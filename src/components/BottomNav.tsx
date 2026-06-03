@@ -1,5 +1,6 @@
 import { CalendarDays, BarChart3, BookOpen, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { todayString } from '@/lib/dates'
 import type { AppTab } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -13,6 +14,7 @@ const TABS: { id: AppTab; label: string; icon: typeof CalendarDays }[] = [
 export function BottomNav() {
   const currentTab = useMacroStore((s) => s.currentTab)
   const setCurrentTab = useMacroStore((s) => s.setCurrentTab)
+  const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur safe-bottom">
@@ -31,6 +33,9 @@ export function BottomNav() {
                 if (active) {
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 } else {
+                  if (id === 'daily') {
+                    setCurrentDate(todayString())
+                  }
                   setCurrentTab(id)
                 }
               }}

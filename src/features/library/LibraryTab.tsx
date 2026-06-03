@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, ChefHat, ChevronLeft, ChevronRight, FolderPlus, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { BookOpen, ChefHat, ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
@@ -17,6 +23,8 @@ import { CreateRecipeSheet } from '@/components/library/CreateRecipeSheet'
 import { AddCategoryDialog } from '@/components/library/AddCategoryDialog'
 import { CategoryEditSheet } from '@/components/library/CategoryEditSheet'
 
+type BulkDeleteKind = 'items' | 'categories' | 'recipes'
+
 export function LibraryTab() {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const customCategories = useMacroStore((s) => s.customCategories)
@@ -24,10 +32,12 @@ export function LibraryTab() {
   const setLibrarySegment = useMacroStore((s) => s.setLibrarySegment)
   const loadSeedLibrary = useMacroStore((s) => s.loadSeedLibrary)
   const deleteFoodItems = useMacroStore((s) => s.deleteFoodItems)
+  const removeLibraryCategory = useMacroStore((s) => s.removeLibraryCategory)
 
   const [query, setQuery] = useState('')
   const [editMode, setEditMode] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [newFoodOpen, setNewFoodOpen] = useState(false)
   const [recipeOpen, setRecipeOpen] = useState(false)
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null)
@@ -35,16 +45,42 @@ export function LibraryTab() {
   const [addCategoryOpen, setAddCategoryOpen] = useState(false)
   const [categoryEditOpen, setCategoryEditOpen] = useState(false)
 
-  const showDeleteEdit =
-    librarySegment === 'items' || librarySegment === 'recipes'
+  const exitEditMode = () => {
+    setEditMode(false)
+    setSelected(new Set())
+  }
+
+  const enterEditMode = () => {
+    setEditMode(true)
+    setSelected(new Set())
+  }
+
+  const showBulkEdit =
+    librarySegment === 'items' ||
+    librarySegment === 'recipes' ||
+    (librarySegment === 'categories' && !activeCategory)
+
+  const bulkDeleteKind: BulkDeleteKind =
+    librarySegment === 'categories'
+      ? 'categories'
+      : librarySegment === 'recipes'
+        ? 'recipes'
+        : 'items'
 
   useEffect(() => {
     setActiveCategory(null)
     setCategoryEditOpen(false)
+    setEditMode(false)
+    setSelected(new Set())
   }, [librarySegment])
 
   useEffect(() => {
-    if (!activeCategory) setCategoryEditOpen(false)
+    if (!activeCategory) {
+      setCategoryEditOpen(false)
+      return
+    }
+    setEditMode(false)
+    setSelected(new Set())
   }, [activeCategory])
 
   const categoryGroups = useMemo(() => {
@@ -89,11 +125,10 @@ export function LibraryTab() {
 
   const activeCategoryItems = useMemo(() => {
     if (!activeCategory) return []
-    return itemsInCategory(foodLibrary, activeCategory)
-      .filter((f) => {
-        const q = query.trim().toLowerCase()
-        return !q || f.name.toLowerCase().includes(q)
-      })
+    return itemsInCategory(foodLibrary, activeCategory).filter((f) => {
+      const q = query.trim().toLowerCase()
+      return !q || f.name.toLowerCase().includes(q)
+    })
   }, [activeCategory, foodLibrary, query])
 
   const toggleSelect = (id: string) => {
@@ -105,14 +140,45 @@ export function LibraryTab() {
     })
   }
 
-  const handleBulkDelete = () => {
+  const confirmBulkDelete = () => {
     if (selected.size === 0) return
-    const count = selected.size
-    deleteFoodItems([...selected])
-    setSelected(new Set())
-    setEditMode(false)
-    toast.success(`Deleted ${count} item(s)`)
+    setDeleteConfirmOpen(true)
   }
+
+  const handleBulkDelete = () => {
+    const count = selected.size
+    if (count === 0) return
+
+    if (bulkDeleteKind === 'categories') {
+      ;[...selected].forEach((name) => removeLibraryCategory(name))
+      toast.success(
+        `Removed ${count} ${count === 1 ? 'category' : 'categories'} (items kept)`,
+      )
+    } else {
+      deleteFoodItems([...selected])
+      toast.success(`Deleted ${count} ${count === 1 ? 'item' : 'items'}`)
+    }
+
+    setDeleteConfirmOpen(false)
+    exitEditMode()
+  }
+
+  const bulkDeleteTitle =
+    bulkDeleteKind === 'categories'
+      ? `Remove ${selected.size} ${selected.size === 1 ? 'category' : 'categories'}?`
+      : `Delete ${selected.size} selected ${bulkDeleteKind === 'recipes' ? 'recipe' : 'item'}${selected.size === 1 ? '' : 's'}?`
+
+  const bulkDeleteDescription =
+    bulkDeleteKind === 'categories'
+      ? 'Category tags will be removed from your library. Food items are not deleted.'
+      : 'This permanently removes the selected entries from your library. Logged entries may show as unknown.'
+
+  const bulkSelectHint =
+    bulkDeleteKind === 'categories'
+      ? 'Select categories to remove'
+      : bulkDeleteKind === 'recipes'
+        ? 'Select recipes to delete'
+        : 'Select items to delete'
 
   if (foodLibrary.length === 0) {
     return (
@@ -122,10 +188,14 @@ export function LibraryTab() {
         <p className="text-muted-foreground">
           Load the built-in library or import your own foods.
         </p>
-        <Button size="lg" className="w-full max-w-sm mx-auto" onClick={() => {
-          loadSeedLibrary()
-          toast.success(`Loaded ${SEED_LIBRARY_COUNT} foods`)
-        }}>
+        <Button
+          size="lg"
+          className="w-full max-w-sm mx-auto"
+          onClick={() => {
+            loadSeedLibrary()
+            toast.success(`Loaded ${SEED_LIBRARY_COUNT} foods`)
+          }}
+        >
           Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
         </Button>
         <p className="text-xs text-muted-foreground">
@@ -150,14 +220,11 @@ export function LibraryTab() {
                 <Pencil className="h-4 w-4 mr-1" />
                 Edit Category
               </Button>
-            ) : showDeleteEdit ? (
+            ) : showBulkEdit ? (
               <Button
                 variant={editMode ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => {
-                  setEditMode(!editMode)
-                  setSelected(new Set())
-                }}
+                onClick={() => (editMode ? exitEditMode() : enterEditMode())}
               >
                 {editMode ? 'Done' : 'Edit'}
               </Button>
@@ -202,30 +269,27 @@ export function LibraryTab() {
               className="pl-9"
             />
           </div>
-          {librarySegment === 'categories' && !activeCategory && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full"
-              onClick={() => setAddCategoryOpen(true)}
-            >
-              <FolderPlus className="h-4 w-4 mr-1" />
-              Add Category
+          {!editMode && librarySegment === 'items' && (
+            <Button className="w-full" size="sm" onClick={() => setNewFoodOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              New Food
             </Button>
           )}
-          {!editMode && librarySegment !== 'categories' && (
-            <div className="flex gap-2">
-              <Button className="flex-1" size="sm" onClick={() => setNewFoodOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> New Food
-              </Button>
-              <Button className="flex-1" size="sm" variant="outline" onClick={() => setRecipeOpen(true)}>
-                <ChefHat className="h-4 w-4 mr-1" /> Create Recipe
-              </Button>
-            </div>
+          {!editMode && librarySegment === 'categories' && !activeCategory && (
+            <Button className="w-full" size="sm" onClick={() => setAddCategoryOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              New Category
+            </Button>
+          )}
+          {!editMode && librarySegment === 'recipes' && (
+            <Button className="w-full" size="sm" onClick={() => setRecipeOpen(true)}>
+              <ChefHat className="h-4 w-4 mr-1" />
+              Create Recipe
+            </Button>
           )}
         </header>
 
-        {editMode && showDeleteEdit && (
+        {editMode && showBulkEdit && (
           <div
             className={`border-b border-border px-4 py-3 flex items-center justify-between gap-3 ${
               selected.size > 0
@@ -233,12 +297,13 @@ export function LibraryTab() {
                 : 'bg-secondary/40'
             }`}
           >
-            <span className="text-sm font-medium">
-              {selected.size > 0 ? `${selected.size} selected` : 'Select items to delete'}
+            <span className="text-sm font-medium shrink-0">
+              {selected.size > 0 ? `${selected.size} selected` : bulkSelectHint}
             </span>
             {selected.size > 0 && (
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                <Trash2 className="h-4 w-4 mr-1" /> Delete Selected
+              <Button variant="destructive" size="sm" onClick={confirmBulkDelete}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete Selected
               </Button>
             )}
           </div>
@@ -271,36 +336,18 @@ export function LibraryTab() {
                   ? 'No categories match your search.'
                   : 'No categories yet. Create one to organize your foods.'}
               </p>
-              {!query.trim() && (
-                <Button variant="outline" onClick={() => setAddCategoryOpen(true)}>
-                  <FolderPlus className="h-4 w-4 mr-1" />
-                  Add Category
-                </Button>
-              )}
             </div>
           ) : (
-            <ul className="space-y-1">
-              {categoryGroups.map(([cat, items]) => (
-                <li key={cat}>
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left active:bg-secondary/50"
-                    onClick={() => {
-                      setActiveCategory(cat)
-                      setQuery('')
-                    }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{cat}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {items.length} {items.length === 1 ? 'item' : 'items'}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <CategoryList
+              groups={categoryGroups}
+              editMode={editMode}
+              selected={selected}
+              onToggle={toggleSelect}
+              onOpenCategory={(cat) => {
+                setActiveCategory(cat)
+                setQuery('')
+              }}
+            />
           )
         ) : filtered.type === 'alpha' ? (
           [...filtered.groups.entries()]
@@ -320,6 +367,25 @@ export function LibraryTab() {
         ) : null}
       </div>
 
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{bulkDeleteTitle}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{bulkDeleteDescription}</p>
+          <Button variant="destructive" className="w-full" onClick={handleBulkDelete}>
+            {bulkDeleteKind === 'categories' ? 'Remove categories' : 'Delete permanently'}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => setDeleteConfirmOpen(false)}
+          >
+            Cancel
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       <NewFoodSheet open={newFoodOpen} onOpenChange={setNewFoodOpen} />
       <EditFoodSheet food={editingFood} onClose={() => setEditingFood(null)} />
       <CreateRecipeSheet open={recipeOpen} onOpenChange={setRecipeOpen} />
@@ -333,6 +399,64 @@ export function LibraryTab() {
         category={activeCategory}
         onOpenChange={setCategoryEditOpen}
       />
+    </div>
+  )
+}
+
+function CategoryList({
+  groups,
+  editMode,
+  selected,
+  onToggle,
+  onOpenCategory,
+}: {
+  groups: readonly (readonly [string, FoodItem[]])[]
+  editMode: boolean
+  selected: Set<string>
+  onToggle: (name: string) => void
+  onOpenCategory: (name: string) => void
+}) {
+  return (
+    <ul className="space-y-1 mb-4">
+      {groups.map(([cat, items]) => (
+        <li key={cat}>
+          {editMode ? (
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-3 active:bg-secondary/50">
+              <Checkbox
+                checked={selected.has(cat)}
+                onChange={() => onToggle(cat)}
+              />
+              <CategoryRowContent name={cat} itemCount={items.length} />
+            </label>
+          ) : (
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left active:bg-secondary/50"
+              onClick={() => onOpenCategory(cat)}
+            >
+              <CategoryRowContent name={cat} itemCount={items.length} />
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+            </button>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function CategoryRowContent({
+  name,
+  itemCount,
+}: {
+  name: string
+  itemCount: number
+}) {
+  return (
+    <div className="flex-1 min-w-0">
+      <p className="font-medium truncate">{name}</p>
+      <p className="text-xs text-muted-foreground">
+        {itemCount} {itemCount === 1 ? 'item' : 'items'}
+      </p>
     </div>
   )
 }

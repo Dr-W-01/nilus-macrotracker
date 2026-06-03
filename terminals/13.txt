@@ -3,7 +3,7 @@ pid: 10564
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-03T02:14:32.035Z
-running_for_ms: 335003   
+running_for_ms: 1219997  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -30,3 +30,11 @@ Port 5182 is in use, trying another one...
 10:19:32 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CategoryPicker.tsx
 10:19:32 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/NewFoodSheet.tsx
 10:19:32 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CategoryPicker.tsx
+10:29:17 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+10:29:21 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+10:29:34 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+10:32:52 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/BottomNav.tsx
+10:32:52 PM [vite] (client) hmr update /src/app/layout.tsx, /src/styles/globals.css
+10:32:52 PM [vite] (client) hmr update /src/app/layout.tsx, /src/styles/globals.css
+10:32:52 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/BottomNav.tsx
+10:34:13 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx

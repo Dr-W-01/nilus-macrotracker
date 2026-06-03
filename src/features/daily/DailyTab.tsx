@@ -181,6 +181,16 @@ export function DailyTab() {
       </header>
 
       <div className="p-4 space-y-4">
+        <div className="text-center py-2">
+          <p className="text-sm text-muted-foreground">Net Calories</p>
+          <p className="text-5xl font-bold tracking-tight text-primary">
+            {roundMacro(netCalories, 0)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {roundMacro(consumed.calories, 0)} eaten − {log.burnedCalories} burned
+          </p>
+        </div>
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Goals vs Remaining</CardTitle>
@@ -210,16 +220,6 @@ export function DailyTab() {
             </div>
           </CardContent>
         </Card>
-
-        <div className="text-center py-2">
-          <p className="text-sm text-muted-foreground">Net Calories</p>
-          <p className="text-5xl font-bold tracking-tight text-primary">
-            {roundMacro(netCalories, 0)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {roundMacro(consumed.calories, 0)} eaten − {log.burnedCalories} burned
-          </p>
-        </div>
 
         <button
           type="button"

@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Toaster } from '@/components/ui/sonner'
+import { todayString } from '@/lib/dates'
 import { applyThemeColors, withDefaultSettings } from '@/lib/theme'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -11,6 +12,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const settings = useMacroStore((s) => s.settings)
   const _hasHydrated = useMacroStore((s) => s._hasHydrated)
   const setHasHydrated = useMacroStore((s) => s.setHasHydrated)
+  const didSyncDailyDate = useRef(false)
 
   useEffect(() => {
     const finish = () => setHasHydrated(true)
@@ -32,6 +34,14 @@ export function AppLayout({ children }: AppLayoutProps) {
       applyThemeColors(withDefaultSettings(settings))
     }
   }, [settings?.theme, settings?.accentColor, settings?.secondaryTextColor])
+
+  useEffect(() => {
+    if (!_hasHydrated || didSyncDailyDate.current) return
+    didSyncDailyDate.current = true
+    if (useMacroStore.getState().currentTab === 'daily') {
+      useMacroStore.getState().setCurrentDate(todayString())
+    }
+  }, [_hasHydrated])
 
   if (!_hasHydrated) {
     return (
