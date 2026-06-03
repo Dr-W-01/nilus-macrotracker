@@ -1,9 +1,8 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CategoryPicker } from '@/components/library/CategoryPicker'
+import { normalizeCategoryList } from '@/lib/categories'
 import {
   inferBaseAmountFromServing,
   normalizeScaleFoodItem,
@@ -37,7 +36,7 @@ export const emptyFoodFormValues = (): FoodFormValues => ({
   baseUnit: 'g',
   baseAmount: '1',
   servingDesc: '1 serving',
-  categories: ['General'],
+  categories: [],
 })
 
 export function foodItemToFormValues(food: FoodItem): FoodFormValues {
@@ -56,7 +55,7 @@ export function foodItemToFormValues(food: FoodItem): FoodFormValues {
         inferBaseAmountFromServing(food.servingDesc, food.baseUnit ?? food.unit),
     ),
     servingDesc: food.servingDesc,
-    categories: food.categories.length > 0 ? [...food.categories] : ['General'],
+    categories: normalizeCategoryList(food.categories),
   }
 }
 
@@ -79,13 +78,14 @@ export function formValuesToFoodFields(
         ? parseFloat(values.baseAmount) || 1
         : undefined,
     servingDesc: values.servingDesc.trim() || '1 serving',
-    categories: values.categories.length > 0 ? values.categories : ['General'],
+    categories: normalizeCategoryList(values.categories),
   })
 }
 
 interface FoodFormFieldsProps {
   values: FoodFormValues
   onChange: (values: FoodFormValues) => void
+  allCategories: string[]
   macrosReadOnly?: boolean
   scaleReadOnly?: boolean
 }
@@ -93,29 +93,12 @@ interface FoodFormFieldsProps {
 export function FoodFormFields({
   values,
   onChange,
+  allCategories,
   macrosReadOnly = false,
   scaleReadOnly = false,
 }: FoodFormFieldsProps) {
-  const [categoryInput, setCategoryInput] = useState('')
-
   const patch = (partial: Partial<FoodFormValues>) =>
     onChange({ ...values, ...partial })
-
-  const addCategory = (raw: string) => {
-    const tag = raw.trim()
-    if (!tag) return
-    if (values.categories.some((c) => c.toLowerCase() === tag.toLowerCase())) {
-      setCategoryInput('')
-      return
-    }
-    patch({ categories: [...values.categories, tag] })
-    setCategoryInput('')
-  }
-
-  const removeCategory = (tag: string) => {
-    const next = values.categories.filter((c) => c !== tag)
-    patch({ categories: next.length > 0 ? next : ['General'] })
-  }
 
   return (
     <div className="space-y-4">
@@ -220,45 +203,11 @@ export function FoodFormFields({
         />
       </FormField>
 
-      <div>
-        <Label className="text-xs text-muted-foreground">Categories</Label>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {values.categories.map((tag) => (
-            <Badge key={tag} variant="secondary" className="gap-1 pr-1 text-sm">
-              {tag}
-              <button
-                type="button"
-                className="rounded-full p-0.5 hover:bg-background/50"
-                aria-label={`Remove ${tag}`}
-                onClick={() => removeCategory(tag)}
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-        <div className="mt-2 flex gap-2">
-          <Input
-            value={categoryInput}
-            onChange={(e) => setCategoryInput(e.target.value)}
-            placeholder="Add category..."
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                addCategory(categoryInput)
-              }
-            }}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            className="shrink-0"
-            onClick={() => addCategory(categoryInput)}
-          >
-            Add
-          </Button>
-        </div>
-      </div>
+      <CategoryPicker
+        selected={values.categories}
+        allCategories={allCategories}
+        onChange={(categories) => patch({ categories })}
+      />
     </div>
   )
 }

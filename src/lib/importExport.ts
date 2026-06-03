@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { parseImportedCategories } from './categories'
 import type { FoodItem } from './types'
 
 export function parseFoodLibraryJson(text: string): FoodItem[] {
@@ -31,7 +32,7 @@ export function parseFoodLibraryCsv(text: string): FoodItem[] {
       scaleType,
       unit: scaleType === 'scale' ? ((cols[idx('unit')] as 'g' | 'oz') || 'g') : undefined,
       servingDesc: cols[idx('servingdesc')] || '1 serving',
-      categories: (cols[idx('categories')] || 'General').split(';').filter(Boolean),
+      categories: parseImportedCategories(cols[idx('categories')]),
       isRecipe: cols[idx('isrecipe')] === 'true',
       lastUsed: cols[idx('lastused')] || '2020-01-01',
       timesUsed: parseInt(cols[idx('timesused')] || '0', 10),
@@ -57,10 +58,7 @@ export function parseFoodLibraryXlsx(buffer: ArrayBuffer): FoodItem[] {
       scaleType,
       unit: scaleType === 'scale' ? (String(row.unit || 'g') as 'g' | 'oz') : undefined,
       servingDesc: String(row.servingDesc || row.serving || '1 serving'),
-      categories: String(row.categories || 'General')
-        .split(/[;,]/)
-        .map((s) => s.trim())
-        .filter(Boolean),
+      categories: parseImportedCategories(String(row.categories || '')),
       isRecipe: Boolean(row.isRecipe),
       lastUsed: String(row.lastUsed || '2020-01-01'),
       timesUsed: Number(row.timesUsed || 0),

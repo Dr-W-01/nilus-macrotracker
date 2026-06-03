@@ -3,6 +3,12 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { SEED_LIBRARY } from '@/data/seedLibrary'
 import { getWeekRange, todayString } from '@/lib/dates'
 import { computeComponentMacros } from '@/lib/macros'
+import {
+  addCategoryToItem,
+  collectAllCategories,
+  normalizeCategoryList,
+  removeCategoryFromItem,
+} from '@/lib/categories'
 import { normalizeScaleFoodItem } from '@/lib/scale'
 import { macroStorage, STORAGE_KEY } from '@/lib/storage'
 import type {
@@ -71,6 +77,8 @@ interface MacroStore {
   _hasHydrated: boolean
   settings: Settings
   foodLibrary: FoodItem[]
+  /** User-created category names (may exist before any item uses them) */
+  customCategories: string[]
   dailyLogs: Record<string, DailyLog>
   currentDate: string
   currentTab: AppTab
@@ -107,6 +115,16 @@ interface MacroStore {
   deleteFoodItems: (ids: string[]) => void
   touchFoodUsage: (foodId: string) => void
 
+  addLibraryCategory: (name: string) => boolean
+  renameLibraryCategory: (oldName: string, newName: string) => boolean
+  removeLibraryCategory: (name: string) => void
+  applyCategoryMembership: (
+    category: string,
+    addIds: string[],
+    removeIds: string[],
+  ) => void
+  getAllLibraryCategories: () => string[]
+
   updateSettings: (patch: Partial<Settings>) => void
   addGoalTemplate: (t: Omit<GoalTemplate, 'id'>) => string
   updateGoalTemplate: (id: string, patch: Partial<GoalTemplate>) => void
@@ -120,6 +138,7 @@ export const useMacroStore = create<MacroStore>()(
       _hasHydrated: false,
       settings: defaultSettings,
       foodLibrary: [],
+      customCategories: [],
       dailyLogs: {},
       currentDate: todayString(),
       currentTab: 'daily',
@@ -283,6 +302,80 @@ export const useMacroStore = create<MacroStore>()(
         })
       },
 
+      getAllLibraryCategories: () =>
+        collectAllCategories(get().foodLibrary, get().customCategories),
+
+      addLibraryCategory: (name) => {
+        const tag = normalizeCategoryList([name])[0]
+        if (!tag) return false
+        const existing = collectAllCategories(
+          get().foodLibrary,
+          get().customCategories,
+        )
+        if (existing.some((c) => c.toLowerCase() === tag.toLowerCase())) {
+          return false
+        }
+        set({ customCategories: [...get().customCategories, tag] })
+        return true
+      },
+
+      renameLibraryCategory: (oldName, newName) => {
+        const tag = normalizeCategoryList([newName])[0]
+        if (!tag) return false
+        const oldKey = oldName.toLowerCase()
+        const all = collectAllCategories(get().foodLibrary, get().customCategories)
+        if (all.some((c) => c.toLowerCase() === tag.toLowerCase() && c.toLowerCase() !== oldKey)) {
+          return false
+        }
+        set({
+          customCategories: get().customCategories.map((c) =>
+            c.toLowerCase() === oldKey ? tag : c,
+          ),
+          foodLibrary: get().foodLibrary.map((f) => ({
+            ...f,
+            categories: f.categories.map((c) =>
+              c.toLowerCase() === oldKey ? tag : c,
+            ),
+          })),
+        })
+        return true
+      },
+
+      removeLibraryCategory: (name) => {
+        const key = name.toLowerCase()
+        set({
+          customCategories: get().customCategories.filter(
+            (c) => c.toLowerCase() !== key,
+          ),
+          foodLibrary: get().foodLibrary.map((f) => ({
+            ...f,
+            categories: removeCategoryFromItem(f.categories, name),
+          })),
+        })
+      },
+
+      applyCategoryMembership: (category, addIds, removeIds) => {
+        const addSet = new Set(addIds)
+        const removeSet = new Set(removeIds)
+        set({
+          foodLibrary: get().foodLibrary.map((f) => {
+            if (addSet.has(f.id)) {
+              return {
+                ...f,
+                categories: addCategoryToItem(f.categories, category),
+              }
+            }
+            if (removeSet.has(f.id)) {
+              return {
+                ...f,
+                categories: removeCategoryFromItem(f.categories, category),
+              }
+            }
+            return f
+          }),
+        })
+      },
+
       updateSettings: (patch) => set({ settings: { ...get().settings, ...patch } }),
 
       addGoalTemplate: (t) => {
@@ -323,6 +416,7 @@ export const useMacroStore = create<MacroStore>()(
         set({
           settings: defaultSettings,
           foodLibrary: [],
+          customCategories: [],
           dailyLogs: {},
           currentDate: todayString(),
           currentTab: 'daily',
@@ -336,6 +430,7 @@ export const useMacroStore = create<MacroStore>()(
       partialize: (state) => ({
         settings: state.settings,
         foodLibrary: state.foodLibrary,
+        customCategories: state.customCategories,
         dailyLogs: state.dailyLogs,
         currentDate: state.currentDate,
         currentTab: state.currentTab,
@@ -348,7 +443,11 @@ export const useMacroStore = create<MacroStore>()(
         statsAnchorDate: state.statsAnchorDate,
       }),
       migrate: (persisted: unknown) => {
-        const state = persisted as { foodLibrary?: FoodItem[] }
+        const state = persisted as {
+          foodLibrary?: FoodItem[]
+          customCategories?: string[]
+        }
+        if (!state.customCategories) state.customCategories = []
         if (state?.foodLibrary?.length) {
           state.foodLibrary = state.foodLibrary.map((item) =>
             normalizeLibraryItem(item),

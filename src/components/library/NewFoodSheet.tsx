@@ -8,6 +8,7 @@ import {
   formValuesToFoodFields,
   type FoodFormValues,
 } from '@/components/library/FoodFormFields'
+import { collectAllCategories } from '@/lib/categories'
 import { useMacroStore } from '@/store/useMacroStore'
 
 interface NewFoodSheetProps {
@@ -17,6 +18,9 @@ interface NewFoodSheetProps {
 
 export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
   const addFoodItem = useMacroStore((s) => s.addFoodItem)
+  const allCategories = useMacroStore((s) =>
+    collectAllCategories(s.foodLibrary, s.customCategories),
+  )
   const [values, setValues] = useState<FoodFormValues>(emptyFoodFormValues())
 
   useEffect(() => {
@@ -46,7 +50,11 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
           <SheetTitle>New Food</SheetTitle>
         </SheetHeader>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-          <FoodFormFields values={values} onChange={setValues} />
+          <FoodFormFields
+            values={values}
+            onChange={setValues}
+            allCategories={allCategories}
+          />
         </div>
         <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
           <Button size="lg" className="w-full" onClick={save}>

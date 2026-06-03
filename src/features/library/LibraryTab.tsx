@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, ChefHat, ChevronLeft, ChevronRight, Plus, Search, Trash2 } from 'lucide-react'
+import { BookOpen, ChefHat, ChevronLeft, ChevronRight, FolderPlus, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
+import { collectAllCategories, itemsInCategory } from '@/lib/categories'
 import { getLetterGroup } from '@/lib/dates'
 import { formatBaseServing } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
@@ -13,9 +14,12 @@ import { useMacroStore } from '@/store/useMacroStore'
 import { NewFoodSheet } from '@/components/library/NewFoodSheet'
 import { EditFoodSheet } from '@/components/library/EditFoodSheet'
 import { CreateRecipeSheet } from '@/components/library/CreateRecipeSheet'
+import { AddCategoryDialog } from '@/components/library/AddCategoryDialog'
+import { CategoryEditSheet } from '@/components/library/CategoryEditSheet'
 
 export function LibraryTab() {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
+  const customCategories = useMacroStore((s) => s.customCategories)
   const librarySegment = useMacroStore((s) => s.librarySegment)
   const setLibrarySegment = useMacroStore((s) => s.setLibrarySegment)
   const loadSeedLibrary = useMacroStore((s) => s.loadSeedLibrary)
@@ -28,45 +32,41 @@ export function LibraryTab() {
   const [recipeOpen, setRecipeOpen] = useState(false)
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false)
+  const [categoryEditOpen, setCategoryEditOpen] = useState(false)
+
+  const showDeleteEdit =
+    librarySegment === 'items' || librarySegment === 'recipes'
 
   useEffect(() => {
     setActiveCategory(null)
+    setCategoryEditOpen(false)
   }, [librarySegment])
+
+  useEffect(() => {
+    if (!activeCategory) setCategoryEditOpen(false)
+  }, [activeCategory])
 
   const categoryGroups = useMemo(() => {
     if (librarySegment !== 'categories') return null
 
     const q = query.trim().toLowerCase()
-    const list = foodLibrary.filter((f) => !f.isRecipe)
-    const cats = new Map<string, FoodItem[]>()
+    const allNames = collectAllCategories(foodLibrary, customCategories)
 
-    list.forEach((f) => {
-      const itemCategories =
-        f.categories.length > 0 ? f.categories : ['General']
-      itemCategories.forEach((cat) => {
-        const arr = cats.get(cat) ?? []
-        if (!arr.some((x) => x.id === f.id)) {
-          arr.push(f)
-        }
-        cats.set(cat, arr)
-      })
-    })
-
-    const entries = [...cats.entries()]
-      .map(([cat, items]) => {
-        const sorted = [...items].sort((a, b) => a.name.localeCompare(b.name))
-        if (!q) return [cat, sorted] as const
+    const entries = allNames
+      .map((cat) => {
+        const items = itemsInCategory(foodLibrary, cat)
+        if (!q) return [cat, items] as const
         const catMatches = cat.toLowerCase().includes(q)
-        const matched = sorted.filter((f) => f.name.toLowerCase().includes(q))
-        if (catMatches) return [cat, sorted] as const
+        const matched = items.filter((f) => f.name.toLowerCase().includes(q))
+        if (catMatches) return [cat, items] as const
         if (matched.length > 0) return [cat, matched] as const
         return null
       })
       .filter((entry): entry is readonly [string, FoodItem[]] => entry != null)
-      .sort(([a], [b]) => a.localeCompare(b))
 
     return entries
-  }, [foodLibrary, librarySegment, query])
+  }, [foodLibrary, customCategories, librarySegment, query])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -88,10 +88,13 @@ export function LibraryTab() {
   }, [foodLibrary, librarySegment, query])
 
   const activeCategoryItems = useMemo(() => {
-    if (!activeCategory || !categoryGroups) return []
-    const entry = categoryGroups.find(([cat]) => cat === activeCategory)
-    return entry?.[1] ?? []
-  }, [activeCategory, categoryGroups])
+    if (!activeCategory) return []
+    return itemsInCategory(foodLibrary, activeCategory)
+      .filter((f) => {
+        const q = query.trim().toLowerCase()
+        return !q || f.name.toLowerCase().includes(q)
+      })
+  }, [activeCategory, foodLibrary, query])
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
@@ -136,18 +139,29 @@ export function LibraryTab() {
     <div className="flex flex-col pb-28">
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <header className="border-b border-border p-4 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <h1 className="text-xl font-bold">Library</h1>
-            <Button
-              variant={editMode ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setEditMode(!editMode)
-                setSelected(new Set())
-              }}
-            >
-              {editMode ? 'Done' : 'Edit'}
-            </Button>
+            {librarySegment === 'categories' && activeCategory ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCategoryEditOpen(true)}
+              >
+                <Pencil className="h-4 w-4 mr-1" />
+                Edit Category
+              </Button>
+            ) : showDeleteEdit ? (
+              <Button
+                variant={editMode ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setEditMode(!editMode)
+                  setSelected(new Set())
+                }}
+              >
+                {editMode ? 'Done' : 'Edit'}
+              </Button>
+            ) : null}
           </div>
           <Tabs
             value={librarySegment}
@@ -164,7 +178,10 @@ export function LibraryTab() {
               variant="ghost"
               size="sm"
               className="-ml-2 w-fit gap-1 px-2 text-primary"
-              onClick={() => setActiveCategory(null)}
+              onClick={() => {
+                setActiveCategory(null)
+                setQuery('')
+              }}
             >
               <ChevronLeft className="h-4 w-4" />
               All categories
@@ -176,14 +193,27 @@ export function LibraryTab() {
               placeholder={
                 librarySegment === 'categories' && !activeCategory
                   ? 'Search categories...'
-                  : `Search ${librarySegment}...`
+                  : librarySegment === 'categories' && activeCategory
+                    ? `Search in ${activeCategory}...`
+                    : `Search ${librarySegment}...`
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-9"
             />
           </div>
-          {!editMode && (
+          {librarySegment === 'categories' && !activeCategory && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={() => setAddCategoryOpen(true)}
+            >
+              <FolderPlus className="h-4 w-4 mr-1" />
+              Add Category
+            </Button>
+          )}
+          {!editMode && librarySegment !== 'categories' && (
             <div className="flex gap-2">
               <Button className="flex-1" size="sm" onClick={() => setNewFoodOpen(true)}>
                 <Plus className="h-4 w-4 mr-1" /> New Food
@@ -195,7 +225,7 @@ export function LibraryTab() {
           )}
         </header>
 
-        {editMode && (
+        {editMode && showDeleteEdit && (
           <div
             className={`border-b border-border px-4 py-3 flex items-center justify-between gap-3 ${
               selected.size > 0
@@ -222,12 +252,12 @@ export function LibraryTab() {
               <h2 className="py-2 text-sm font-bold text-primary">{activeCategory}</h2>
               {activeCategoryItems.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
-                  No items match your search in this category.
+                  No items in this category yet. Tap Edit Category to add items.
                 </p>
               ) : (
                 <FoodList
                   items={activeCategoryItems}
-                  editMode={editMode}
+                  editMode={false}
                   selected={selected}
                   onToggle={toggleSelect}
                   onOpenItem={(food) => setEditingFood(food)}
@@ -235,9 +265,19 @@ export function LibraryTab() {
               )}
             </section>
           ) : categoryGroups.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              No categories match your search.
-            </p>
+            <div className="py-8 text-center space-y-3">
+              <p className="text-muted-foreground">
+                {query.trim()
+                  ? 'No categories match your search.'
+                  : 'No categories yet. Create one to organize your foods.'}
+              </p>
+              {!query.trim() && (
+                <Button variant="outline" onClick={() => setAddCategoryOpen(true)}>
+                  <FolderPlus className="h-4 w-4 mr-1" />
+                  Add Category
+                </Button>
+              )}
+            </div>
           ) : (
             <ul className="space-y-1">
               {categoryGroups.map(([cat, items]) => (
@@ -283,6 +323,16 @@ export function LibraryTab() {
       <NewFoodSheet open={newFoodOpen} onOpenChange={setNewFoodOpen} />
       <EditFoodSheet food={editingFood} onClose={() => setEditingFood(null)} />
       <CreateRecipeSheet open={recipeOpen} onOpenChange={setRecipeOpen} />
+      <AddCategoryDialog
+        open={addCategoryOpen}
+        onOpenChange={setAddCategoryOpen}
+        onCreated={(name) => setActiveCategory(name)}
+      />
+      <CategoryEditSheet
+        open={categoryEditOpen}
+        category={activeCategory}
+        onOpenChange={setCategoryEditOpen}
+      />
     </div>
   )
 }

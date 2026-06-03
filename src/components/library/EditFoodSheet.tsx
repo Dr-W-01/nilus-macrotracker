@@ -15,6 +15,7 @@ import {
   type FoodFormValues,
 } from '@/components/library/FoodFormFields'
 import type { FoodItem } from '@/lib/types'
+import { collectAllCategories } from '@/lib/categories'
 import { useMacroStore } from '@/store/useMacroStore'
 
 interface EditFoodSheetProps {
@@ -25,6 +26,9 @@ interface EditFoodSheetProps {
 export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
   const updateFoodItem = useMacroStore((s) => s.updateFoodItem)
   const deleteFoodItems = useMacroStore((s) => s.deleteFoodItems)
+  const allCategories = useMacroStore((s) =>
+    collectAllCategories(s.foodLibrary, s.customCategories),
+  )
   const [values, setValues] = useState<FoodFormValues | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
@@ -75,6 +79,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
             <FoodFormFields
               values={values}
               onChange={setValues}
+              allCategories={allCategories}
               macrosReadOnly={isRecipe}
               scaleReadOnly={isRecipe}
             />
