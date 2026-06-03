@@ -3,7 +3,7 @@ pid: 27060
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-03T00:07:27.716Z
-running_for_ms: 410007   
+running_for_ms: 1710003  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -18,3 +18,10 @@ Port 5176 is in use, trying another one...
 
   ➜  Local:   http://localhost:5177/
   ➜  Network: http://192.168.1.69:5177/
+8:18:31 PM [vite] vite.config.ts changed, restarting server...
+8:18:31 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+8:18:32 PM [vite] server restarted.
+
+  ➜  Local:   http://localhost:5177/nilus-macrotracker/
+  ➜  Network: http://192.168.1.69:5177/nilus-macrotracker/
+8:18:33 PM [vite] (client) [optimizer] bundling dependencies...

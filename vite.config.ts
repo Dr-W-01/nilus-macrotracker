@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/nilus-macrotracker/',
   server: {
     host: true,
     port: 5173,
@@ -24,7 +25,7 @@ export default defineConfig({
         background_color: '#0a0a0a',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        start_url: '/nilus-macrotracker/',
         icons: [
           {
             src: 'icons.svg',

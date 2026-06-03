@@ -10,6 +10,7 @@ import { getLetterGroup } from '@/lib/dates'
 import type { FoodItem } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { NewFoodSheet } from '@/components/library/NewFoodSheet'
+import { EditFoodSheet } from '@/components/library/EditFoodSheet'
 import { CreateRecipeSheet } from '@/components/library/CreateRecipeSheet'
 
 export function LibraryTab() {
@@ -24,6 +25,7 @@ export function LibraryTab() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [newFoodOpen, setNewFoodOpen] = useState(false)
   const [recipeOpen, setRecipeOpen] = useState(false)
+  const [editingFood, setEditingFood] = useState<FoodItem | null>(null)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -153,7 +155,13 @@ export function LibraryTab() {
             .map(([cat, items]) => (
               <section key={cat} className="mb-6">
                 <h2 className="sticky-letter py-2 text-sm font-bold text-primary">{cat}</h2>
-                <FoodList items={items} editMode={editMode} selected={selected} onToggle={toggleSelect} />
+                <FoodList
+                  items={items}
+                  editMode={editMode}
+                  selected={selected}
+                  onToggle={toggleSelect}
+                  onOpenItem={(food) => setEditingFood(food)}
+                />
               </section>
             ))
         ) : (
@@ -162,13 +170,20 @@ export function LibraryTab() {
             .map(([letter, items]) => (
               <section key={letter}>
                 <h2 className="sticky-letter py-2 text-sm font-bold text-primary">{letter}</h2>
-                <FoodList items={items} editMode={editMode} selected={selected} onToggle={toggleSelect} />
+                <FoodList
+                  items={items}
+                  editMode={editMode}
+                  selected={selected}
+                  onToggle={toggleSelect}
+                  onOpenItem={(food) => setEditingFood(food)}
+                />
               </section>
             ))
         )}
       </div>
 
       <NewFoodSheet open={newFoodOpen} onOpenChange={setNewFoodOpen} />
+      <EditFoodSheet food={editingFood} onClose={() => setEditingFood(null)} />
       <CreateRecipeSheet open={recipeOpen} onOpenChange={setRecipeOpen} />
     </div>
   )
@@ -179,35 +194,53 @@ function FoodList({
   editMode,
   selected,
   onToggle,
+  onOpenItem,
 }: {
   items: FoodItem[]
   editMode: boolean
   selected: Set<string>
   onToggle: (id: string) => void
+  onOpenItem: (food: FoodItem) => void
 }) {
   return (
     <ul className="space-y-1 mb-4">
       {items.map((food) => (
         <li key={food.id}>
-          <div className="flex items-center gap-3 rounded-lg border border-border px-3 py-3">
-            {editMode && (
+          {editMode ? (
+            <div className="flex items-center gap-3 rounded-lg border border-border px-3 py-3">
               <Checkbox
                 checked={selected.has(food.id)}
                 onChange={() => onToggle(food.id)}
               />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">
-                {food.name} {food.isRecipe && '🍱'}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">{food.servingDesc}</p>
+              <FoodRowContent food={food} />
             </div>
-            <span className="text-sm text-muted-foreground shrink-0">
-              {Math.round(food.caloriesPerServing)} cal
-            </span>
-          </div>
+          ) : (
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left active:bg-secondary/50"
+              onClick={() => onOpenItem(food)}
+            >
+              <FoodRowContent food={food} />
+            </button>
+          )}
         </li>
       ))}
     </ul>
+  )
+}
+
+function FoodRowContent({ food }: { food: FoodItem }) {
+  return (
+    <>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate">
+          {food.name} {food.isRecipe && '🍱'}
+        </p>
+        <p className="text-xs text-muted-foreground truncate">{food.servingDesc}</p>
+      </div>
+      <span className="text-sm text-muted-foreground shrink-0">
+        {Math.round(food.caloriesPerServing)} cal
+      </span>
+    </>
   )
 }

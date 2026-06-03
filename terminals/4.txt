@@ -3,7 +3,7 @@ pid: 30996
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-02T23:46:56.340Z
-running_for_ms: 1639993  
+running_for_ms: 2939993  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -24,3 +24,13 @@ Port 5175 is in use, trying another one...
 8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
 8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
 8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+8:18:31 PM [vite] vite.config.ts changed, restarting server...
+8:18:32 PM [vite] server restarted.
+
+  ➜  Local:   http://localhost:5176/nilus-macrotracker/
+  ➜  Network: http://192.168.1.69:5176/nilus-macrotracker/
+8:18:33 PM [vite] (client) [optimizer] bundling dependencies...
+8:34:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+8:34:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/NewFoodSheet.tsx
+8:34:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+8:34:06 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
