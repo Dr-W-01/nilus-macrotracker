@@ -3,10 +3,30 @@ import { cn } from '@/lib/utils'
 const Table = ({
   className,
   containerClassName,
+  scrollable,
   ...props
-}: React.HTMLAttributes<HTMLTableElement> & { containerClassName?: string }) => (
-  <div className={cn('relative w-full overflow-auto', containerClassName)}>
-    <table className={cn('w-full caption-bottom text-sm', className)} {...props} />
+}: React.HTMLAttributes<HTMLTableElement> & {
+  containerClassName?: string
+  /** Wide tables: expand to column content and scroll horizontally on narrow screens */
+  scrollable?: boolean
+}) => (
+  <div
+    className={cn(
+      'relative w-full',
+      scrollable
+        ? 'overflow-x-auto overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch]'
+        : 'overflow-auto',
+      containerClassName,
+    )}
+  >
+    <table
+      className={cn(
+        scrollable ? 'w-max table-auto' : 'w-full',
+        'caption-bottom text-sm',
+        className,
+      )}
+      {...props}
+    />
   </div>
 )
 

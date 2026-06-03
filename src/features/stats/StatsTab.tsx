@@ -181,7 +181,8 @@ export function StatsTab() {
   }
 
   const headerClass =
-    'sticky top-0 z-10 cursor-pointer whitespace-nowrap bg-background px-1.5 sm:px-2 shadow-[0_1px_0_hsl(var(--border))]'
+    'sticky top-0 z-10 cursor-pointer whitespace-nowrap bg-background px-2 py-2 text-[10px] font-semibold uppercase tracking-wide sm:text-xs sm:normal-case sm:tracking-normal shadow-[0_1px_0_hsl(var(--border))]'
+  const cellClass = 'whitespace-nowrap px-2 py-1.5 tabular-nums text-[11px] sm:text-sm'
 
   return (
     <div className="p-4 pb-24 space-y-4">
@@ -264,79 +265,106 @@ export function StatsTab() {
         dayRows.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No logged days in this period</p>
         ) : (
-          <Table
-            containerClassName="max-h-[min(52dvh,28rem)] overflow-auto rounded-lg border border-border"
-            className="min-w-[42rem] text-xs sm:text-sm"
-          >
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className={headerClass} onClick={() => toggleSort('date')}>
-                  Date{sortIndicator('date')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('calories')}>
-                  Calories{sortIndicator('calories')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('protein')}>
-                  Protein{sortIndicator('protein')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('carbs')}>
-                  Carbs{sortIndicator('carbs')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('fat')}>
-                  Fat{sortIndicator('fat')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('fiber')}>
-                  Fiber (g){sortIndicator('fiber')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('sugars')}>
-                  Sugars (g){sortIndicator('sugars')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('net')}>
-                  Net{sortIndicator('net')}
-                </TableHead>
-                <TableHead className={headerClass} onClick={() => toggleSort('vsGoal')}>
-                  vs Goal{sortIndicator('vsGoal')}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedRows.map((row) => (
-                <TableRow
-                  key={row.date}
-                  className="cursor-pointer"
-                  onClick={() => goToDay(row.date)}
-                >
-                  <TableCell className="whitespace-nowrap px-1.5 sm:px-2 tabular-nums">
-                    {format(parseISO(row.date), 'MM/dd')}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.calories, 0)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.protein)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.carbs)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.fat)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.fiber)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.sugars)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {roundMacro(row.net, 0)}
-                  </TableCell>
-                  <TableCell className="px-1.5 sm:px-2 tabular-nums">
-                    {formatVsGoal(row.vsGoal)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground sm:hidden">
+              Swipe sideways to see all columns →
+            </p>
+            <div className="-mx-4 sm:mx-0">
+              <Table
+                scrollable
+                containerClassName="max-h-[min(52dvh,28rem)] overflow-y-auto rounded-lg border border-border"
+                className="min-w-[40rem]"
+              >
+                <colgroup>
+                  <col className="min-w-[3.5rem]" />
+                  <col className="min-w-[4.5rem]" />
+                  <col className="min-w-[4rem]" />
+                  <col className="min-w-[4rem]" />
+                  <col className="min-w-[3.5rem]" />
+                  <col className="min-w-[4rem]" />
+                  <col className="min-w-[4.5rem]" />
+                  <col className="min-w-[4.5rem]" />
+                  <col className="min-w-[4rem]" />
+                </colgroup>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className={headerClass} onClick={() => toggleSort('date')}>
+                      Date{sortIndicator('date')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('calories')}>
+                      Calories{sortIndicator('calories')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('protein')}>
+                      Protein (g){sortIndicator('protein')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('carbs')}>
+                      Carbs (g){sortIndicator('carbs')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('fat')}>
+                      Fat (g){sortIndicator('fat')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('fiber')}>
+                      Fiber (g){sortIndicator('fiber')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('sugars')}>
+                      Sugars (g){sortIndicator('sugars')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('net')}>
+                      Net Cal{sortIndicator('net')}
+                    </TableHead>
+                    <TableHead className={headerClass} onClick={() => toggleSort('vsGoal')}>
+                      vs Goal{sortIndicator('vsGoal')}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedRows.map((row) => (
+                    <TableRow
+                      key={row.date}
+                      className="cursor-pointer active:bg-secondary/80"
+                      onClick={() => goToDay(row.date)}
+                    >
+                      <TableCell className={cellClass}>
+                        {format(parseISO(row.date), 'MM/dd')}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.calories, 0)}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.protein)}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.carbs)}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.fat)}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.fiber)}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.sugars)}
+                      </TableCell>
+                      <TableCell className={cellClass}>
+                        {roundMacro(row.net, 0)}
+                      </TableCell>
+                      <TableCell
+                        className={`${cellClass} font-medium ${
+                          row.vsGoal > 0
+                            ? 'text-amber-500'
+                            : row.vsGoal < 0
+                              ? 'text-emerald-500'
+                              : 'text-muted-foreground'
+                        }`}
+                      >
+                        {formatVsGoal(row.vsGoal)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         )
       ) : chartData.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No data for charts</p>
