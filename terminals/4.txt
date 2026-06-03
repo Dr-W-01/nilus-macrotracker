@@ -3,7 +3,7 @@ pid: 30996
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-02T23:46:56.340Z
-running_for_ms: 5949994  
+running_for_ms: 7599999  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -209,3 +209,6 @@ Port 5175 is in use, trying another one...
 9:24:01 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/table.tsx
 9:24:01 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
 9:24:01 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+9:52:41 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditFoodSheet.tsx
+9:52:41 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+9:52:50 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/features/stats/StatsTab.tsx, /src/app/page.tsx, /src/app/layout.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 2 more

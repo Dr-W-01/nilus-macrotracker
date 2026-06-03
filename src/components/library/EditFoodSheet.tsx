@@ -64,6 +64,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
         <SheetContent
           side="bottom"
           className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
             <SheetTitle>

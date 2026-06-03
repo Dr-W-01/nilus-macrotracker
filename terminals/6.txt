@@ -3,7 +3,7 @@ pid: 27868
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"set PATH=C:\\Program Files\\Git\\bin;%PATH% && cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-03T00:34:16.487Z
-running_for_ms: 3110008  
+running_for_ms: 4760011  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -191,3 +191,5 @@ Port 5174 is in use, trying another one...
 9:24:01 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
 9:24:01 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/table.tsx
 9:24:01 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+9:52:41 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditFoodSheet.tsx
+9:52:41 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
