@@ -11,18 +11,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
-import {
-  exportFullBackup,
-  parseFoodLibraryCsv,
-  parseFoodLibraryJson,
-  parseFoodLibraryXlsx,
-} from '@/lib/importExport'
+import { exportFullBackup, parseFullBackup } from '@/lib/importExport'
 import { clearAllStorage } from '@/lib/storage'
 import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_SECONDARY_TEXT_COLOR,
 } from '@/lib/theme'
-import type { FoodItem, GoalTemplate } from '@/lib/types'
+import type { GoalTemplate } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
 
@@ -33,38 +28,51 @@ export function SettingsTab() {
   const settings = useMacroStore((s) => s.settings)
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const dailyLogs = useMacroStore((s) => s.dailyLogs)
+  const customCategories = useMacroStore((s) => s.customCategories)
   const updateSettings = useMacroStore((s) => s.updateSettings)
   const loadSeedLibrary = useMacroStore((s) => s.loadSeedLibrary)
-  const mergeFoodLibrary = useMacroStore((s) => s.mergeFoodLibrary)
+  const restoreFullBackup = useMacroStore((s) => s.restoreFullBackup)
   const addGoalTemplate = useMacroStore((s) => s.addGoalTemplate)
   const updateGoalTemplate = useMacroStore((s) => s.updateGoalTemplate)
   const deleteGoalTemplate = useMacroStore((s) => s.deleteGoalTemplate)
   const factoryReset = useMacroStore((s) => s.factoryReset)
 
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [preview, setPreview] = useState<FoodItem[] | null>(null)
+  const backupFileRef = useRef<HTMLInputElement>(null)
   const [resetStep, setResetStep] = useState(0)
   const [editingGoal, setEditingGoal] = useState<GoalTemplate | null>(null)
+  const [backupConfirmOpen, setBackupConfirmOpen] = useState(false)
+  const [pendingBackup, setPendingBackup] = useState<ReturnType<
+    typeof parseFullBackup
+  > | null>(null)
 
   const accentColor = settings.accentColor || DEFAULT_ACCENT_COLOR
   const secondaryTextColor =
     settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR
 
-  const handleImportFile = async (file: File) => {
+  const handleBackupFile = async (file: File) => {
     try {
-      let items: FoodItem[]
-      if (file.name.endsWith('.json')) {
-        items = parseFoodLibraryJson(await file.text())
-      } else if (file.name.endsWith('.csv')) {
-        items = parseFoodLibraryCsv(await file.text())
-      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        items = parseFoodLibraryXlsx(await file.arrayBuffer())
-      } else {
-        throw new Error('Unsupported file type')
-      }
-      setPreview(items)
+      const backup = parseFullBackup(await file.text())
+      setPendingBackup(backup)
+      setBackupConfirmOpen(true)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Import failed')
+      toast.error(e instanceof Error ? e.message : 'Could not read backup file')
+    }
+  }
+
+  const applyBackup = () => {
+    if (!pendingBackup) return
+    try {
+      restoreFullBackup(pendingBackup)
+      const foodCount = pendingBackup.foodLibrary?.length ?? 0
+      const dayCount = Object.keys(pendingBackup.dailyLogs ?? {}).length
+      const templateCount = pendingBackup.settings?.goalTemplates?.length ?? 0
+      toast.success(
+        `Backup restored: ${foodCount} foods, ${dayCount} daily logs, ${templateCount} goal template(s)`,
+      )
+      setBackupConfirmOpen(false)
+      setPendingBackup(null)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Restore failed')
     }
   }
 
@@ -87,7 +95,10 @@ export function SettingsTab() {
         <h2 className="font-semibold mb-3">Goals & Templates</h2>
         <ul className="space-y-2 mb-3">
           {settings.goalTemplates.map((g) => (
-            <li key={g.id} className="rounded-lg border border-border p-3 flex justify-between items-center">
+            <li
+              key={g.id}
+              className="rounded-lg border border-border p-3 flex justify-between items-center"
+            >
               <div>
                 <p className="font-medium">{g.name}</p>
                 <p className="text-xs text-muted-foreground">
@@ -98,84 +109,53 @@ export function SettingsTab() {
                 </p>
               </div>
               <div className="flex gap-1">
-                <Button size="sm" variant="outline" onClick={() => setEditingGoal(g)}>Edit</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditingGoal(g)}
+                >
+                  Edit
+                </Button>
                 {settings.goalTemplates.length > 1 && (
-                  <Button size="sm" variant="ghost" onClick={() => {
-                    deleteGoalTemplate(g.id)
-                    toast.success('Template deleted')
-                  }}>Del</Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      deleteGoalTemplate(g.id)
+                      toast.success('Template deleted')
+                    }}
+                  >
+                    Del
+                  </Button>
                 )}
               </div>
             </li>
           ))}
         </ul>
-        <Button variant="outline" className="w-full" onClick={() => setEditingGoal({
-          id: '',
-          name: 'New Template',
-          calories: 2000,
-          targetDeficit: undefined,
-          protein: 150,
-          carbs: 200,
-          fat: 65,
-          fiber: 30,
-          sugars: 50,
-        })}>Create new template</Button>
-      </section>
-
-      <Card className="border-primary/40">
-        <CardHeader>
-          <CardTitle>Data</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".json,.csv,.xlsx,.xls"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleImportFile(f)
-              e.target.value = ''
-            }}
-          />
-          <Button className="w-full" variant="outline" onClick={() => fileRef.current?.click()}>
-            Import Food Library (.json / .csv / .xlsx)
-          </Button>
-          <Button className="w-full" onClick={() => {
-            loadSeedLibrary()
-            toast.success(`Loaded ${SEED_LIBRARY_COUNT} items`)
-          }}>
-            Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
-          </Button>
-          <Button className="w-full" variant="secondary" onClick={() => {
-            exportFullBackup({
-              settings,
-              foodLibrary,
-              dailyLogs,
-              exportedAt: new Date().toISOString(),
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() =>
+            setEditingGoal({
+              id: '',
+              name: 'New Template',
+              calories: 2000,
+              targetDeficit: undefined,
+              protein: 150,
+              carbs: 200,
+              fat: 65,
+              fiber: 30,
+              sugars: 50,
             })
-            toast.success('Backup downloaded')
-          }}>
-            Export Everything
-          </Button>
-          <Button
-            className="w-full"
-            variant="destructive"
-            onClick={handleFactoryReset}
-          >
-            {resetStep === 0 ? 'Factory Reset' : 'Confirm: Erase ALL data permanently'}
-          </Button>
-          {resetStep === 1 && (
-            <p className="text-xs text-destructive text-center">
-              Warning: This cannot be undone. Tap again to confirm.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          }
+        >
+          Create new template
+        </Button>
+      </section>
 
       <section className="space-y-4">
         <div>
-          <h2 className="font-semibold">Theme & Colors</h2>
+          <h2 className="font-semibold">Appearance</h2>
           <p className="text-sm text-muted-foreground mt-1">
             Customize accent and text colors on the dark theme base.
           </p>
@@ -215,9 +195,10 @@ export function SettingsTab() {
               className="h-9 w-9 rounded-full border-2 border-border"
               style={{
                 background: color,
-                outline: accentColor.toUpperCase() === color.toUpperCase()
-                  ? '2px solid var(--foreground)'
-                  : undefined,
+                outline:
+                  accentColor.toUpperCase() === color.toUpperCase()
+                    ? '2px solid var(--foreground)'
+                    : undefined,
               }}
               onClick={() => updateSettings({ accentColor: color })}
             />
@@ -265,33 +246,113 @@ export function SettingsTab() {
         </Button>
       </section>
 
+      <Card className="border-primary/40">
+        <CardHeader>
+          <CardTitle>Data</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <input
+            ref={backupFileRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void handleBackupFile(f)
+              e.target.value = ''
+            }}
+          />
+          <Button
+            className="w-full"
+            variant="outline"
+            onClick={() => backupFileRef.current?.click()}
+          >
+            Import Full Backup
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Restores a JSON file from Export Everything (library, logs, settings,
+            categories).
+          </p>
+          <Button
+            className="w-full"
+            onClick={() => {
+              loadSeedLibrary()
+              toast.success(`Loaded ${SEED_LIBRARY_COUNT} items`)
+            }}
+          >
+            Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
+          </Button>
+          <Button
+            className="w-full"
+            variant="secondary"
+            onClick={() => {
+              exportFullBackup({
+                settings,
+                foodLibrary,
+                dailyLogs,
+                customCategories,
+                exportedAt: new Date().toISOString(),
+              })
+              toast.success('Backup downloaded')
+            }}
+          >
+            Export Everything
+          </Button>
+          <Button
+            className="w-full"
+            variant="destructive"
+            onClick={handleFactoryReset}
+          >
+            {resetStep === 0
+              ? 'Factory Reset'
+              : 'Confirm: Erase ALL data permanently'}
+          </Button>
+          {resetStep === 1 && (
+            <p className="text-xs text-destructive text-center">
+              Warning: This cannot be undone. Tap again to confirm.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       <section className="text-center text-sm text-muted-foreground pb-8">
-        <p className="font-semibold text-foreground">Nilus AI: MacroTracker</p>
+        <p className="font-semibold text-foreground">NullTracker</p>
         <p className="mt-2">Private, local-first macro tracking PWA.</p>
         <p className="mt-1">Built with React, Vite, and ❤️</p>
       </section>
 
-      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
+      <Dialog open={backupConfirmOpen} onOpenChange={setBackupConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Import preview ({preview?.length ?? 0} items)</DialogTitle>
+            <DialogTitle>Restore full backup?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground mb-4">
-            Replace clears your library. Merge adds/updates items by id.
+          <p className="text-sm text-muted-foreground">
+            This replaces your current food library, daily logs, goal templates,
+            and settings with the backup file.
           </p>
-          <div className="flex flex-col gap-2">
-            <Button onClick={() => {
-              if (preview) mergeFoodLibrary(preview, true)
-              setPreview(null)
-              toast.success('Library replaced')
-            }}>Replace library</Button>
-            <Button variant="secondary" onClick={() => {
-              if (preview) mergeFoodLibrary(preview, false)
-              setPreview(null)
-              toast.success('Library merged')
-            }}>Merge into library</Button>
-            <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
-          </div>
+          {pendingBackup && (
+            <ul className="text-sm space-y-1 rounded-lg bg-secondary/40 p-3">
+              <li>{pendingBackup.foodLibrary?.length ?? 0} food items</li>
+              <li>{Object.keys(pendingBackup.dailyLogs ?? {}).length} daily logs</li>
+              <li>
+                {pendingBackup.settings?.goalTemplates?.length ?? 0} goal templates
+              </li>
+              <li>{pendingBackup.customCategories?.length ?? 0} custom categories</li>
+            </ul>
+          )}
+          <Button className="w-full" onClick={applyBackup}>
+            Restore backup
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => {
+              setBackupConfirmOpen(false)
+              setPendingBackup(null)
+            }}
+          >
+            Cancel
+          </Button>
         </DialogContent>
       </Dialog>
 
@@ -304,7 +365,8 @@ export function SettingsTab() {
             toast.success('Template updated')
           } else {
             const id = addGoalTemplate(g)
-            if (!settings.defaultTemplateId) updateSettings({ defaultTemplateId: id })
+            if (!settings.defaultTemplateId)
+              updateSettings({ defaultTemplateId: id })
             toast.success('Template created')
           }
           setEditingGoal(null)
@@ -341,7 +403,9 @@ function GoalEditDialog({
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
-        <DialogHeader><DialogTitle>{goal.id ? 'Edit' : 'New'} template</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{goal.id ? 'Edit' : 'New'} template</DialogTitle>
+        </DialogHeader>
         <div className="space-y-2">
           <div>
             <Label className="text-xs">Name</Label>
@@ -397,13 +461,21 @@ function GoalEditDialog({
             </div>
           ))}
         </div>
-        <Button className="w-full mt-4" onClick={() => onSave(form)}>Save</Button>
+        <Button className="w-full mt-4" onClick={() => onSave(form)}>
+          Save
+        </Button>
         {form.id && form.id !== defaultId && (
-          <Button variant="outline" className="w-full mt-2" onClick={() => onSetDefault(form.id)}>
+          <Button
+            variant="outline"
+            className="w-full mt-2"
+            onClick={() => onSetDefault(form.id)}
+          >
             Set as default
           </Button>
         )}
-        <Button variant="ghost" className="w-full mt-2" onClick={onClose}>Cancel</Button>
+        <Button variant="ghost" className="w-full mt-2" onClick={onClose}>
+          Cancel
+        </Button>
       </DialogContent>
     </Dialog>
   )

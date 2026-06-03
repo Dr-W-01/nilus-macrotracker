@@ -1,6 +1,14 @@
 import * as XLSX from 'xlsx'
 import { parseImportedCategories } from './categories'
-import type { FoodItem } from './types'
+import type { DailyLog, FoodItem, Settings } from './types'
+
+export interface FullBackupPayload {
+  settings?: Settings
+  foodLibrary?: FoodItem[]
+  dailyLogs?: Record<string, DailyLog>
+  customCategories?: string[]
+  exportedAt?: string
+}
 
 export function parseFoodLibraryJson(text: string): FoodItem[] {
   const data = JSON.parse(text) as unknown
@@ -71,7 +79,30 @@ export function exportFullBackup(data: object): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `nilus-macro-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `nulltracker-backup-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+export function parseFullBackup(text: string): FullBackupPayload {
+  let data: unknown
+  try {
+    data = JSON.parse(text)
+  } catch {
+    throw new Error('Invalid JSON — could not parse backup file')
+  }
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid backup format')
+  }
+  const record = data as Record<string, unknown>
+  const hasSettings = record.settings != null && typeof record.settings === 'object'
+  const hasLibrary = Array.isArray(record.foodLibrary)
+  const hasLogs =
+    record.dailyLogs != null && typeof record.dailyLogs === 'object'
+  if (!hasSettings && !hasLibrary && !hasLogs) {
+    throw new Error(
+      'This file is not a full backup. Export from Settings → Export Everything, or choose a backup JSON that includes settings, foodLibrary, and dailyLogs.',
+    )
+  }
+  return data as FullBackupPayload
 }

@@ -191,6 +191,12 @@ interface MacroStore {
   addGoalTemplate: (t: Omit<GoalTemplate, 'id'>) => string
   updateGoalTemplate: (id: string, patch: Partial<GoalTemplate>) => void
   deleteGoalTemplate: (id: string) => void
+  restoreFullBackup: (backup: {
+    settings?: Settings
+    foodLibrary?: FoodItem[]
+    dailyLogs?: Record<string, DailyLog>
+    customCategories?: string[]
+  }) => void
   factoryReset: () => void
 }
 
@@ -470,6 +476,22 @@ export const useMacroStore = create<MacroStore>()(
             : get().settings.defaultTemplateId
         set({
           settings: { ...get().settings, goalTemplates: templates, defaultTemplateId },
+        })
+      },
+
+      restoreFullBackup: (backup) => {
+        const normalized = normalizePersistedState({
+          settings: backup.settings,
+          foodLibrary: backup.foodLibrary,
+          dailyLogs: backup.dailyLogs,
+          customCategories: backup.customCategories,
+        })
+        const lib = normalized.foodLibrary ?? []
+        set({
+          settings: (normalized.settings ?? defaultSettings) as Settings,
+          foodLibrary: lib,
+          customCategories: normalized.customCategories ?? [],
+          dailyLogs: normalized.dailyLogs ?? {},
         })
       },
 

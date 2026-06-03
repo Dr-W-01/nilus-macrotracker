@@ -99,8 +99,8 @@ export type AdherenceKey =
 export type AdherenceBreakdown = Record<AdherenceKey, number | null>
 
 export const ADHERENCE_LABELS: Record<AdherenceKey, string> = {
-  calories: 'Calories (intake)',
-  targetDeficit: 'Target deficit',
+  calories: 'Calories',
+  targetDeficit: 'Deficit goal',
   protein: 'Protein',
   carbs: 'Carbs',
   fat: 'Fat',
@@ -111,6 +111,12 @@ export const ADHERENCE_LABELS: Record<AdherenceKey, string> = {
 function isWithinTarget(actual: number, target: number): boolean {
   if (target <= 0) return actual <= Math.max(1, target * ADHERENCE_TOLERANCE)
   return Math.abs(actual - target) <= target * ADHERENCE_TOLERANCE
+}
+
+/** Protein: at or above target counts as success */
+function isProteinOnTarget(actual: number, target: number): boolean {
+  if (target <= 0) return true
+  return actual >= target * (1 - ADHERENCE_TOLERANCE)
 }
 
 /** Implied maintenance = intake goal + desired deficit */
@@ -146,7 +152,7 @@ export function computeAdherenceBreakdown(rows: StatsDayRow[]): AdherenceBreakdo
         })
       : null,
     protein: computeMetricAdherence(rows, (d) =>
-      isWithinTarget(d.protein, d.goal.protein),
+      isProteinOnTarget(d.protein, d.goal.protein),
     ),
     carbs: computeMetricAdherence(rows, (d) =>
       isWithinTarget(d.carbs, d.goal.carbs),
@@ -187,33 +193,75 @@ export function generateInsights(
   if (rows.length === 0) return ['Log foods on the Daily tab to unlock insights for this period.']
 
   const insights: string[] = []
-  const avgNet = rows.reduce((s, d) => s + d.net, 0) / rows.length
-  const avgGoalCal =
-    rows.reduce((s, d) => s + d.goal.calories, 0) / rows.length
-  const delta = roundMacro(avgNet - avgGoalCal, 0)
-  if (delta > 25) {
-    insights.push(
-      `Your average daily net calories are ${delta} above goal this ${period === 'month' ? 'month' : 'period'}.`,
-    )
-  } else if (delta < -25) {
-    insights.push(
-      `Your average daily net calories are ${Math.abs(delta)} below goal this ${period === 'month' ? 'month' : 'period'}.`,
-    )
+  const periodLabel = period === 'month' ? 'month' : 'period'
+  const n = rows.length
+
+  const avgIntake = rows.reduce((s, d) => s + d.calories, 0) / n
+  const avgIntakeGoal = rows.reduce((s, d) => s + d.goal.calories, 0) / n
+  const avgNet = rows.reduce((s, d) => s + d.net, 0) / n
+
+  const deficitRows = rows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
+  const usesDeficit = deficitRows.length > 0
+
+  if (usesDeficit) {
+    const avgTargetDeficit =
+      deficitRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
+      deficitRows.length
+    const avgActualDeficit =
+      deficitRows.reduce((s, d) => s + (getActualDeficit(d) ?? 0), 0) /
+      deficitRows.length
+    const defDelta = roundMacro(avgActualDeficit - avgTargetDeficit, 0)
+
+    if (Math.abs(defDelta) <= Math.max(50, avgTargetDeficit * ADHERENCE_TOLERANCE)) {
+      insights.push(
+        `Your average daily deficit (${roundMacro(avgActualDeficit, 0)} kcal) matches your ${roundMacro(avgTargetDeficit, 0)} kcal deficit goal.`,
+      )
+    } else if (defDelta > 0) {
+      insights.push(
+        `Your average deficit is ${defDelta} kcal above your ${roundMacro(avgTargetDeficit, 0)} kcal target — a larger gap than planned.`,
+      )
+    } else {
+      insights.push(
+        `Your average deficit is ${Math.abs(defDelta)} kcal below your ${roundMacro(avgTargetDeficit, 0)} kcal target — you're eating closer to maintenance than your deficit goal.`,
+      )
+    }
+
+    const intakeDelta = roundMacro(avgIntake - avgIntakeGoal, 0)
+    if (Math.abs(intakeDelta) > 25) {
+      insights.push(
+        intakeDelta > 0
+          ? `Average intake was ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal/day target (separate from your deficit goal).`
+          : `Average intake was ${Math.abs(intakeDelta)} cal below your ${roundMacro(avgIntakeGoal, 0)} cal/day target.`,
+      )
+    }
   } else {
-    insights.push('Your average daily net calories are close to your calorie goal.')
+    const intakeDelta = roundMacro(avgIntake - avgIntakeGoal, 0)
+    if (intakeDelta > 25) {
+      insights.push(
+        `Your average daily intake is ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal target this ${periodLabel}.`,
+      )
+    } else if (intakeDelta < -25) {
+      insights.push(
+        `Your average daily intake is ${Math.abs(intakeDelta)} cal below your ${roundMacro(avgIntakeGoal, 0)} cal target this ${periodLabel}.`,
+      )
+    } else {
+      insights.push(
+        `Your average daily intake (${roundMacro(avgIntake, 0)} cal) is close to your ${roundMacro(avgIntakeGoal, 0)} cal target.`,
+      )
+    }
+    insights.push(
+      `Average net calories (after burned): ${roundMacro(avgNet, 0)} cal/day.`,
+    )
   }
 
   const adherence = computeAdherenceBreakdown(rows)
-  const macroHits = [
-    `intake ${adherence.calories}%`,
-    `protein ${adherence.protein}%`,
-    `carbs ${adherence.carbs}%`,
-    `fat ${adherence.fat}%`,
-  ]
-  if (adherence.targetDeficit != null) {
-    macroHits.push(`deficit ${adherence.targetDeficit}%`)
-  }
-  insights.push(`Goal adherence this period: ${macroHits.join(', ')}.`)
+  insights.push(
+    `Adherence highlights: protein ${adherence.protein}% (met or exceeded), intake ${adherence.calories}%` +
+      (adherence.targetDeficit != null
+        ? `, deficit goal ${adherence.targetDeficit}%`
+        : '') +
+      '.',
+  )
 
   const best = [...rows].sort((a, b) => b.net - a.net)[0]
   const toughest = [...rows].sort((a, b) => a.net - b.net)[0]
@@ -231,7 +279,7 @@ export function generateInsights(
     )
   }
 
-  return insights.slice(0, 4)
+  return insights.slice(0, 5)
 }
 
 export function rollingAverage(values: number[], window: number): (number | null)[] {

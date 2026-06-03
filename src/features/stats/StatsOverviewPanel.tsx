@@ -15,15 +15,18 @@ import { roundMacro } from '@/lib/macros'
 import type { FoodItem, Settings } from '@/lib/types'
 import type { DailyLog } from '@/lib/types'
 
-const ADHERENCE_ORDER: AdherenceKey[] = [
-  'calories',
-  'targetDeficit',
-  'protein',
-  'carbs',
-  'fat',
-  'fiber',
-  'sugars',
-]
+const PRIMARY_ADHERENCE: AdherenceKey[] = ['calories', 'protein', 'targetDeficit']
+const OTHER_ADHERENCE: AdherenceKey[] = ['carbs', 'fat', 'fiber', 'sugars']
+
+const ADHERENCE_HINTS: Partial<Record<AdherenceKey, string>> = {
+  calories: 'Within ~15% of intake target',
+  protein: 'Met or exceeded target',
+  targetDeficit: 'Within ~15% of deficit goal',
+  carbs: 'Within ~15% of target',
+  fat: 'Within ~15% of target',
+  fiber: 'Within ~15% of target',
+  sugars: 'Within ~15% of target',
+}
 
 interface StatsOverviewPanelProps {
   range: { start: string; end: string }
@@ -78,6 +81,8 @@ export function StatsOverviewPanel({
     )
   }
 
+  const primaryKeys = PRIMARY_ADHERENCE.filter((key) => adherence[key] != null)
+
   return (
     <div className="space-y-4">
       <div className="text-center py-2">
@@ -93,24 +98,46 @@ export function StatsOverviewPanel({
       </div>
 
       <Card>
-        <CardContent className="pt-4 pb-3 space-y-3">
-          <p className="text-sm font-medium">Goal adherence</p>
-          <p className="text-xs text-muted-foreground">
-            % of logged days within ~15% of each target. Intake uses calories eaten;
-            deficit uses your template&apos;s target deficit when set.
-          </p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {ADHERENCE_ORDER.map((key) => {
-              const pct = adherence[key]
-              if (pct == null) return null
-              return (
+        <CardContent className="pt-4 pb-3 space-y-4">
+          <div>
+            <p className="text-sm font-medium">Goal adherence</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              % of logged days on target for each goal. Protein counts when you meet or
+              beat the target.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Calories &amp; protein
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {primaryKeys.map((key) => (
                 <AdherenceCell
                   key={key}
                   label={ADHERENCE_LABELS[key]}
-                  percent={pct}
+                  hint={ADHERENCE_HINTS[key]}
+                  percent={adherence[key]!}
+                  prominent={key === 'calories' || key === 'protein'}
                 />
-              )
-            })}
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Other macros
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {OTHER_ADHERENCE.map((key) => (
+                <AdherenceCell
+                  key={key}
+                  label={ADHERENCE_LABELS[key]}
+                  hint={ADHERENCE_HINTS[key]}
+                  percent={adherence[key]!}
+                />
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -142,22 +169,38 @@ export function StatsOverviewPanel({
   )
 }
 
-function AdherenceCell({ label, percent }: { label: string; percent: number }) {
+function AdherenceCell({
+  label,
+  hint,
+  percent,
+  prominent,
+}: {
+  label: string
+  hint?: string
+  percent: number
+  prominent?: boolean
+}) {
   const hit = percent >= 70
   const partial = percent >= 40 && percent < 70
   return (
-    <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
-      <p className="text-[10px] text-muted-foreground leading-tight mb-1">{label}</p>
+    <div
+      className={`rounded-lg bg-secondary/50 px-3 py-2.5 ${
+        prominent ? 'ring-1 ring-primary/25' : ''
+      }`}
+    >
+      <p className="text-[10px] text-muted-foreground leading-tight">{label}</p>
       <p
-        className={`text-xl font-bold tabular-nums ${
+        className={`font-bold tabular-nums ${
+          prominent ? 'text-2xl' : 'text-xl'
+        } ${
           hit ? 'text-emerald-400' : partial ? 'text-amber-400' : 'text-muted-foreground'
         }`}
       >
         {percent}%
       </p>
-      <p className="text-[10px] text-muted-foreground mt-0.5">
-        {hit ? 'On target' : partial ? 'Close' : 'Off target'}
-      </p>
+      {hint && (
+        <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{hint}</p>
+      )}
     </div>
   )
 }
