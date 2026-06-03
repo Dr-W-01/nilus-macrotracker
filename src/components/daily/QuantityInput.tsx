@@ -20,13 +20,27 @@ interface QuantityInputProps {
   note: string
   onNoteChange: (n: string) => void
   disabled?: boolean
-  /** Count items: integer quantity */
   countQuantity?: number
   onCountQuantityChange?: (q: number) => void
-  /** Scale items: actual amount eaten in food's unit */
   amountEaten?: number
   onAmountEatenChange?: (amount: number) => void
   showNote?: boolean
+  showInlineMacroPreview?: boolean
+}
+
+function MacroInlinePreview({
+  macros,
+}: {
+  macros: ReturnType<typeof scaleMacros>
+}) {
+  return (
+    <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm">
+      <span className="text-muted-foreground">≈ </span>
+      {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C{' '}
+      {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)} · Fib{' '}
+      {roundMacro(macros.fiber)} · S {roundMacro(macros.sugars)}
+    </div>
+  )
 }
 
 export function QuantityInput({
@@ -39,9 +53,30 @@ export function QuantityInput({
   amountEaten = 1,
   onAmountEatenChange,
   showNote = true,
+  showInlineMacroPreview = true,
 }: QuantityInputProps) {
-  if (food.scaleType === 'count') {
-    const intQty = Math.max(1, Math.round(countQuantity) || 1)
+  const isCount = food.scaleType === 'count'
+  const intQty = Math.max(1, Math.round(countQuantity) || 1)
+  const base = getFoodBaseAmount(food)
+  const unit = getFoodBaseUnit(food)
+  const eaten = Number.isFinite(amountEaten) && amountEaten > 0 ? amountEaten : base
+
+  const [amountText, setAmountText] = useState(String(eaten))
+  useEffect(() => {
+    if (!isCount) setAmountText(String(eaten))
+  }, [eaten, food.id, isCount])
+
+  const multiplier = useMemo(
+    () => (isCount ? intQty : servingsFromAmountEaten(base, eaten)),
+    [isCount, intQty, base, eaten],
+  )
+
+  const previewMacros = useMemo(
+    () => scaleMacros(food, multiplier),
+    [food, multiplier],
+  )
+
+  if (isCount) {
     return (
       <div className="space-y-4">
         <p className="text-center text-sm text-muted-foreground">{food.servingDesc}</p>
@@ -70,31 +105,13 @@ export function QuantityInput({
             <Plus className="h-6 w-6" />
           </Button>
         </div>
+        {showInlineMacroPreview && <MacroInlinePreview macros={previewMacros} />}
         {showNote && (
           <NoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
         )}
       </div>
     )
   }
-
-  const base = getFoodBaseAmount(food)
-  const unit = getFoodBaseUnit(food)
-  const eaten = Number.isFinite(amountEaten) && amountEaten > 0 ? amountEaten : base
-
-  const [amountText, setAmountText] = useState(String(eaten))
-  useEffect(() => {
-    setAmountText(String(eaten))
-  }, [eaten, food.id])
-
-  const multiplier = useMemo(
-    () => servingsFromAmountEaten(base, eaten),
-    [base, eaten],
-  )
-
-  const previewMacros = useMemo(
-    () => scaleMacros(food, multiplier),
-    [food, multiplier],
-  )
 
   return (
     <div className="space-y-4">
@@ -145,11 +162,7 @@ export function QuantityInput({
         {formatScaleEatenSummary(food, eaten)}
       </p>
 
-      <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm">
-        <span className="text-muted-foreground">≈ </span>
-        {roundMacro(previewMacros.calories, 0)} cal · P {roundMacro(previewMacros.protein)} · C{' '}
-        {roundMacro(previewMacros.carbs)} · F {roundMacro(previewMacros.fat)}
-      </div>
+      {showInlineMacroPreview && <MacroInlinePreview macros={previewMacros} />}
 
       {showNote && (
         <NoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />

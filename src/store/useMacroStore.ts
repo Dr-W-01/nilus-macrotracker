@@ -81,7 +81,7 @@ type PersistedSlice = {
   statsPeriod?: 'week' | 'month' | 'custom'
   statsRangeStart?: string
   statsRangeEnd?: string
-  statsView?: 'table' | 'charts'
+  statsView?: 'overview' | 'trends' | 'breakdowns' | 'table' | 'charts'
   statsAnchorDate?: string
 }
 
@@ -143,7 +143,7 @@ interface MacroStore {
   statsPeriod: 'week' | 'month' | 'custom'
   statsRangeStart: string
   statsRangeEnd: string
-  statsView: 'table' | 'charts'
+  statsView: 'overview' | 'trends' | 'breakdowns'
   statsAnchorDate: string
 
   setHasHydrated: (v: boolean) => void
@@ -153,7 +153,7 @@ interface MacroStore {
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
   setStatsPeriod: (p: 'week' | 'month' | 'custom') => void
   setStatsRange: (start: string, end: string) => void
-  setStatsView: (v: 'table' | 'charts') => void
+  setStatsView: (v: 'overview' | 'trends' | 'breakdowns') => void
   setStatsAnchorDate: (d: string) => void
 
   getDailyLog: (date?: string) => DailyLog
@@ -203,7 +203,7 @@ export const useMacroStore = create<MacroStore>()(
       statsPeriod: 'week',
       statsRangeStart: getWeekRange().start,
       statsRangeEnd: getWeekRange().end,
-      statsView: 'charts',
+      statsView: 'overview',
       statsAnchorDate: todayString(),
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
@@ -534,6 +534,17 @@ export const useMacroStore = create<MacroStore>()(
         state.dailyLogs = normalized.dailyLogs ?? {}
         if (normalized.statsRangeStart) state.statsRangeStart = normalized.statsRangeStart
         if (normalized.statsRangeEnd) state.statsRangeEnd = normalized.statsRangeEnd
+        const view = state.statsView as string
+        if (view === 'table' || view === 'charts' || view === 'overview' || view === 'trends' || view === 'breakdowns') {
+          state.statsView =
+            view === 'table'
+              ? 'overview'
+              : view === 'charts'
+                ? 'trends'
+                : (view as 'overview' | 'trends' | 'breakdowns')
+        } else {
+          state.statsView = 'overview'
+        }
         state.setHasHydrated(true)
       },
     },

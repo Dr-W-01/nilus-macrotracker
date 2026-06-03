@@ -28,11 +28,14 @@ import {
   buildScaleLogPayload,
   formatLoggedFoodQuantity,
   getFoodBaseAmount,
+  servingsFromAmountEaten,
 } from '@/lib/scale'
+import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import {
   computeDayMacros,
   getLoggedFoodMacros,
   roundMacro,
+  scaleMacros,
 } from '@/lib/macros'
 import type { FoodItem, LoggedFood } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
@@ -283,23 +286,28 @@ export function DailyTab() {
                   <li key={entry.id}>
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left"
+                      className="flex w-full flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 text-left"
                       onClick={() => editDayMode && setEditLogged(entry)}
                     >
-                      <div>
-                        <p className="font-medium">
-                          {food?.name ?? 'Unknown'}
-                          {food?.isRecipe && ' 🍱'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {entry.overriddenComponents
-                            ? 'Customized recipe'
-                            : food
-                              ? formatLoggedFoodQuantity(food, entry)
-                              : ''}
-                        </p>
+                      <div className="flex w-full items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium">
+                            {food?.name ?? 'Unknown'}
+                            {food?.isRecipe && ' 🍱'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {entry.overriddenComponents
+                              ? 'Customized recipe'
+                              : food
+                                ? formatLoggedFoodQuantity(food, entry)
+                                : ''}
+                          </p>
+                        </div>
+                        <span className="text-sm font-medium shrink-0">
+                          {roundMacro(macros.calories, 0)} cal
+                        </span>
                       </div>
-                      <span className="text-sm font-medium">{roundMacro(macros.calories, 0)} cal</span>
+                      <LoggedMacroPreview macros={macros} />
                     </button>
                   </li>
                 )
@@ -454,6 +462,15 @@ function EditLoggedSheet({
     }
   }, [entry, food])
 
+  const previewMacros = useMemo(() => {
+    if (!food || food.isRecipe) return null
+    if (food.scaleType === 'count') {
+      return scaleMacros(food, Math.max(1, Math.round(countQty)))
+    }
+    const mult = servingsFromAmountEaten(getFoodBaseAmount(food), amountEaten)
+    return scaleMacros(food, mult)
+  }, [food, countQty, amountEaten])
+
   if (!entry || !food || food.isRecipe) {
     return (
       <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -477,6 +494,15 @@ function EditLoggedSheet({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="bottom">
         <SheetHeader><SheetTitle>Edit {food.name}</SheetTitle></SheetHeader>
+        {previewMacros && (
+          <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
+            <p className="text-xs text-muted-foreground mb-1">Macros for this entry</p>
+            <p className="text-lg font-bold text-primary tabular-nums">
+              {roundMacro(previewMacros.calories, 0)} cal
+            </p>
+            <LoggedMacroPreview macros={previewMacros} size="md" className="mt-1" />
+          </div>
+        )}
         <QuantityInput
           food={food}
           note={note}
@@ -485,6 +511,7 @@ function EditLoggedSheet({
           onCountQuantityChange={setCountQty}
           amountEaten={amountEaten}
           onAmountEatenChange={setAmountEaten}
+          showInlineMacroPreview={false}
         />
         <Button
           size="lg"

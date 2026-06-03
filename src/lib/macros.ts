@@ -79,3 +79,8 @@ export function roundMacro(value: number, decimals = 1): number {
   const factor = 10 ** decimals
   return Math.round(value * factor) / factor
 }
+
+/** Compact macro line for logged food rows, e.g. P: 42g • C: 8g • F: 12g */
+export function formatCompactMacroLine(m: MacroTotals): string {
+  return `P: ${roundMacro(m.protein)}g • C: ${roundMacro(m.carbs)}g • F: ${roundMacro(m.fat)}g • Fib: ${roundMacro(m.fiber)}g • S: ${roundMacro(m.sugars)}g`
+}

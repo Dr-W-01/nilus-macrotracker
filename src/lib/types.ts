@@ -81,5 +81,5 @@ export interface PersistedState {
   statsPeriod: 'week' | 'month' | 'custom'
   statsCustomStart: string
   statsCustomEnd: string
-  statsView: 'table' | 'charts'
+  statsView: 'overview' | 'trends' | 'breakdowns'
 }
