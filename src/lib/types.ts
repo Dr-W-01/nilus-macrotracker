@@ -42,7 +42,10 @@ export interface DailyLog {
 export interface GoalTemplate {
   id: string
   name: string
+  /** Daily target calorie intake */
   calories: number
+  /** Desired daily calorie deficit (optional); compared when set */
+  targetDeficit?: number
   protein: number
   carbs: number
   fat: number

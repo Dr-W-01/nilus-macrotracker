@@ -91,7 +91,9 @@ export function SettingsTab() {
               <div>
                 <p className="font-medium">{g.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {g.calories} cal · P{g.protein} C{g.carbs} F{g.fat}
+                  {g.calories} cal intake
+                  {(g.targetDeficit ?? 0) > 0 ? ` · ${g.targetDeficit} def` : ''}
+                  {' · '}P{g.protein} C{g.carbs} F{g.fat}
                   {g.id === settings.defaultTemplateId && ' · Default'}
                 </p>
               </div>
@@ -111,6 +113,7 @@ export function SettingsTab() {
           id: '',
           name: 'New Template',
           calories: 2000,
+          targetDeficit: undefined,
           protein: 150,
           carbs: 200,
           fat: 65,
@@ -340,15 +343,54 @@ function GoalEditDialog({
       <DialogContent>
         <DialogHeader><DialogTitle>{goal.id ? 'Edit' : 'New'} template</DialogTitle></DialogHeader>
         <div className="space-y-2">
-          {(['name', 'calories', 'protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (
+          <div>
+            <Label className="text-xs">Name</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Target intake (cal/day)</Label>
+            <Input
+              type="number"
+              min={0}
+              value={String(form.calories)}
+              onChange={(e) =>
+                setForm({ ...form, calories: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Target deficit (cal/day, optional)</Label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="e.g. 1000"
+              value={form.targetDeficit != null ? String(form.targetDeficit) : ''}
+              onChange={(e) => {
+                const raw = e.target.value.trim()
+                setForm({
+                  ...form,
+                  targetDeficit: raw === '' ? undefined : parseFloat(raw) || 0,
+                })
+              }}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              When set, Stats measures deficit as (intake + deficit) − net calories.
+            </p>
+          </div>
+          {(['protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (
             <div key={key}>
-              <Label className="text-xs capitalize">{key}</Label>
+              <Label className="text-xs capitalize">{key} (g)</Label>
               <Input
+                type="number"
+                min={0}
                 value={String(form[key])}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    [key]: key === 'name' ? e.target.value : parseFloat(e.target.value) || 0,
+                    [key]: parseFloat(e.target.value) || 0,
                   })
                 }
               />

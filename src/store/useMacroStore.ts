@@ -94,7 +94,13 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
       ...persisted.settings,
       goalTemplates:
         persisted.settings?.goalTemplates?.length
-          ? persisted.settings.goalTemplates
+          ? persisted.settings.goalTemplates.map((g) => ({
+              ...g,
+              targetDeficit:
+                g.targetDeficit != null && g.targetDeficit > 0
+                  ? g.targetDeficit
+                  : undefined,
+            }))
           : defaultSettings.goalTemplates,
       defaultTemplateId:
         persisted.settings?.defaultTemplateId ?? defaultSettings.defaultTemplateId,

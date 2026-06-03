@@ -85,18 +85,98 @@ export function sumDayRows(rows: StatsDayRow[]) {
   )
 }
 
-export function computeAdherence(rows: StatsDayRow[]): number {
+const ADHERENCE_TOLERANCE = 0.15
+
+export type AdherenceKey =
+  | 'calories'
+  | 'targetDeficit'
+  | 'protein'
+  | 'carbs'
+  | 'fat'
+  | 'fiber'
+  | 'sugars'
+
+export type AdherenceBreakdown = Record<AdherenceKey, number | null>
+
+export const ADHERENCE_LABELS: Record<AdherenceKey, string> = {
+  calories: 'Calories (intake)',
+  targetDeficit: 'Target deficit',
+  protein: 'Protein',
+  carbs: 'Carbs',
+  fat: 'Fat',
+  fiber: 'Fiber',
+  sugars: 'Sugars',
+}
+
+function isWithinTarget(actual: number, target: number): boolean {
+  if (target <= 0) return actual <= Math.max(1, target * ADHERENCE_TOLERANCE)
+  return Math.abs(actual - target) <= target * ADHERENCE_TOLERANCE
+}
+
+/** Implied maintenance = intake goal + desired deficit */
+export function getActualDeficit(row: StatsDayRow): number | null {
+  const targetDeficit = row.goal.targetDeficit ?? 0
+  if (targetDeficit <= 0) return null
+  const impliedMaintenance = row.goal.calories + targetDeficit
+  return impliedMaintenance - row.net
+}
+
+function computeMetricAdherence(
+  rows: StatsDayRow[],
+  check: (row: StatsDayRow) => boolean,
+): number {
   if (rows.length === 0) return 0
-  const hits = rows.filter((d) => {
-    const goalCal = d.goal.calories
-    if (goalCal <= 0) return false
-    const withinCal = Math.abs(d.net - goalCal) <= goalCal * 0.15
-    const withinProtein = Math.abs(d.protein - d.goal.protein) <= d.goal.protein * 0.15
-    const withinCarbs = Math.abs(d.carbs - d.goal.carbs) <= d.goal.carbs * 0.15
-    const withinFat = Math.abs(d.fat - d.goal.fat) <= d.goal.fat * 0.15
-    return withinCal && withinProtein && withinCarbs && withinFat
-  }).length
+  const hits = rows.filter(check).length
   return Math.round((hits / rows.length) * 100)
+}
+
+export function computeAdherenceBreakdown(rows: StatsDayRow[]): AdherenceBreakdown {
+  const showDeficit = rows.some((d) => (d.goal.targetDeficit ?? 0) > 0)
+
+  return {
+    calories: computeMetricAdherence(rows, (d) =>
+      isWithinTarget(d.calories, d.goal.calories),
+    ),
+    targetDeficit: showDeficit
+      ? computeMetricAdherence(rows, (d) => {
+          const target = d.goal.targetDeficit ?? 0
+          if (target <= 0) return false
+          const actual = getActualDeficit(d)
+          return actual != null && isWithinTarget(actual, target)
+        })
+      : null,
+    protein: computeMetricAdherence(rows, (d) =>
+      isWithinTarget(d.protein, d.goal.protein),
+    ),
+    carbs: computeMetricAdherence(rows, (d) =>
+      isWithinTarget(d.carbs, d.goal.carbs),
+    ),
+    fat: computeMetricAdherence(rows, (d) =>
+      isWithinTarget(d.fat, d.goal.fat),
+    ),
+    fiber: computeMetricAdherence(rows, (d) =>
+      isWithinTarget(d.fiber, d.goal.fiber),
+    ),
+    sugars: computeMetricAdherence(rows, (d) =>
+      isWithinTarget(d.sugars, d.goal.sugars),
+    ),
+  }
+}
+
+/** @deprecated Use computeAdherenceBreakdown */
+export function computeAdherence(rows: StatsDayRow[]): number {
+  const breakdown = computeAdherenceBreakdown(rows)
+  const values = [
+    breakdown.calories,
+    breakdown.protein,
+    breakdown.carbs,
+    breakdown.fat,
+    breakdown.fiber,
+    breakdown.sugars,
+    breakdown.targetDeficit,
+  ].filter((v): v is number => v != null)
+  if (values.length === 0) return 0
+  return Math.round(values.reduce((a, b) => a + b, 0) / values.length)
 }
 
 export function generateInsights(
@@ -123,8 +203,17 @@ export function generateInsights(
     insights.push('Your average daily net calories are close to your calorie goal.')
   }
 
-  const adherence = computeAdherence(rows)
-  insights.push(`You hit your main macro goals on ${adherence}% of logged days in this period.`)
+  const adherence = computeAdherenceBreakdown(rows)
+  const macroHits = [
+    `intake ${adherence.calories}%`,
+    `protein ${adherence.protein}%`,
+    `carbs ${adherence.carbs}%`,
+    `fat ${adherence.fat}%`,
+  ]
+  if (adherence.targetDeficit != null) {
+    macroHits.push(`deficit ${adherence.targetDeficit}%`)
+  }
+  insights.push(`Goal adherence this period: ${macroHits.join(', ')}.`)
 
   const best = [...rows].sort((a, b) => b.net - a.net)[0]
   const toughest = [...rows].sort((a, b) => a.net - b.net)[0]
