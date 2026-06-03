@@ -3,7 +3,7 @@ pid: 7804
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-02T23:17:52.259Z
-running_for_ms: 5699998  
+running_for_ms: 6299987  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -214,3 +214,6 @@ running_for_ms: 5699998
 8:51:29 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
 8:51:29 PM [vite] (client) hmr invalidate /src/components/library/FoodFormFields.tsx Could not Fast Refresh ("emptyFoodFormValues" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
 8:51:29 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx
+9:00:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+9:00:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+9:00:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx

@@ -87,7 +87,7 @@ export function LibraryTab() {
           loadSeedLibrary()
           toast.success(`Loaded ${SEED_LIBRARY_COUNT} foods`)
         }}>
-          Load My Food Library ({SEED_LIBRARY_COUNT} items)
+          Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
         </Button>
         <p className="text-xs text-muted-foreground">
           Or import from Settings → Data

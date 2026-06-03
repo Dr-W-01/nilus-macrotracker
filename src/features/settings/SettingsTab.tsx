@@ -142,7 +142,7 @@ export function SettingsTab() {
             loadSeedLibrary()
             toast.success(`Loaded ${SEED_LIBRARY_COUNT} items`)
           }}>
-            Load My Food Library ({SEED_LIBRARY_COUNT} items)
+            Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
           </Button>
           <Button className="w-full" variant="secondary" onClick={() => {
             exportFullBackup({
