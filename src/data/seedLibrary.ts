@@ -1,3 +1,4 @@
+import { normalizeScaleFoodItem } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
 
 type RawSeedItem = Omit<FoodItem, 'scaleType' | 'unit'> & {
@@ -19,7 +20,7 @@ function normalizeSeedItem(raw: RawSeedItem): FoodItem {
       : raw.servingDesc
 
   const { unit: _u, scaleType: _s, ...rest } = raw
-  return { ...rest, scaleType: 'scale', unit, servingDesc }
+  return normalizeScaleFoodItem({ ...rest, scaleType: 'scale', unit, servingDesc })
 }
 
 const RAW_SEED: RawSeedItem[] = [

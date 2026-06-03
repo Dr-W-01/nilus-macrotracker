@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { buildScaleLogPayload, getFoodBaseAmount } from '@/lib/scale'
 import { Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
   const [components, setComponents] = useState<{ food: FoodItem; quantity: number }[]>([])
   const [adding, setAdding] = useState<FoodItem | null>(null)
   const [addQty, setAddQty] = useState(1)
+  const [addAmountEaten, setAddAmountEaten] = useState(1)
 
   const nonRecipes = useMemo(
     () =>
@@ -107,15 +109,23 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
               <p className="font-medium mb-2">{adding.name}</p>
               <QuantityInput
                 food={adding}
-                quantity={addQty}
                 note=""
-                onQuantityChange={setAddQty}
                 onNoteChange={() => {}}
+                showNote={false}
+                countQuantity={addQty}
+                onCountQuantityChange={setAddQty}
+                amountEaten={addAmountEaten}
+                onAmountEatenChange={setAddAmountEaten}
               />
               <Button className="w-full mt-3" onClick={() => {
-                setComponents((prev) => [...prev, { food: adding, quantity: addQty }])
+                const qty =
+                  adding.scaleType === 'scale'
+                    ? buildScaleLogPayload(adding, addAmountEaten).quantity
+                    : Math.max(1, Math.round(addQty))
+                setComponents((prev) => [...prev, { food: adding, quantity: qty }])
                 setAdding(null)
                 setAddQty(1)
+                setAddAmountEaten(getFoodBaseAmount(adding))
               }}>Add ingredient</Button>
               <Button variant="ghost" className="w-full mt-1" onClick={() => setAdding(null)}>Cancel</Button>
             </div>
@@ -133,7 +143,8 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
                     className="w-full text-left rounded-lg border px-3 py-2 text-sm hover:bg-secondary"
                     onClick={() => {
                       setAdding(f)
-                      setAddQty(f.scaleType === 'count' ? 1 : 1)
+                      setAddQty(1)
+                      setAddAmountEaten(getFoodBaseAmount(f))
                     }}
                   >
                     {f.name}

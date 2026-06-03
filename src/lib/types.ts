@@ -8,7 +8,11 @@ export interface FoodItem {
   fiber: number
   sugars: number
   scaleType: 'count' | 'scale'
+  /** @deprecated Use baseUnit; kept for backward compatibility */
   unit?: 'g' | 'oz'
+  /** Base serving size for scale items (macros are per this amount) */
+  baseAmount?: number
+  baseUnit?: 'g' | 'oz'
   servingDesc: string
   categories: string[]
   isRecipe: boolean
@@ -21,6 +25,8 @@ export interface LoggedFood {
   id: string
   foodId: string
   quantity: number
+  /** Actual amount eaten (scale items), in the food's unit */
+  scaleAmountEaten?: number
   note?: string
   overriddenComponents?: { foodId: string; quantity: number }[]
 }

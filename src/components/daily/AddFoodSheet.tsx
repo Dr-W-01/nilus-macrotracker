@@ -1,17 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
+import { buildScaleLogPayload, getFoodBaseAmount } from '@/lib/scale'
 import { scaleMacros, roundMacro } from '@/lib/macros'
 import type { FoodItem } from '@/lib/types'
+
+export interface AddFoodResult {
+  quantity: number
+  scaleAmountEaten?: number
+  note?: string
+}
 
 interface AddFoodSheetProps {
   open: boolean
   food: FoodItem | null
   date: string
   onOpenChange: (open: boolean) => void
-  onAdd: (quantity: number, note: string) => void
+  onAdd: (result: AddFoodResult) => void
   onCancel: () => void
 }
 
@@ -23,13 +30,50 @@ export function AddFoodSheet({
   onAdd,
   onCancel,
 }: AddFoodSheetProps) {
-  const [quantity, setQuantity] = useState(1)
+  const [countQty, setCountQty] = useState(1)
+  const [amountEaten, setAmountEaten] = useState(1)
   const [note, setNote] = useState('')
+
+  useEffect(() => {
+    if (!food || !open) return
+    if (food.scaleType === 'scale') {
+      setAmountEaten(getFoodBaseAmount(food))
+    } else {
+      setCountQty(1)
+    }
+    setNote('')
+  }, [food, open])
+
+  const macros = useMemo(() => {
+    if (!food) return null
+    if (food.scaleType === 'count') {
+      return scaleMacros(food, Math.max(1, Math.round(countQty)))
+    }
+    const mult =
+      amountEaten > 0
+        ? amountEaten / getFoodBaseAmount(food)
+        : 1
+    return scaleMacros(food, mult)
+  }, [food, countQty, amountEaten])
 
   if (!food) return null
 
-  const macros = scaleMacros(food, food.scaleType === 'count' ? Math.max(1, Math.round(quantity)) : quantity)
   const dateLabel = format(parseISO(date), 'MMM d, yyyy')
+
+  const handleAdd = () => {
+    if (food.scaleType === 'count') {
+      onAdd({
+        quantity: Math.max(1, Math.round(countQty)),
+        note: note || undefined,
+      })
+      return
+    }
+    const payload = buildScaleLogPayload(food, amountEaten)
+    onAdd({
+      ...payload,
+      note: note || undefined,
+    })
+  }
 
   return (
     <Sheet
@@ -39,28 +83,27 @@ export function AddFoodSheet({
         onOpenChange(v)
       }}
     >
-      <SheetContent side="bottom">
+      <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{food.name}</SheetTitle>
         </SheetHeader>
         <QuantityInput
           food={food}
-          quantity={quantity}
           note={note}
-          onQuantityChange={setQuantity}
           onNoteChange={setNote}
+          countQuantity={countQty}
+          onCountQuantityChange={setCountQty}
+          amountEaten={amountEaten}
+          onAmountEatenChange={setAmountEaten}
         />
-        <p className="text-center text-sm text-muted-foreground my-4">
-          ≈ {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)}
-        </p>
+        {macros && (
+          <p className="text-center text-sm text-muted-foreground my-4">
+            Total: {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C{' '}
+            {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)}
+          </p>
+        )}
         <div className="flex flex-col gap-2">
-          <Button
-            size="lg"
-            onClick={() => {
-              const q = food.scaleType === 'count' ? Math.max(1, Math.round(quantity)) : quantity
-              onAdd(q, note)
-            }}
-          >
+          <Button size="lg" onClick={handleAdd} disabled={food.scaleType === 'scale' && amountEaten <= 0}>
             Add to {dateLabel}
           </Button>
           <Button size="lg" variant="ghost" onClick={onCancel}>

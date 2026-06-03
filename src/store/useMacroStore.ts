@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { SEED_LIBRARY } from '@/data/seedLibrary'
 import { getWeekRange, todayString } from '@/lib/dates'
 import { computeComponentMacros } from '@/lib/macros'
+import { normalizeScaleFoodItem } from '@/lib/scale'
 import { macroStorage, STORAGE_KEY } from '@/lib/storage'
 import type {
   AppTab,
@@ -42,6 +43,14 @@ function createEmptyLog(date: string, templateId: string): DailyLog {
     burnedCalories: 0,
     note: '',
   }
+}
+
+function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
+  const base = normalizeScaleFoodItem(item)
+  if (base.isRecipe && base.recipeComponents) {
+    return enrichRecipe(base, library ?? [])
+  }
+  return base
 }
 
 function enrichRecipe(item: FoodItem, library: FoodItem[]): FoodItem {
@@ -187,22 +196,23 @@ export const useMacroStore = create<MacroStore>()(
       },
 
       loadSeedLibrary: () => {
-        const lib = SEED_LIBRARY.map((item: FoodItem) => {
-          if (item.isRecipe && item.recipeComponents) {
-            return enrichRecipe(item, SEED_LIBRARY)
-          }
-          return { ...item }
-        })
+        const lib = SEED_LIBRARY.map((item: FoodItem) =>
+          item.isRecipe && item.recipeComponents
+            ? enrichRecipe(normalizeScaleFoodItem(item), SEED_LIBRARY)
+            : normalizeScaleFoodItem(item),
+        )
         set({ foodLibrary: lib })
       },
 
       mergeFoodLibrary: (items, replace = false) => {
-        const normalized = items.map((item) => ({
-          ...item,
-          id: item.id || generateId(),
-          lastUsed: item.lastUsed || todayString(),
-          timesUsed: item.timesUsed ?? 0,
-        }))
+        const normalized = items.map((item) =>
+          normalizeLibraryItem({
+            ...item,
+            id: item.id || generateId(),
+            lastUsed: item.lastUsed || todayString(),
+            timesUsed: item.timesUsed ?? 0,
+          }),
+        )
         if (replace) {
           const lib = normalized.map((item) =>
             item.isRecipe && item.recipeComponents
@@ -225,12 +235,12 @@ export const useMacroStore = create<MacroStore>()(
 
       addFoodItem: (item) => {
         const id = generateId()
-        const newItem: FoodItem = {
+        const newItem = normalizeLibraryItem({
           ...item,
           id,
           lastUsed: todayString(),
           timesUsed: 0,
-        }
+        })
         const lib = [...get().foodLibrary, newItem]
         const enriched =
           newItem.isRecipe && newItem.recipeComponents
@@ -245,7 +255,7 @@ export const useMacroStore = create<MacroStore>()(
       updateFoodItem: (id, patch) => {
         const lib = get().foodLibrary.map((f) => {
           if (f.id !== id) return f
-          const updated = { ...f, ...patch }
+          const updated = normalizeLibraryItem({ ...f, ...patch })
           return updated.isRecipe && updated.recipeComponents
             ? enrichRecipe(updated, get().foodLibrary)
             : updated
@@ -337,7 +347,21 @@ export const useMacroStore = create<MacroStore>()(
         statsView: state.statsView,
         statsAnchorDate: state.statsAnchorDate,
       }),
+      migrate: (persisted: unknown) => {
+        const state = persisted as { foodLibrary?: FoodItem[] }
+        if (state?.foodLibrary?.length) {
+          state.foodLibrary = state.foodLibrary.map((item) =>
+            normalizeLibraryItem(item),
+          )
+        }
+        return persisted
+      },
       onRehydrateStorage: () => (state) => {
+        if (state?.foodLibrary?.length) {
+          state.foodLibrary = state.foodLibrary.map((item) =>
+            normalizeLibraryItem(item),
+          )
+        }
         state?.setHasHydrated(true)
       },
     },

@@ -3,7 +3,7 @@ pid: 7804
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-02T23:17:52.259Z
-running_for_ms: 4684996  
+running_for_ms: 5699998  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -47,3 +47,170 @@ running_for_ms: 4684996
 8:34:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/NewFoodSheet.tsx
 8:34:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
 8:34:06 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+8:48:54 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 2 more
+8:48:58 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 2 more
+8:49:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 1 more
+8:49:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:49:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:49:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:49:05 PM [vite] (client) hmr invalidate /src/components/library/FoodFormFields.tsx Could not Fast Refresh ("emptyFoodFormValues" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:49:05 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx
+8:49:13 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/QuantityInput.tsx
+8:49:13 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/AddFoodSheet.tsx
+8:49:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/AddFoodSheet.tsx
+8:49:22 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+8:49:22 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+8:49:36 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+8:49:36 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+8:49:51 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 1 more
+8:49:51 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:49:51 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 1 more
+8:49:51 PM [vite] (client) Pre-transform error: Transform failed with 1 error:
+
+[PARSE_ERROR] Expected `,` or `)` but found `}`
+    ╭─[ src/components/library/FoodFormFields.tsx:82:1 ]
+    │
+ 65 │   return normalizeScaleFoodItem({
+    │                                ┬  
+    │                                ╰── Opened here
+    │ 
+ 82 │ }
+    │ ┬  
+    │ ╰── `,` or `)` expected
+────╯
+
+  Plugin: vite:oxc
+  File: C:/Users/einsn/Documents/nilus-macrotracker/src/components/library/FoodFormFields.tsx
+8:49:51 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 1 more
+8:49:51 PM [vite] (client) Pre-transform error: Transform failed with 1 error:
+
+[PARSE_ERROR] Expected `,` or `)` but found `}`
+    ╭─[ src/components/library/FoodFormFields.tsx:82:1 ]
+    │
+ 65 │   return normalizeScaleFoodItem({
+    │                                ┬  
+    │                                ╰── Opened here
+    │ 
+ 82 │ }
+    │ ┬  
+    │ ╰── `,` or `)` expected
+────╯
+
+  Plugin: vite:oxc
+  File: C:/Users/einsn/Documents/nilus-macrotracker/src/components/library/FoodFormFields.tsx
+8:49:52 PM [vite] (client) Pre-transform error: Transform failed with 1 error:
+
+[PARSE_ERROR] Expected `,` or `)` but found `}`
+    ╭─[ src/components/library/FoodFormFields.tsx:82:1 ]
+    │
+ 65 │   return normalizeScaleFoodItem({
+    │                                ┬  
+    │                                ╰── Opened here
+    │ 
+ 82 │ }
+    │ ┬  
+    │ ╰── `,` or `)` expected
+────╯
+
+  Plugin: vite:oxc
+  File: C:/Users/einsn/Documents/nilus-macrotracker/src/components/library/FoodFormFields.tsx
+8:49:52 PM [vite] (client) Pre-transform error: Transform failed with 1 error:
+
+[PARSE_ERROR] Expected `,` or `)` but found `}`
+    ╭─[ src/components/library/FoodFormFields.tsx:82:1 ]
+    │
+ 65 │   return normalizeScaleFoodItem({
+    │                                ┬  
+    │                                ╰── Opened here
+    │ 
+ 82 │ }
+    │ ┬  
+    │ ╰── `,` or `)` expected
+────╯
+
+  Plugin: vite:oxc
+  File: C:/Users/einsn/Documents/nilus-macrotracker/src/components/library/FoodFormFields.tsx
+8:49:52 PM [vite] Internal server error: Transform failed with 1 error:
+
+[PARSE_ERROR] Expected `,` or `)` but found `}`
+    ╭─[ src/components/library/FoodFormFields.tsx:82:1 ]
+    │
+ 65 │   return normalizeScaleFoodItem({
+    │                                ┬  
+    │                                ╰── Opened here
+    │ 
+ 82 │ }
+    │ ┬  
+    │ ╰── `,` or `)` expected
+────╯
+
+  Plugin: vite:oxc
+  File: C:/Users/einsn/Documents/nilus-macrotracker/src/components/library/FoodFormFields.tsx
+      at transformWithOxc (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:3344:19)
+      at TransformPluginContext.transform (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:3415:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:30387:51)
+      at async loadAndTransform (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:24646:26)
+      at async viteTransformMiddleware (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:24440:20)
+8:49:53 PM [vite] Internal server error: Transform failed with 1 error:
+
+[PARSE_ERROR] Expected `,` or `)` but found `}`
+    ╭─[ src/components/library/FoodFormFields.tsx:82:1 ]
+    │
+ 65 │   return normalizeScaleFoodItem({
+    │                                ┬  
+    │                                ╰── Opened here
+    │ 
+ 82 │ }
+    │ ┬  
+    │ ╰── `,` or `)` expected
+────╯
+
+  Plugin: vite:oxc
+  File: C:/Users/einsn/Documents/nilus-macrotracker/src/components/library/FoodFormFields.tsx
+      at transformWithOxc (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:3344:19)
+      at TransformPluginContext.transform (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:3415:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:30387:51)
+      at async loadAndTransform (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:24646:26)
+      at async viteTransformMiddleware (file:///C:/Users/einsn/Documents/nilus-macrotracker/node_modules/vite/dist/node/chunks/node.js:24440:20)
+8:50:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:50:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx and 1 more
+8:50:00 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/RecipeCustomizeSheet.tsx
+8:50:05 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/QuantityInput.tsx
+8:50:05 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/RecipeCustomizeSheet.tsx
+8:50:05 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/QuantityInput.tsx
+8:50:05 PM [vite] (client) hmr invalidate /src/components/daily/RecipeCustomizeSheet.tsx Could not Fast Refresh ("recipeComponentLabel" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:50:05 PM [vite] (client) hmr update /src/features/daily/DailyTab.tsx
+8:50:22 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
+8:50:22 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+8:50:22 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CreateRecipeSheet.tsx
+8:50:22 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CreateRecipeSheet.tsx
+8:50:23 PM [vite] (client) hmr invalidate /src/components/library/FoodFormFields.tsx Could not Fast Refresh ("emptyFoodFormValues" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:50:23 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx
+8:50:23 PM [vite] (client) hmr invalidate /src/components/daily/RecipeCustomizeSheet.tsx Could not Fast Refresh ("recipeComponentLabel" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:50:23 PM [vite] (client) hmr update /src/features/daily/DailyTab.tsx
+8:50:27 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CreateRecipeSheet.tsx
+8:50:37 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
+8:50:37 PM [vite] (client) hmr invalidate /src/components/library/FoodFormFields.tsx Could not Fast Refresh ("emptyFoodFormValues" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:50:37 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx
+8:50:37 PM [vite] (client) hmr invalidate /src/components/daily/RecipeCustomizeSheet.tsx Could not Fast Refresh ("recipeComponentLabel" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:50:37 PM [vite] (client) hmr update /src/features/daily/DailyTab.tsx
+8:50:54 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/RecipeCustomizeSheet.tsx
+8:50:54 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/RecipeCustomizeSheet.tsx
+8:50:54 PM [vite] (client) hmr invalidate /src/components/daily/RecipeCustomizeSheet.tsx Could not Fast Refresh (export removed)
+8:50:54 PM [vite] (client) hmr update /src/features/daily/DailyTab.tsx
+8:50:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+8:50:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+8:51:25 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:51:25 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/QuantityInput.tsx
+8:51:25 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
+8:51:25 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
+8:51:25 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:51:25 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/QuantityInput.tsx
+8:51:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
+8:51:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+8:51:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/QuantityInput.tsx
+8:51:26 PM [vite] (client) hmr invalidate /src/components/library/FoodFormFields.tsx Could not Fast Refresh ("emptyFoodFormValues" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:51:26 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx
+8:51:29 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/EditFoodSheet.tsx and 4 more
+8:51:29 PM [vite] (client) hmr invalidate /src/components/library/FoodFormFields.tsx Could not Fast Refresh ("emptyFoodFormValues" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:51:29 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx

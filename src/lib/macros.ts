@@ -1,3 +1,4 @@
+import { getLoggedServingMultiplier } from './scale'
 import type { FoodItem, LoggedFood, MacroTotals } from './types'
 
 export const emptyMacros = (): MacroTotals => ({
@@ -61,7 +62,7 @@ export function getLoggedFoodMacros(
     return computeComponentMacros(library, components)
   }
 
-  return scaleMacros(food, logged.quantity)
+  return scaleMacros(food, getLoggedServingMultiplier(food, logged))
 }
 
 export function computeDayMacros(

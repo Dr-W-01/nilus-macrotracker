@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import {
   Calendar as CalendarIcon,
@@ -23,6 +23,12 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { formatDisplayDate, shiftDate } from '@/lib/dates'
+import {
+  amountEatenFromServings,
+  buildScaleLogPayload,
+  formatLoggedFoodQuantity,
+  getFoodBaseAmount,
+} from '@/lib/scale'
 import {
   computeDayMacros,
   getLoggedFoodMacros,
@@ -285,7 +291,11 @@ export function DailyTab() {
                           {food?.isRecipe && ' 🍱'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {entry.overriddenComponents ? 'Customized recipe' : `${entry.quantity} ${food?.servingDesc ?? ''}`}
+                          {entry.overriddenComponents
+                            ? 'Customized recipe'
+                            : food
+                              ? formatLoggedFoodQuantity(food, entry)
+                              : ''}
                         </p>
                       </div>
                       <span className="text-sm font-medium">{roundMacro(macros.calories, 0)} cal</span>
@@ -319,9 +329,14 @@ export function DailyTab() {
         food={selectedFood && !selectedFood.isRecipe ? selectedFood : null}
         date={currentDate}
         onOpenChange={setAddSheetOpen}
-        onAdd={(quantity, note) => {
+        onAdd={(result) => {
           if (!selectedFood) return
-          addLoggedFood({ foodId: selectedFood.id, quantity, note: note || undefined })
+          addLoggedFood({
+            foodId: selectedFood.id,
+            quantity: result.quantity,
+            scaleAmountEaten: result.scaleAmountEaten,
+            note: result.note,
+          })
           toast.success(`Added ${selectedFood.name}`)
           resetFoodFlow()
         }}
@@ -345,9 +360,10 @@ export function DailyTab() {
 
       <RecipeCustomizeSheet
         open={customizeOpen}
-        food={selectedFood}
+        recipe={selectedFood}
+        library={foodLibrary}
         onOpenChange={setCustomizeOpen}
-        onAddToDay={(overrides) => addRecipe(overrides)}
+        onConfirm={(overrides) => addRecipe(overrides)}
         onCancel={() => {
           setCustomizeOpen(false)
           setPreviewOpen(true)
@@ -420,8 +436,22 @@ function EditLoggedSheet({
   onSave: (patch: Partial<LoggedFood>) => void
   onDelete: () => void
 }) {
-  const [quantity, setQuantity] = useState(entry?.quantity ?? 1)
-  const [note, setNote] = useState(entry?.note ?? '')
+  const [countQty, setCountQty] = useState(1)
+  const [amountEaten, setAmountEaten] = useState(1)
+  const [note, setNote] = useState('')
+
+  useEffect(() => {
+    if (!entry || !food) return
+    setNote(entry.note ?? '')
+    if (food.scaleType === 'scale') {
+      setAmountEaten(
+        entry.scaleAmountEaten ??
+          amountEatenFromServings(getFoodBaseAmount(food), entry.quantity),
+      )
+    } else {
+      setCountQty(Math.max(1, Math.round(entry.quantity)))
+    }
+  }, [entry, food])
 
   if (!entry || !food || food.isRecipe) {
     return (
@@ -448,20 +478,30 @@ function EditLoggedSheet({
         <SheetHeader><SheetTitle>Edit {food.name}</SheetTitle></SheetHeader>
         <QuantityInput
           food={food}
-          quantity={quantity}
           note={note}
-          onQuantityChange={setQuantity}
           onNoteChange={setNote}
+          countQuantity={countQty}
+          onCountQuantityChange={setCountQty}
+          amountEaten={amountEaten}
+          onAmountEatenChange={setAmountEaten}
         />
         <Button
           size="lg"
           className="w-full mt-4"
-          onClick={() =>
-            onSave({
-              quantity: food.scaleType === 'count' ? Math.max(1, Math.round(quantity)) : quantity,
-              note: note || undefined,
-            })
-          }
+          onClick={() => {
+            if (food.scaleType === 'count') {
+              onSave({
+                quantity: Math.max(1, Math.round(countQty)),
+                scaleAmountEaten: undefined,
+                note: note || undefined,
+              })
+            } else {
+              onSave({
+                ...buildScaleLogPayload(food, amountEaten),
+                note: note || undefined,
+              })
+            }
+          }}
         >
           Save for {dateLabel}
         </Button>

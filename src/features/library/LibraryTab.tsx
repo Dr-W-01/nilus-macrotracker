@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
 import { getLetterGroup } from '@/lib/dates'
+import { formatBaseServing } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { NewFoodSheet } from '@/components/library/NewFoodSheet'
@@ -236,7 +237,11 @@ function FoodRowContent({ food }: { food: FoodItem }) {
         <p className="font-medium truncate">
           {food.name} {food.isRecipe && '🍱'}
         </p>
-        <p className="text-xs text-muted-foreground truncate">{food.servingDesc}</p>
+        <p className="text-xs text-muted-foreground truncate">
+          {food.scaleType === 'scale'
+            ? `Base: ${formatBaseServing(food)} · ${food.servingDesc}`
+            : food.servingDesc}
+        </p>
       </div>
       <span className="text-sm text-muted-foreground shrink-0">
         {Math.round(food.caloriesPerServing)} cal

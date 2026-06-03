@@ -4,6 +4,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  inferBaseAmountFromServing,
+  normalizeScaleFoodItem,
+} from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
 
 export interface FoodFormValues {
@@ -15,7 +19,8 @@ export interface FoodFormValues {
   fiber: string
   sugars: string
   scaleType: 'count' | 'scale'
-  unit: 'g' | 'oz'
+  baseUnit: 'g' | 'oz'
+  baseAmount: string
   servingDesc: string
   categories: string[]
 }
@@ -29,7 +34,8 @@ export const emptyFoodFormValues = (): FoodFormValues => ({
   fiber: '0',
   sugars: '0',
   scaleType: 'count',
-  unit: 'g',
+  baseUnit: 'g',
+  baseAmount: '1',
   servingDesc: '1 serving',
   categories: ['General'],
 })
@@ -44,7 +50,11 @@ export function foodItemToFormValues(food: FoodItem): FoodFormValues {
     fiber: String(food.fiber),
     sugars: String(food.sugars),
     scaleType: food.scaleType,
-    unit: food.unit ?? 'g',
+    baseUnit: food.baseUnit ?? food.unit ?? 'g',
+    baseAmount: String(
+      food.baseAmount ??
+        inferBaseAmountFromServing(food.servingDesc, food.baseUnit ?? food.unit),
+    ),
     servingDesc: food.servingDesc,
     categories: food.categories.length > 0 ? [...food.categories] : ['General'],
   }
@@ -53,7 +63,7 @@ export function foodItemToFormValues(food: FoodItem): FoodFormValues {
 export function formValuesToFoodFields(
   values: FoodFormValues,
 ): Omit<FoodItem, 'id' | 'lastUsed' | 'timesUsed' | 'isRecipe' | 'recipeComponents'> {
-  return {
+  return normalizeScaleFoodItem({
     name: values.name.trim(),
     caloriesPerServing: parseFloat(values.calories) || 0,
     protein: parseFloat(values.protein) || 0,
@@ -62,10 +72,15 @@ export function formValuesToFoodFields(
     fiber: parseFloat(values.fiber) || 0,
     sugars: parseFloat(values.sugars) || 0,
     scaleType: values.scaleType,
-    unit: values.scaleType === 'scale' ? values.unit : undefined,
+    baseUnit: values.scaleType === 'scale' ? values.baseUnit : undefined,
+    unit: values.scaleType === 'scale' ? values.baseUnit : undefined,
+    baseAmount:
+      values.scaleType === 'scale'
+        ? parseFloat(values.baseAmount) || 1
+        : undefined,
     servingDesc: values.servingDesc.trim() || '1 serving',
     categories: values.categories.length > 0 ? values.categories : ['General'],
-  }
+  })
 }
 
 interface FoodFormFieldsProps {
@@ -161,27 +176,38 @@ export function FoodFormFields({
           </div>
 
           {values.scaleType === 'scale' && (
-            <div>
-              <Label className="text-xs text-muted-foreground">Unit</Label>
-              <div className="mt-2 flex gap-2" role="radiogroup" aria-label="Unit">
-                <Button
-                  type="button"
-                  variant={values.unit === 'g' ? 'default' : 'outline'}
-                  className="flex-1"
-                  onClick={() => patch({ unit: 'g' })}
-                >
-                  g
-                </Button>
-                <Button
-                  type="button"
-                  variant={values.unit === 'oz' ? 'default' : 'outline'}
-                  className="flex-1"
-                  onClick={() => patch({ unit: 'oz' })}
-                >
-                  oz
-                </Button>
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <FormField label="Base amount">
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0.01}
+                    step={0.01}
+                    value={values.baseAmount}
+                    onChange={(e) => patch({ baseAmount: e.target.value })}
+                    placeholder="e.g. 4"
+                  />
+                </FormField>
+                <FormField label="Base unit">
+                  <select
+                    id="base-unit"
+                    aria-label="Base unit"
+                    value={values.baseUnit}
+                    onChange={(e) =>
+                      patch({ baseUnit: e.target.value === 'oz' ? 'oz' : 'g' })
+                    }
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="g">g</option>
+                    <option value="oz">oz</option>
+                  </select>
+                </FormField>
               </div>
-            </div>
+              <p className="text-xs text-muted-foreground">
+                Macros above are per {values.baseAmount || '1'} {values.baseUnit} (base serving).
+              </p>
+            </>
           )}
         </>
       )}
