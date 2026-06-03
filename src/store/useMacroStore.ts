@@ -6,6 +6,7 @@ import { computeComponentMacros } from '@/lib/macros'
 import {
   addCategoryToItem,
   collectAllCategories,
+  foodCategories,
   normalizeCategoryList,
   removeCategoryFromItem,
 } from '@/lib/categories'
@@ -51,12 +52,67 @@ function createEmptyLog(date: string, templateId: string): DailyLog {
   }
 }
 
+function sanitizeFoodItem(item: FoodItem): FoodItem {
+  return {
+    ...item,
+    categories: Array.isArray(item.categories) ? item.categories : [],
+  }
+}
+
 function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
-  const base = normalizeScaleFoodItem(item)
+  const base = normalizeScaleFoodItem(sanitizeFoodItem(item))
   if (base.isRecipe && base.recipeComponents) {
     return enrichRecipe(base, library ?? [])
   }
   return base
+}
+
+const PERSIST_VERSION = 2
+
+type PersistedSlice = {
+  settings?: Settings
+  foodLibrary?: FoodItem[]
+  customCategories?: string[]
+  dailyLogs?: Record<string, DailyLog>
+  currentDate?: string
+  currentTab?: AppTab
+  editDayMode?: boolean
+  librarySegment?: 'items' | 'categories' | 'recipes'
+  statsPeriod?: 'week' | 'month' | 'custom'
+  statsRangeStart?: string
+  statsRangeEnd?: string
+  statsView?: 'table' | 'charts'
+  statsAnchorDate?: string
+}
+
+function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
+  const week = getWeekRange()
+  return {
+    ...persisted,
+    settings: {
+      ...defaultSettings,
+      ...persisted.settings,
+      goalTemplates:
+        persisted.settings?.goalTemplates?.length
+          ? persisted.settings.goalTemplates
+          : defaultSettings.goalTemplates,
+      defaultTemplateId:
+        persisted.settings?.defaultTemplateId ?? defaultSettings.defaultTemplateId,
+      theme: persisted.settings?.theme ?? defaultSettings.theme,
+      accentColor: persisted.settings?.accentColor ?? defaultSettings.accentColor,
+      secondaryTextColor:
+        persisted.settings?.secondaryTextColor ?? defaultSettings.secondaryTextColor,
+    },
+    customCategories: Array.isArray(persisted.customCategories)
+      ? persisted.customCategories
+      : [],
+    foodLibrary: (persisted.foodLibrary ?? []).map((item) =>
+      normalizeLibraryItem(item, persisted.foodLibrary),
+    ),
+    dailyLogs: persisted.dailyLogs ?? {},
+    statsRangeStart: persisted.statsRangeStart ?? week.start,
+    statsRangeEnd: persisted.statsRangeEnd ?? week.end,
+  }
 }
 
 function enrichRecipe(item: FoodItem, library: FoodItem[]): FoodItem {
@@ -303,19 +359,17 @@ export const useMacroStore = create<MacroStore>()(
       },
 
       getAllLibraryCategories: () =>
-        collectAllCategories(get().foodLibrary, get().customCategories),
+        collectAllCategories(get().foodLibrary, get().customCategories ?? []),
 
       addLibraryCategory: (name) => {
         const tag = normalizeCategoryList([name])[0]
         if (!tag) return false
-        const existing = collectAllCategories(
-          get().foodLibrary,
-          get().customCategories,
-        )
+        const custom = get().customCategories ?? []
+        const existing = collectAllCategories(get().foodLibrary, custom)
         if (existing.some((c) => c.toLowerCase() === tag.toLowerCase())) {
           return false
         }
-        set({ customCategories: [...get().customCategories, tag] })
+        set({ customCategories: [...custom, tag] })
         return true
       },
 
@@ -323,17 +377,18 @@ export const useMacroStore = create<MacroStore>()(
         const tag = normalizeCategoryList([newName])[0]
         if (!tag) return false
         const oldKey = oldName.toLowerCase()
-        const all = collectAllCategories(get().foodLibrary, get().customCategories)
+        const custom = get().customCategories ?? []
+        const all = collectAllCategories(get().foodLibrary, custom)
         if (all.some((c) => c.toLowerCase() === tag.toLowerCase() && c.toLowerCase() !== oldKey)) {
           return false
         }
         set({
-          customCategories: get().customCategories.map((c) =>
+          customCategories: custom.map((c) =>
             c.toLowerCase() === oldKey ? tag : c,
           ),
           foodLibrary: get().foodLibrary.map((f) => ({
             ...f,
-            categories: f.categories.map((c) =>
+            categories: foodCategories(f).map((c) =>
               c.toLowerCase() === oldKey ? tag : c,
             ),
           })),
@@ -344,7 +399,7 @@ export const useMacroStore = create<MacroStore>()(
       removeLibraryCategory: (name) => {
         const key = name.toLowerCase()
         set({
-          customCategories: get().customCategories.filter(
+          customCategories: (get().customCategories ?? []).filter(
             (c) => c.toLowerCase() !== key,
           ),
           foodLibrary: get().foodLibrary.map((f) => ({
@@ -426,7 +481,14 @@ export const useMacroStore = create<MacroStore>()(
     }),
     {
       name: STORAGE_KEY,
+      version: PERSIST_VERSION,
       storage: createJSONStorage(() => macroStorage),
+      merge: (persisted, currentState) => ({
+        ...currentState,
+        ...(normalizePersistedState(
+          (persisted ?? {}) as PersistedSlice,
+        ) as Partial<MacroStore>),
+      }),
       partialize: (state) => ({
         settings: state.settings,
         foodLibrary: state.foodLibrary,
@@ -442,26 +504,37 @@ export const useMacroStore = create<MacroStore>()(
         statsView: state.statsView,
         statsAnchorDate: state.statsAnchorDate,
       }),
-      migrate: (persisted: unknown) => {
-        const state = persisted as {
-          foodLibrary?: FoodItem[]
-          customCategories?: string[]
+      migrate: (persisted: unknown, version) => {
+        const state = normalizePersistedState((persisted ?? {}) as PersistedSlice)
+        if (version < PERSIST_VERSION) {
+          return state
         }
-        if (!state.customCategories) state.customCategories = []
-        if (state?.foodLibrary?.length) {
-          state.foodLibrary = state.foodLibrary.map((item) =>
-            normalizeLibraryItem(item),
-          )
-        }
-        return persisted
+        return state
       },
       onRehydrateStorage: () => (state) => {
-        if (state?.foodLibrary?.length) {
-          state.foodLibrary = state.foodLibrary.map((item) =>
-            normalizeLibraryItem(item),
-          )
-        }
-        state?.setHasHydrated(true)
+        if (!state) return
+        const normalized = normalizePersistedState({
+          settings: state.settings,
+          foodLibrary: state.foodLibrary,
+          customCategories: state.customCategories,
+          dailyLogs: state.dailyLogs,
+          currentDate: state.currentDate,
+          currentTab: state.currentTab,
+          editDayMode: state.editDayMode,
+          librarySegment: state.librarySegment,
+          statsPeriod: state.statsPeriod,
+          statsRangeStart: state.statsRangeStart,
+          statsRangeEnd: state.statsRangeEnd,
+          statsView: state.statsView,
+          statsAnchorDate: state.statsAnchorDate,
+        })
+        state.customCategories = normalized.customCategories ?? []
+        state.foodLibrary = normalized.foodLibrary ?? []
+        state.settings = normalized.settings ?? defaultSettings
+        state.dailyLogs = normalized.dailyLogs ?? {}
+        if (normalized.statsRangeStart) state.statsRangeStart = normalized.statsRangeStart
+        if (normalized.statsRangeEnd) state.statsRangeEnd = normalized.statsRangeEnd
+        state.setHasHydrated(true)
       },
     },
   ),

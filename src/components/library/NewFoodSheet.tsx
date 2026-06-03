@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -18,8 +18,11 @@ interface NewFoodSheetProps {
 
 export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
   const addFoodItem = useMacroStore((s) => s.addFoodItem)
-  const allCategories = useMacroStore((s) =>
-    collectAllCategories(s.foodLibrary, s.customCategories),
+  const foodLibrary = useMacroStore((s) => s.foodLibrary)
+  const customCategories = useMacroStore((s) => s.customCategories)
+  const allCategories = useMemo(
+    () => collectAllCategories(foodLibrary, customCategories),
+    [foodLibrary, customCategories],
   )
   const [values, setValues] = useState<FoodFormValues>(emptyFoodFormValues())
 

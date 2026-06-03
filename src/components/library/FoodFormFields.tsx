@@ -55,7 +55,9 @@ export function foodItemToFormValues(food: FoodItem): FoodFormValues {
         inferBaseAmountFromServing(food.servingDesc, food.baseUnit ?? food.unit),
     ),
     servingDesc: food.servingDesc,
-    categories: normalizeCategoryList(food.categories),
+    categories: normalizeCategoryList(
+      Array.isArray(food.categories) ? food.categories : [],
+    ),
   }
 }
 

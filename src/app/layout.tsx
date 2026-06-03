@@ -28,8 +28,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [setHasHydrated])
 
   useEffect(() => {
-    applyThemeColors(withDefaultSettings(settings))
-  }, [settings.theme, settings.accentColor, settings.secondaryTextColor])
+    if (settings) {
+      applyThemeColors(withDefaultSettings(settings))
+    }
+  }, [settings?.theme, settings?.accentColor, settings?.secondaryTextColor])
 
   if (!_hasHydrated) {
     return (

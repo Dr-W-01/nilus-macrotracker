@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,8 +26,11 @@ interface EditFoodSheetProps {
 export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
   const updateFoodItem = useMacroStore((s) => s.updateFoodItem)
   const deleteFoodItems = useMacroStore((s) => s.deleteFoodItems)
-  const allCategories = useMacroStore((s) =>
-    collectAllCategories(s.foodLibrary, s.customCategories),
+  const foodLibrary = useMacroStore((s) => s.foodLibrary)
+  const customCategories = useMacroStore((s) => s.customCategories)
+  const allCategories = useMemo(
+    () => collectAllCategories(foodLibrary, customCategories),
+    [foodLibrary, customCategories],
   )
   const [values, setValues] = useState<FoodFormValues | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)

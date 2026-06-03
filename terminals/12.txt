@@ -1,0 +1,8 @@
+---
+pid: 23232
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npx vite preview --host 127.0.0.1 --port 4173 2>&1"
+started_at: 2026-06-03T02:13:44.092Z
+running_for_ms: 390006   
+---
+  ➜  Local:   http://127.0.0.1:4173/nilus-macrotracker/

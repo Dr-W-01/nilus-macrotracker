@@ -28,19 +28,19 @@ export function CategoryPicker({
   }
 
   const selectedNormalized = normalizeCategoryList(selected)
-  const selectedKeys = new Set(selectedNormalized.map((c) => c.toLowerCase()))
 
   const available = useMemo(() => {
+    const selectedKeys = new Set(selectedNormalized.map((c) => c.toLowerCase()))
     const q = search.trim().toLowerCase()
     return allCategories
       .filter((c) => !selectedKeys.has(c.toLowerCase()))
       .filter((c) => !q || c.toLowerCase().includes(q))
       .sort((a, b) => a.localeCompare(b))
-  }, [allCategories, selectedKeys, search])
+  }, [allCategories, selectedNormalized, search])
 
   const toggleCategory = (cat: string) => {
     const key = cat.toLowerCase()
-    if (selectedKeys.has(key)) {
+    if (selectedNormalized.some((c) => c.toLowerCase() === key)) {
       onChange(selectedNormalized.filter((c) => c.toLowerCase() !== key))
     } else {
       registerCategory(cat)
@@ -52,7 +52,7 @@ export function CategoryPicker({
     const tag = normalizeCategoryList([newCategory])[0]
     if (!tag) return
     registerCategory(tag)
-    if (!selectedKeys.has(tag.toLowerCase())) {
+    if (!selectedNormalized.some((c) => c.toLowerCase() === tag.toLowerCase())) {
       onChange(normalizeCategoryList([...selectedNormalized, tag]))
     }
     setNewCategory('')
@@ -114,7 +114,9 @@ export function CategoryPicker({
         !allCategories.some(
           (c) => c.toLowerCase() === search.trim().toLowerCase(),
         ) &&
-        !selectedKeys.has(search.trim().toLowerCase()) && (
+        !selectedNormalized.some(
+          (c) => c.toLowerCase() === search.trim().toLowerCase(),
+        ) && (
           <Button
             type="button"
             variant="outline"

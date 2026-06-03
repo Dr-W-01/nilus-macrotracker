@@ -18,19 +18,24 @@ export function normalizeCategoryList(categories: string[]): string[] {
   return result
 }
 
+export function foodCategories(food: Pick<FoodItem, 'categories'>): string[] {
+  return Array.isArray(food.categories) ? food.categories : []
+}
+
 export function collectAllCategories(
   library: FoodItem[],
   customCategories: string[] = [],
 ): string[] {
-  const fromItems = library.flatMap((f) => f.categories)
-  return normalizeCategoryList([...customCategories, ...fromItems]).sort((a, b) =>
+  const safeCustom = Array.isArray(customCategories) ? customCategories : []
+  const fromItems = library.flatMap((f) => foodCategories(f))
+  return normalizeCategoryList([...safeCustom, ...fromItems]).sort((a, b) =>
     a.localeCompare(b),
   )
 }
 
 export function itemHasCategory(food: FoodItem, category: string): boolean {
   const key = category.toLowerCase()
-  return food.categories.some((c) => c.toLowerCase() === key)
+  return foodCategories(food).some((c) => c.toLowerCase() === key)
 }
 
 export function itemsInCategory(
@@ -45,23 +50,28 @@ export function itemsInCategory(
 }
 
 export function addCategoryToItem(
-  categories: string[],
+  categories: string[] | undefined,
   category: string,
 ): string[] {
+  const base = foodCategories({ categories: categories ?? [] })
   const tag = normalizeCategoryName(category)
-  if (!tag) return normalizeCategoryList(categories)
-  if (itemHasCategory({ categories } as FoodItem, tag)) {
-    return normalizeCategoryList(categories)
+  if (!tag) return normalizeCategoryList(base)
+  if (itemHasCategory({ categories: base } as FoodItem, tag)) {
+    return normalizeCategoryList(base)
   }
-  return normalizeCategoryList([...categories, tag])
+  return normalizeCategoryList([...base, tag])
 }
 
 export function removeCategoryFromItem(
-  categories: string[],
+  categories: string[] | undefined,
   category: string,
 ): string[] {
   const key = category.toLowerCase()
-  return normalizeCategoryList(categories.filter((c) => c.toLowerCase() !== key))
+  return normalizeCategoryList(
+    foodCategories({ categories: categories ?? [] }).filter(
+      (c) => c.toLowerCase() !== key,
+    ),
+  )
 }
 
 export function parseImportedCategories(raw: string | undefined): string[] {

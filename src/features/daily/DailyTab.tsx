@@ -62,12 +62,13 @@ export function DailyTab() {
   const updateDailyLog = useMacroStore((s) => s.updateDailyLog)
 
   const log = getDailyLog(currentDate)
+  const templates = settings?.goalTemplates ?? []
   const goal =
-    settings.goalTemplates.find((g) => g.id === log.goalTemplateId) ??
-    settings.goalTemplates.find((g) => g.id === settings.defaultTemplateId) ??
-    settings.goalTemplates[0]
+    templates.find((g) => g.id === log.goalTemplateId) ??
+    templates.find((g) => g.id === settings?.defaultTemplateId) ??
+    templates[0]
 
-  const activeTemplateId = log.goalTemplateId || settings.defaultTemplateId
+  const activeTemplateId = log.goalTemplateId || settings?.defaultTemplateId || 'default'
 
   const consumed = useMemo(
     () => computeDayMacros(foodLibrary, log.foods),
@@ -130,7 +131,7 @@ export function DailyTab() {
           </span>
         </div>
 
-        {editDayMode && settings.goalTemplates.length > 0 && (
+        {editDayMode && templates.length > 0 && (
           <div className="space-y-1.5">
             <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
               Goal template for this day
@@ -143,7 +144,7 @@ export function DailyTab() {
                 updateDailyLog(currentDate, { goalTemplateId: e.target.value })
               }
             >
-              {settings.goalTemplates.map((t) => (
+              {templates.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} — {t.calories} cal
                 </option>
