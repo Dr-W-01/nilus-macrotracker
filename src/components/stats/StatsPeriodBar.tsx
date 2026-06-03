@@ -2,7 +2,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getMonthRange, getWeekRange, shiftMonthRange, shiftWeekRange } from '@/lib/dates'
+import {
+  getMonthRange,
+  getWeekRange,
+  getWeekRangeForDate,
+  shiftMonthRange,
+  shiftWeekRange,
+  todayString,
+} from '@/lib/dates'
 import { format, parseISO } from 'date-fns'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -42,8 +49,12 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
           const p = v as 'week' | 'month' | 'custom'
           setStatsPeriod(p)
           if (p === 'week') {
-            const w = getWeekRange(parseISO(statsAnchorDate))
+            const switchingToWeek = statsPeriod !== 'week'
+            const w = switchingToWeek
+              ? getWeekRange(new Date())
+              : getWeekRangeForDate(statsAnchorDate)
             setStatsRange(w.start, w.end)
+            if (switchingToWeek) setStatsAnchorDate(todayString())
           } else if (p === 'month') {
             const m = getMonthRange(parseISO(statsAnchorDate))
             setStatsRange(m.start, m.end)
@@ -52,7 +63,7 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
       >
         <TabsList className="grid h-9 grid-cols-3 bg-muted/60">
           <TabsTrigger value="week" className="text-xs sm:text-sm">
-            Week
+            This Week
           </TabsTrigger>
           <TabsTrigger value="month" className="text-xs sm:text-sm">
             Month

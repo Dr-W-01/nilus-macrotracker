@@ -1,11 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { parseISO } from 'date-fns'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatsPeriodBar } from '@/components/stats/StatsPeriodBar'
 import { StatsOverviewPanel } from '@/features/stats/StatsOverviewPanel'
 import { StatsTrendsPanel } from '@/features/stats/StatsTrendsPanel'
 import { StatsBreakdownsPanel } from '@/features/stats/StatsBreakdownsPanel'
-import { getMonthRange, getWeekRange } from '@/lib/dates'
+import { getMonthRange, getWeekRangeForDate } from '@/lib/dates'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export function StatsTab() {
@@ -18,16 +18,25 @@ export function StatsTab() {
   const statsAnchorDate = useMacroStore((s) => s.statsAnchorDate)
   const statsView = useMacroStore((s) => s.statsView)
   const setStatsView = useMacroStore((s) => s.setStatsView)
+  const setStatsRange = useMacroStore((s) => s.setStatsRange)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
   const setCurrentTab = useMacroStore((s) => s.setCurrentTab)
   const accentColor = useMacroStore((s) => s.settings.accentColor)
 
   const range = useMemo(() => {
     const anchor = parseISO(statsAnchorDate)
-    if (statsPeriod === 'week') return getWeekRange(anchor)
+    if (statsPeriod === 'week') return getWeekRangeForDate(statsAnchorDate)
     if (statsPeriod === 'month') return getMonthRange(anchor)
     return { start: statsRangeStart, end: statsRangeEnd }
   }, [statsPeriod, statsAnchorDate, statsRangeStart, statsRangeEnd])
+
+  useEffect(() => {
+    if (statsPeriod !== 'week') return
+    const w = getWeekRangeForDate(statsAnchorDate)
+    if (statsRangeStart !== w.start || statsRangeEnd !== w.end) {
+      setStatsRange(w.start, w.end)
+    }
+  }, [statsPeriod, statsAnchorDate, statsRangeStart, statsRangeEnd, setStatsRange])
 
   const goToDay = (date: string) => {
     setCurrentDate(date)

@@ -13,6 +13,9 @@ import {
   subWeeks,
 } from 'date-fns'
 
+/** US-style week: Sunday (0) through Saturday */
+export const WEEK_STARTS_ON = 0 as const
+
 export function todayString(): string {
   return format(new Date(), 'yyyy-MM-dd')
 }
@@ -28,12 +31,24 @@ export function shiftDate(dateStr: string, days: number): string {
 }
 
 export function getWeekRange(anchor: Date = new Date()) {
-  const start = startOfWeek(anchor, { weekStartsOn: 1 })
-  const end = endOfWeek(anchor, { weekStartsOn: 1 })
+  const start = startOfWeek(anchor, { weekStartsOn: WEEK_STARTS_ON })
+  const end = endOfWeek(anchor, { weekStartsOn: WEEK_STARTS_ON })
   return {
     start: format(start, 'yyyy-MM-dd'),
     end: format(end, 'yyyy-MM-dd'),
   }
+}
+
+export function isDateInRange(date: string, range: { start: string; end: string }): boolean {
+  const d = parseISO(date)
+  const start = parseISO(range.start)
+  const end = parseISO(range.end)
+  return d >= start && d <= end
+}
+
+/** Calendar week (Sun–Sat) containing the given date */
+export function getWeekRangeForDate(dateStr: string) {
+  return getWeekRange(parseISO(dateStr))
 }
 
 export function getMonthRange(anchor: Date = new Date()) {

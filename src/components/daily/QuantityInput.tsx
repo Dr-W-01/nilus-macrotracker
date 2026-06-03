@@ -12,7 +12,8 @@ import {
   roundAmount,
   servingsFromAmountEaten,
 } from '@/lib/scale'
-import { scaleMacros, roundMacro } from '@/lib/macros'
+import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
+import { scaleMacros } from '@/lib/macros'
 import type { FoodItem } from '@/lib/types'
 
 interface QuantityInputProps {
@@ -26,21 +27,6 @@ interface QuantityInputProps {
   onAmountEatenChange?: (amount: number) => void
   showNote?: boolean
   showInlineMacroPreview?: boolean
-}
-
-function MacroInlinePreview({
-  macros,
-}: {
-  macros: ReturnType<typeof scaleMacros>
-}) {
-  return (
-    <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm">
-      <span className="text-muted-foreground">≈ </span>
-      {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C{' '}
-      {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)} · Fib{' '}
-      {roundMacro(macros.fiber)} · S {roundMacro(macros.sugars)}
-    </div>
-  )
 }
 
 export function QuantityInput({
@@ -105,7 +91,11 @@ export function QuantityInput({
             <Plus className="h-6 w-6" />
           </Button>
         </div>
-        {showInlineMacroPreview && <MacroInlinePreview macros={previewMacros} />}
+        {showInlineMacroPreview && (
+          <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-center">
+            <LoggedMacroPreview macros={previewMacros} size="md" />
+          </div>
+        )}
         {showNote && (
           <NoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
         )}
@@ -162,7 +152,11 @@ export function QuantityInput({
         {formatScaleEatenSummary(food, eaten)}
       </p>
 
-      {showInlineMacroPreview && <MacroInlinePreview macros={previewMacros} />}
+      {showInlineMacroPreview && (
+        <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-center">
+          <LoggedMacroPreview macros={previewMacros} size="md" />
+        </div>
+      )}
 
       {showNote && (
         <NoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
