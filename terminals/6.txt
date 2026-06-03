@@ -3,7 +3,7 @@ pid: 27868
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"set PATH=C:\\Program Files\\Git\\bin;%PATH% && cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-03T00:34:16.487Z
-running_for_ms: 1715003  
+running_for_ms: 2425002  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -185,3 +185,6 @@ Port 5174 is in use, trying another one...
 9:00:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
 9:00:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
 9:00:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx, /src/app/page.tsx, /src/features/daily/DailyTab.tsx, /src/features/library/LibraryTab.tsx, /src/components/BottomNav.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/library/EditFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx
+9:13:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/table.tsx
+9:13:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+9:13:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
