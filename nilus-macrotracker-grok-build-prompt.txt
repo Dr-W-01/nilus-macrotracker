@@ -1,0 +1,223 @@
+You are an expert senior frontend engineer specializing in clean, production-ready React + TypeScript mobile-first PWAs.
+
+Create a new project called **Nilus AI: MacroTracker** — a private, local-first calorie & macro tracking PWA.
+
+**Strict requirements (do not deviate):**
+
+### Tech Stack (exact)
+- Vite 5 + React 19 + TypeScript + Tailwind CSS + shadcn/ui
+- lucide-react for icons
+- Recharts for charts
+- date-fns for all date handling
+- localforage (or idb-keyval) for persistent local storage
+- xlsx for .xlsx import support
+- Zustand for state management (with persist middleware)
+- sonner (or shadcn toast) for clean notifications
+- vite-plugin-pwa for installable PWA
+
+Run the following setup commands in order:
+```bash
+npm create vite@latest . -- --template react-ts
+npm install
+npx shadcn@latest init -d
+npx shadcn@latest add button input card dialog sheet tabs calendar popover table toast
+npm install lucide-react recharts date-fns localforage xlsx zustand sonner
+npm install -D vite-plugin-pwa
+```
+
+### Project Structure (create exactly)
+```
+src/
+├── app/
+│   ├── layout.tsx          # root layout + Toaster
+│   ├── page.tsx            # main app with bottom nav + tab switching
+├── components/
+│   ├── ui/                 # all shadcn components
+│   ├── daily/
+│   ├── library/
+│   ├── stats/
+│   └── settings/
+├── features/
+│   ├── daily/
+│   ├── library/
+│   ├── stats/
+│   └── settings/
+├── store/
+│   └── useMacroStore.ts    # Zustand store + localforage persist
+├── data/
+│   └── seedLibrary.ts      # 87-item seed + interface
+├── lib/
+│   ├── storage.ts
+│   ├── utils.ts
+│   └── types.ts            # all TypeScript interfaces
+├── hooks/
+└── styles/
+    └── globals.css         # dark theme + dark red accents
+```
+
+### App Name & Branding
+- Display name: **Nilus AI: MacroTracker**
+- PWA manifest name and short_name must use this.
+- Theme color: very dark red (#8B0000)
+- Default theme: dark (#0a0a0a background)
+
+### Core Data Interfaces (exact — put in src/lib/types.ts)
+```ts
+export interface FoodItem {
+  id: string;
+  name: string;
+  caloriesPerServing: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  sugars: number;
+  scaleType: 'count' | 'scale';
+  unit?: 'g' | 'oz';           // only for scale items
+  servingDesc: string;
+  categories: string[];
+  isRecipe: boolean;
+  recipeComponents?: { foodId: string; quantity: number }[];
+  lastUsed: string;
+  timesUsed: number;
+}
+
+export interface LoggedFood {
+  id: string;
+  foodId: string;
+  quantity: number;
+  note?: string;
+  overriddenComponents?: { foodId: string; quantity: number }[]; // for recipe instances
+}
+
+export interface DailyLog {
+  date: string; // YYYY-MM-DD
+  goalTemplateId: string;
+  foods: LoggedFood[];
+  burnedCalories: number;
+  note: string;
+}
+
+export interface GoalTemplate {
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  sugars: number;
+}
+
+export interface Settings {
+  goalTemplates: GoalTemplate[];
+  defaultTemplateId: string;
+  theme: 'dark' | 'light';
+  accentColor: string;
+}
+```
+
+### Seed Library
+Create `src/data/seedLibrary.ts` with the full 87-item library from the user's existing Food Library (exact structure matching FoodItem interface above). Include a one-click "Load My Food Library (87 items)" button that populates the library from this seed when the library is empty.
+
+### State Management (Zustand)
+Create a single store (`useMacroStore`) that holds:
+- settings
+- foodLibrary (array)
+- dailyLogs (Record<string, DailyLog>)
+- currentDate (YYYY-MM-DD)
+- currentTab
+
+Persist everything with localforage. Auto-hydrate on mount. Auto-save on every mutation (debounced where sensible).
+
+### Exact UI Rules (must implement precisely)
+
+**Bottom Navigation (fixed, 4 tabs)**
+- Daily (default on launch)
+- Library
+- Stats
+- Settings
+
+Active tab uses dark red accent. Tapping current tab does nothing (or scrolls to top).
+
+**Daily Tab**
+- Sticky header with ← date → + calendar picker button
+- Prominent "Goals vs Remaining" grid (6 metrics)
+- Large Net Calories display
+- Logged foods list (tap opens edit sheet)
+- Burned calories row with edit
+- Collapsible daily note
+- **View Mode / Edit Day toggle** at top (default View Mode = read-only). When Edit Day is on, all editing is unlocked and auto-saves.
+- Large + Add Food FAB/button that opens Food Picker bottom sheet
+
+**Quantity Input Rules (critical)**
+- If scaleType === 'count': big + and – buttons, integer only, large centered number
+- If scaleType === 'scale': number input (step 0.01, up to 2 decimals) + unit label clearly shown next to the input (the unit saved with the FoodItem: 'g' or 'oz')
+- Always show servingDesc context
+- Optional note field
+- Big primary button: "Add to [current date]"
+- Prominent Cancel / X that returns to previous screen without adding
+
+**Recipe Flow (exact)**
+- Recipes appear in Food Picker with 🍱 badge
+- Selecting a recipe → immediate preview sheet showing standard quantities + two big buttons at bottom:
+  - **Add** (uses default quantities, adds to day instantly)
+  - **Edit** (goes to customization screen)
+- **Edit / Customize screen**:
+  - List of all components with editable quantity fields (respecting each component's scaleType)
+  - Live-updating total macros for the customized meal
+  - Bottom actions: **Add to day** (saves the overridden quantities for *this instance only*) | **Cancel** (returns to preview without changes)
+- The override is stored in the LoggedFood record so future uses of the same recipe start clean from the master definition.
+- Every sheet/modal has clear Cancel / X / Back — user can never get stuck.
+
+**Library Tab**
+- Opens in alphabetical order with sticky letter headers (A, B, C… only letters that have items — no empty letter sections)
+- Top segmented control / tabs: **Items** | **Categories** | **Recipes**
+- Live search bar at the top of every view (scoped to current segment)
+- **Edit** button in header enters multi-select checkbox mode for bulk delete (action bar appears with "Delete Selected")
+- FAB or header buttons: **+ New Food** and **Create Recipe**
+- Create Recipe flow: search/add multiple foods with quantities → live totals → name it → save as new FoodItem (isRecipe=true, stores recipeComponents)
+
+**Stats Tab**
+- Default period: **This Week**
+- Segmented control: This Week | This Month | Custom (with date pickers when Custom)
+- Quick prev/next arrows to shift period
+- Summary cards showing:
+  - Actual totals for logged days in the period
+  - **Proportional goals** = (number of days actually logged in this period) × daily goal values
+- View toggle: Table | Charts
+- Table: sortable table of each logged day (tap row → load that date in Daily tab)
+- Charts (Recharts, dark theme, clean):
+  - Line chart: Net Calories trend
+  - Stacked/grouped bar: daily macro breakdown
+  - Click chart point → loads that day in Daily tab
+
+**Settings Tab**
+- Goals & Templates management (list, edit, delete, set default, create new)
+- Data section (big & prominent):
+  - Import Food Library (.json / .csv / .xlsx) with preview + Replace/Merge options
+  - One-click "Load My Food Library (87 items)" seed button
+  - Export Everything (full JSON backup download)
+  - Factory Reset (red, double confirm + warning)
+- Appearance: Dark/Light toggle + accent color swatches (default very dark red)
+- About section with app name and credits
+
+**First Launch Behavior**
+- Minimal. No onboarding carousel or tutorial.
+- If library is empty: show friendly empty state in Library tab + prominent "Load My Food Library (87 items)" button + import file picker.
+- Daily tab shows empty state with "Add your first food" CTA.
+- Everything is self-explanatory via clear labels, icons, and empty states.
+
+**General Rules (non-negotiable)**
+- Auto-save on every meaningful change (instant or lightly debounced)
+- Every flow has explicit Cancel / Back / X that returns to previous sensible state without data loss where possible
+- Clean success/error toasts
+- Excellent empty states everywhere
+- Dark theme with very dark red (#8B0000) accents by default
+- Fully offline-capable after PWA install
+- TypeScript strict mode, clean readable code, good component organization
+- Mobile-first with excellent touch targets and responsive behavior
+
+Generate the complete working app following the locked spec above exactly. Prioritize getting the Daily tab + quantity input logic + recipe preview/edit flow working first, then Library (alphabetical + letter headers + bulk edit), then Stats (proportional goals + charts), then Settings.
+
+When finished, give a clear summary of what was created and the commands to run (`npm run dev`, how to test on phone, how to deploy to GitHub Pages later).

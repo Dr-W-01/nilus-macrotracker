@@ -1,0 +1,21 @@
+---
+pid: 23840
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
+started_at: 2026-06-02T23:18:54.586Z
+running_for_ms: 3325007  
+---
+
+> nilus-macrotracker@1.0.0 dev
+> vite
+
+Port 5173 is in use, trying another one...
+
+  VITE v8.0.16  ready in 270 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: http://192.168.1.69:5174/
+7:46:32 PM [vite] vite.config.ts changed, restarting server...
+7:46:32 PM [vite] (client) page reload index.html
+7:46:33 PM [vite] server restarted.
+7:46:45 PM [vite] (client) page reload index.html

@@ -1,0 +1,39 @@
+---
+pid: 7804
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
+started_at: 2026-06-02T23:17:52.259Z
+running_for_ms: 3384992  
+---
+
+> nilus-macrotracker@1.0.0 dev
+> vite
+
+
+  VITE v8.0.16  ready in 288 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.1.69:5173/
+7:18:36 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/features/stats/StatsTab.tsx, /src/features/library/LibraryTab.tsx, /src/components/BottomNav.tsx, /src/features/settings/SettingsTab.tsx, /src/features/daily/DailyTab.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/styles/globals.css
+7:18:36 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/features/stats/StatsTab.tsx, /src/features/library/LibraryTab.tsx, /src/components/BottomNav.tsx, /src/features/settings/SettingsTab.tsx, /src/features/daily/DailyTab.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/styles/globals.css
+7:46:32 PM [vite] (client) hmr update /src/styles/globals.css
+7:46:32 PM [vite] (client) hmr update /src/components/library/NewFoodSheet.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/features/stats/StatsTab.tsx, /src/features/library/LibraryTab.tsx, /src/components/BottomNav.tsx, /src/features/settings/SettingsTab.tsx, /src/features/daily/DailyTab.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/styles/globals.css
+7:46:32 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+7:46:32 PM [vite] vite.config.ts changed, restarting server...
+7:46:32 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+7:46:32 PM [vite] (client) page reload index.html
+7:46:32 PM [vite] (client) hmr update /src/styles/globals.css
+7:46:32 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+7:46:33 PM [vite] server restarted.
+7:46:40 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/FoodPickerSheet.tsx
+7:46:40 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+7:46:40 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+7:46:45 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+7:46:45 PM [vite] (client) page reload index.html
+8:07:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CreateRecipeSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/app/layout.tsx, /src/app/page.tsx, /src/features/stats/StatsTab.tsx, /src/features/daily/DailyTab.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx
+8:07:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/layout.tsx
+8:07:02 PM [vite] (client) hmr update /src/styles/globals.css
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx

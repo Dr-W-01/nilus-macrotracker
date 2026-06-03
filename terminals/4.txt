@@ -1,0 +1,26 @@
+---
+pid: 30996
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
+started_at: 2026-06-02T23:46:56.340Z
+running_for_ms: 1639993  
+---
+
+> nilus-macrotracker@1.0.0 dev
+> vite
+
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v8.0.16  ready in 452 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.1.69:5176/
+8:07:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/app/page.tsx, /src/app/layout.tsx, /src/components/BottomNav.tsx, /src/features/library/LibraryTab.tsx, /src/features/daily/DailyTab.tsx, /src/features/stats/StatsTab.tsx, /src/features/settings/SettingsTab.tsx, /src/components/library/CreateRecipeSheet.tsx, /src/components/daily/FoodPickerSheet.tsx, /src/components/library/NewFoodSheet.tsx, /src/components/daily/RecipeCustomizeSheet.tsx, /src/components/daily/RecipePreviewSheet.tsx
+8:07:02 PM [vite] (client) hmr update /src/app/layout.tsx, /src/styles/globals.css
+8:07:02 PM [vite] (client) hmr update /src/styles/globals.css
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTab.tsx
+8:07:14 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
