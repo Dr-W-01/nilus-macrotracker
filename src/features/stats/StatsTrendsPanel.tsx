@@ -18,6 +18,7 @@ import { buildStatsDayRows, rollingAverage } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 
 type MetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
 
@@ -114,15 +115,8 @@ export function StatsTrendsPanel({
     })
   }
 
-  if (dayRows.length === 0) {
-    return (
-      <p className="py-8 text-center text-muted-foreground">
-        No logged days in this period for trends.
-      </p>
-    )
-  }
-
   const singleMetric = enabled.size === 1
+  const hasMacroTrends = dayRows.length > 0
   const primaryMetrics = METRIC_OPTIONS.filter((m) =>
     (defaultMetrics as MetricKey[]).includes(m.key),
   )
@@ -219,70 +213,88 @@ export function StatsTrendsPanel({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Trends over time</CardTitle>
-          <p className="text-xs text-muted-foreground">Tap a point to open that day</p>
-        </CardHeader>
-        <CardContent className="h-72 sm:h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              onClick={(state) => {
-                const idx =
-                  typeof state?.activeTooltipIndex === 'number'
-                    ? state.activeTooltipIndex
-                    : -1
-                const row = chartData[idx]
-                if (row) onDayClick(row.fullDate)
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="date" stroke="#888" fontSize={11} />
-              <YAxis stroke="#888" fontSize={11} />
-              <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
-              {!singleMetric && <Legend wrapperStyle={{ fontSize: 11 }} />}
-              {[...enabled].map((key) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  name={METRIC_OPTIONS.find((m) => m.key === key)?.label ?? key}
-                  stroke={key === 'net' ? accentColor : COLORS[key]}
-                  strokeWidth={key === 'net' ? 2.5 : 2}
-                  dot={{ r: 3, cursor: 'pointer' }}
-                />
-              ))}
-              {showRolling &&
-                [...enabled].map((key) => {
-                  const rollKey =
-                    key === 'net'
-                      ? 'rollNet'
-                      : key === 'calories'
-                        ? 'rollCal'
-                        : key === 'protein'
-                          ? 'rollProt'
-                          : key === 'carbs'
-                            ? 'rollCarb'
-                            : 'rollFat'
-                  return (
-                    <Line
-                      key={`roll-${key}`}
-                      type="monotone"
-                      dataKey={rollKey}
-                      name={`${METRIC_OPTIONS.find((m) => m.key === key)?.label} (${rollingWindow}d avg)`}
-                      stroke={key === 'net' ? accentColor : COLORS[key]}
-                      strokeWidth={1.5}
-                      strokeDasharray="6 4"
-                      dot={false}
-                      connectNulls={false}
-                    />
-                  )
-                })}
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {hasMacroTrends ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Trends over time</CardTitle>
+            <p className="text-xs text-muted-foreground">Tap a point to open that day</p>
+          </CardHeader>
+          <CardContent className="h-72 sm:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                onClick={(state) => {
+                  const idx =
+                    typeof state?.activeTooltipIndex === 'number'
+                      ? state.activeTooltipIndex
+                      : -1
+                  const row = chartData[idx]
+                  if (row) onDayClick(row.fullDate)
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <XAxis dataKey="date" stroke="#888" fontSize={11} />
+                <YAxis stroke="#888" fontSize={11} />
+                <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
+                {!singleMetric && <Legend wrapperStyle={{ fontSize: 11 }} />}
+                {[...enabled].map((key) => (
+                  <Line
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    name={METRIC_OPTIONS.find((m) => m.key === key)?.label ?? key}
+                    stroke={key === 'net' ? accentColor : COLORS[key]}
+                    strokeWidth={key === 'net' ? 2.5 : 2}
+                    dot={{ r: 3, cursor: 'pointer' }}
+                  />
+                ))}
+                {showRolling &&
+                  [...enabled].map((key) => {
+                    const rollKey =
+                      key === 'net'
+                        ? 'rollNet'
+                        : key === 'calories'
+                          ? 'rollCal'
+                          : key === 'protein'
+                            ? 'rollProt'
+                            : key === 'carbs'
+                              ? 'rollCarb'
+                              : 'rollFat'
+                    return (
+                      <Line
+                        key={`roll-${key}`}
+                        type="monotone"
+                        dataKey={rollKey}
+                        name={`${METRIC_OPTIONS.find((m) => m.key === key)?.label} (${rollingWindow}d avg)`}
+                        stroke={key === 'net' ? accentColor : COLORS[key]}
+                        strokeWidth={1.5}
+                        strokeDasharray="6 4"
+                        dot={false}
+                        connectNulls={false}
+                      />
+                    )
+                  })}
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-sm text-muted-foreground">
+              No logged days in this period for macro trends. Use the period selector above
+              or log food on the Daily tab.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <TrendsWeightSection
+        dailyLogs={dailyLogs}
+        settings={settings}
+        accentColor={accentColor}
+        onDayClick={onDayClick}
+      />
     </div>
   )
 }

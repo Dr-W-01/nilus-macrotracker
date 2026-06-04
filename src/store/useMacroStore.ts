@@ -186,7 +186,7 @@ interface MacroStore {
   statsPeriod: 'week' | 'month' | 'custom'
   statsRangeStart: string
   statsRangeEnd: string
-  statsView: 'overview' | 'trends' | 'breakdowns' | 'weight'
+  statsView: 'overview' | 'trends' | 'breakdowns'
   statsAnchorDate: string
 
   setHasHydrated: (v: boolean) => void
@@ -196,7 +196,7 @@ interface MacroStore {
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
   setStatsPeriod: (p: 'week' | 'month' | 'custom') => void
   setStatsRange: (start: string, end: string) => void
-  setStatsView: (v: 'overview' | 'trends' | 'breakdowns' | 'weight') => void
+  setStatsView: (v: 'overview' | 'trends' | 'breakdowns') => void
   setStatsAnchorDate: (d: string) => void
 
   getDailyLog: (date?: string) => DailyLog
@@ -688,9 +688,9 @@ export const useMacroStore = create<MacroStore>()(
           state.statsView =
             view === 'table'
               ? 'overview'
-              : view === 'charts'
+              : view === 'charts' || view === 'weight'
                 ? 'trends'
-                : (view as 'overview' | 'trends' | 'breakdowns' | 'weight')
+                : (view as 'overview' | 'trends' | 'breakdowns')
         } else {
           state.statsView = 'overview'
         }

@@ -104,5 +104,5 @@ export interface PersistedState {
   statsPeriod: 'week' | 'month' | 'custom'
   statsCustomStart: string
   statsCustomEnd: string
-  statsView: 'overview' | 'trends' | 'breakdowns' | 'weight'
+  statsView: 'overview' | 'trends' | 'breakdowns'
 }
