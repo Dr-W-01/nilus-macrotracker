@@ -802,15 +802,28 @@ function EditLoggedSheet({
   if (!entry || !food || food.isRecipe) {
     return (
       <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-        <SheetContent side="bottom">
-          <SheetHeader><SheetTitle>Edit entry</SheetTitle></SheetHeader>
-          {food?.isRecipe && (
-            <p className="text-sm text-muted-foreground py-4">
-              Recipe entries: remove and re-add to change components.
-            </p>
-          )}
-          <Button variant="destructive" className="w-full" onClick={onDelete}>Remove from day</Button>
-          <Button variant="ghost" className="w-full mt-2" onClick={onClose}>Cancel</Button>
+        <SheetContent
+          side="bottom"
+          className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+        >
+          <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+            <SheetTitle>Edit entry</SheetTitle>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]">
+            {food?.isRecipe && (
+              <p className="text-sm text-muted-foreground">
+                Recipe entries: remove and re-add to change components.
+              </p>
+            )}
+          </div>
+          <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+            <Button variant="destructive" size="lg" className="w-full" onClick={onDelete}>
+              Remove from day
+            </Button>
+            <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
+              Cancel
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
     )
@@ -818,59 +831,69 @@ function EditLoggedSheet({
 
   const dateLabel = format(parseISO(date), 'MMM d, yyyy')
 
+  const handleSave = () => {
+    if (food.scaleType === 'count') {
+      onSave({
+        quantity: Math.max(1, Math.round(countQty)),
+        scaleAmountEaten: undefined,
+        note: note || undefined,
+        meal,
+      })
+    } else {
+      onSave({
+        ...buildScaleLogPayload(food, amountEaten),
+        note: note || undefined,
+        meal,
+      })
+    }
+  }
+
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="bottom">
-        <SheetHeader><SheetTitle>Edit {food.name}</SheetTitle></SheetHeader>
-        <p className="text-xs text-muted-foreground -mt-2 mb-2">
-          Changes apply to this day&apos;s log only.
-        </p>
-        <MealPicker label="Meal" meals={meals} value={meal} onChange={setMeal} compact />
-        {previewMacros && (
-          <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Macros for this entry</p>
-            <p className="text-lg font-bold text-primary tabular-nums">
-              {roundMacro(previewMacros.calories, 0)} cal
-            </p>
-            <LoggedMacroPreview macros={previewMacros} size="md" className="mt-1" />
-          </div>
-        )}
-        <QuantityInput
-          food={food}
-          note={note}
-          onNoteChange={setNote}
-          countQuantity={countQty}
-          onCountQuantityChange={setCountQty}
-          amountEaten={amountEaten}
-          onAmountEatenChange={setAmountEaten}
-          showInlineMacroPreview={false}
-        />
-        <Button
-          size="lg"
-          className="w-full mt-4"
-          onClick={() => {
-            if (food.scaleType === 'count') {
-              onSave({
-                quantity: Math.max(1, Math.round(countQty)),
-                scaleAmountEaten: undefined,
-                note: note || undefined,
-                meal,
-              })
-            } else {
-              onSave({
-                ...buildScaleLogPayload(food, amountEaten),
-                note: note || undefined,
-                meal,
-              })
-            }
-          }}
-        >
-          Save for {dateLabel}
-        </Button>
-        <Button variant="destructive" className="w-full mt-2" onClick={onDelete}>
-          Remove from day
-        </Button>
-        <Button variant="ghost" className="w-full mt-2" onClick={onClose}>Cancel</Button>
+      <SheetContent
+        side="bottom"
+        className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+          <SheetTitle>Edit {food.name}</SheetTitle>
+          <p className="text-xs text-muted-foreground font-normal">
+            Changes apply to this day&apos;s log only.
+          </p>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]">
+          <MealPicker label="Meal" meals={meals} value={meal} onChange={setMeal} compact />
+          {previewMacros && (
+            <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Macros for this entry</p>
+              <p className="text-lg font-bold text-primary tabular-nums">
+                {roundMacro(previewMacros.calories, 0)} cal
+              </p>
+              <LoggedMacroPreview macros={previewMacros} size="md" className="mt-1" />
+            </div>
+          )}
+          <QuantityInput
+            food={food}
+            note={note}
+            onNoteChange={setNote}
+            countQuantity={countQty}
+            onCountQuantityChange={setCountQty}
+            amountEaten={amountEaten}
+            onAmountEatenChange={setAmountEaten}
+            showInlineMacroPreview={false}
+          />
+        </div>
+        <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+          <Button size="lg" className="w-full" onClick={handleSave}>
+            Save for {dateLabel}
+          </Button>
+          <Button variant="destructive" size="lg" className="w-full" onClick={onDelete}>
+            Remove from day
+          </Button>
+          <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
+            Cancel
+          </Button>
+        </div>
       </SheetContent>
     </Sheet>
   )
