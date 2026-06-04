@@ -1,5 +1,5 @@
 import { format, parseISO, subDays } from 'date-fns'
-import { datesInRange, todayString } from '@/lib/dates'
+import { clampStatsRange, datesInRange, statsLastCompleteDate } from '@/lib/dates'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog } from '@/lib/types'
 import { weightFromKg } from '@/lib/weight'
@@ -35,17 +35,17 @@ export function getWeightChartRange(
   preset: WeightRangePreset,
   dailyLogs: Record<string, DailyLog>,
 ): { start: string; end: string } {
-  const end = todayString()
+  const end = statsLastCompleteDate()
   if (preset === 'all') {
     const logged = getWeightLogDates(dailyLogs)
     if (logged.length === 0) {
       return { start: end, end }
     }
-    return { start: logged[0], end }
+    return clampStatsRange({ start: logged[0], end })
   }
   const days = PRESET_DAYS[preset]
   const start = format(subDays(parseISO(end), days - 1), 'yyyy-MM-dd')
-  return { start, end }
+  return clampStatsRange({ start, end })
 }
 
 export type WeightChartPoint = {

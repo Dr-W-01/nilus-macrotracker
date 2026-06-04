@@ -8,6 +8,7 @@ import {
   getWeekRangeForDate,
   shiftMonthRange,
   shiftWeekRange,
+  statsLastCompleteDate,
   todayString,
 } from '@/lib/dates'
 import { format, parseISO } from 'date-fns'
@@ -88,6 +89,7 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
             <label className="text-xs text-muted-foreground">End</label>
             <Input
               type="date"
+              max={statsLastCompleteDate()}
               value={statsRangeEnd}
               onChange={(e) => setStatsRange(statsRangeStart, e.target.value)}
             />

@@ -5,7 +5,7 @@ import { StatsPeriodBar } from '@/components/stats/StatsPeriodBar'
 import { StatsOverviewPanel } from '@/features/stats/StatsOverviewPanel'
 import { StatsTrendsPanel } from '@/features/stats/StatsTrendsPanel'
 import { StatsBreakdownsPanel } from '@/features/stats/StatsBreakdownsPanel'
-import { getMonthRange, getWeekRangeForDate } from '@/lib/dates'
+import { clampStatsRange, getMonthRange, getWeekRangeForDate } from '@/lib/dates'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export function StatsTab() {
@@ -25,9 +25,13 @@ export function StatsTab() {
 
   const range = useMemo(() => {
     const anchor = parseISO(statsAnchorDate)
-    if (statsPeriod === 'week') return getWeekRangeForDate(statsAnchorDate)
-    if (statsPeriod === 'month') return getMonthRange(anchor)
-    return { start: statsRangeStart, end: statsRangeEnd }
+    const raw =
+      statsPeriod === 'week'
+        ? getWeekRangeForDate(statsAnchorDate)
+        : statsPeriod === 'month'
+          ? getMonthRange(anchor)
+          : { start: statsRangeStart, end: statsRangeEnd }
+    return clampStatsRange(raw)
   }, [statsPeriod, statsAnchorDate, statsRangeStart, statsRangeEnd])
 
   useEffect(() => {

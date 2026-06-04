@@ -20,6 +20,24 @@ export function todayString(): string {
   return format(new Date(), 'yyyy-MM-dd')
 }
 
+/** Last calendar day included in Stats (today is excluded as incomplete). */
+export function statsLastCompleteDate(): string {
+  return shiftDate(todayString(), -1)
+}
+
+/** Clamp a range so Stats only use completed past days (end ≤ yesterday). */
+export function clampStatsRange(range: { start: string; end: string }): {
+  start: string
+  end: string
+} {
+  const lastComplete = statsLastCompleteDate()
+  let end = range.end
+  if (end > lastComplete) end = lastComplete
+  let start = range.start
+  if (start > end) start = end
+  return { start, end }
+}
+
 export function formatDisplayDate(dateStr: string): string {
   const d = parseISO(dateStr)
   if (!isValid(d)) return dateStr

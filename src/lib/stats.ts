@@ -1,5 +1,5 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns'
-import { datesInRange } from '@/lib/dates'
+import { clampStatsRange, datesInRange } from '@/lib/dates'
 import {
   computeDayMacros,
   getLoggedFoodMacros,
@@ -35,11 +35,12 @@ export function buildStatsDayRows(
   foodLibrary: FoodItem[],
   settings: Settings,
 ): StatsDayRow[] {
+  const statsRange = clampStatsRange(range)
   const defaultGoal =
     settings.goalTemplates.find((g) => g.id === settings.defaultTemplateId) ??
     settings.goalTemplates[0]
 
-  return datesInRange(range.start, range.end)
+  return datesInRange(statsRange.start, statsRange.end)
     .map((date) => {
       const log = dailyLogs[date]
       if (!log || log.foods.length === 0) return null
@@ -377,7 +378,8 @@ export function computeTopFoods(
     { name: string; entries: number; qtyParts: string[]; calories: number }
   >()
 
-  for (const date of datesInRange(range.start, range.end)) {
+  const statsRange = clampStatsRange(range)
+  for (const date of datesInRange(statsRange.start, statsRange.end)) {
     const log = dailyLogs[date]
     if (!log) continue
     for (const entry of log.foods) {
