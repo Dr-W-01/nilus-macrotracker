@@ -79,7 +79,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 5
+const PERSIST_VERSION = 6
 
 type PersistedSlice = {
   settings?: Settings
@@ -93,7 +93,7 @@ type PersistedSlice = {
   statsPeriod?: 'week' | 'month' | 'custom'
   statsRangeStart?: string
   statsRangeEnd?: string
-  statsView?: 'overview' | 'trends' | 'breakdowns' | 'table' | 'charts'
+  statsView?: 'overview' | 'trends' | 'breakdowns' | 'weight' | 'table' | 'charts'
   statsAnchorDate?: string
 }
 
@@ -127,6 +127,12 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
         persisted.settings?.defaultMeal,
         normalizeMeals(persisted.settings?.meals),
       ),
+      targetWeightKg:
+        persisted.settings?.targetWeightKg != null &&
+        Number.isFinite(persisted.settings.targetWeightKg) &&
+        persisted.settings.targetWeightKg > 0
+          ? persisted.settings.targetWeightKg
+          : undefined,
     },
     dailyLogs: Object.fromEntries(
       Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
@@ -180,7 +186,7 @@ interface MacroStore {
   statsPeriod: 'week' | 'month' | 'custom'
   statsRangeStart: string
   statsRangeEnd: string
-  statsView: 'overview' | 'trends' | 'breakdowns'
+  statsView: 'overview' | 'trends' | 'breakdowns' | 'weight'
   statsAnchorDate: string
 
   setHasHydrated: (v: boolean) => void
@@ -190,13 +196,14 @@ interface MacroStore {
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
   setStatsPeriod: (p: 'week' | 'month' | 'custom') => void
   setStatsRange: (start: string, end: string) => void
-  setStatsView: (v: 'overview' | 'trends' | 'breakdowns') => void
+  setStatsView: (v: 'overview' | 'trends' | 'breakdowns' | 'weight') => void
   setStatsAnchorDate: (d: string) => void
 
   getDailyLog: (date?: string) => DailyLog
   updateDailyLog: (date: string, patch: Partial<DailyLog>) => void
   addLoggedFood: (logged: Omit<LoggedFood, 'id'>, date?: string) => void
   updateLoggedFood: (loggedId: string, patch: Partial<LoggedFood>, date?: string) => void
+  bulkUpdateLoggedFoodMeal: (loggedIds: string[], meal: string, date?: string) => void
   removeLoggedFood: (loggedId: string, date?: string) => void
   setBurnedCalories: (value: number, date?: string) => void
   setDailyWeight: (weightKg: number | undefined, date?: string) => void
@@ -299,6 +306,19 @@ export const useMacroStore = create<MacroStore>()(
         get().updateDailyLog(d, {
           foods: log.foods.map((f) =>
             f.id === loggedId ? { ...f, ...patch } : f,
+          ),
+        })
+      },
+
+      bulkUpdateLoggedFoodMeal: (loggedIds, meal, date) => {
+        const d = date ?? get().currentDate
+        const log = get().getDailyLog(d)
+        const meals = normalizeMeals(get().settings.meals)
+        const tag = normalizeMealName(meal, meals)
+        const idSet = new Set(loggedIds)
+        get().updateDailyLog(d, {
+          foods: log.foods.map((f) =>
+            idSet.has(f.id) ? { ...f, meal: tag } : f,
           ),
         })
       },
@@ -595,6 +615,14 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 6 && raw.settings) {
+          const tw = raw.settings.targetWeightKg
+          raw.settings = {
+            ...raw.settings,
+            targetWeightKg:
+              tw != null && Number.isFinite(tw) && tw > 0 ? tw : undefined,
+          }
+        }
         if (version < 5 && raw.settings) {
           const meals = normalizeMeals(raw.settings.meals)
           raw.settings = {
@@ -648,13 +676,20 @@ export const useMacroStore = create<MacroStore>()(
         if (normalized.statsRangeStart) state.statsRangeStart = normalized.statsRangeStart
         if (normalized.statsRangeEnd) state.statsRangeEnd = normalized.statsRangeEnd
         const view = state.statsView as string
-        if (view === 'table' || view === 'charts' || view === 'overview' || view === 'trends' || view === 'breakdowns') {
+        if (
+          view === 'table' ||
+          view === 'charts' ||
+          view === 'overview' ||
+          view === 'trends' ||
+          view === 'breakdowns' ||
+          view === 'weight'
+        ) {
           state.statsView =
             view === 'table'
               ? 'overview'
               : view === 'charts'
                 ? 'trends'
-                : (view as 'overview' | 'trends' | 'breakdowns')
+                : (view as 'overview' | 'trends' | 'breakdowns' | 'weight')
         } else {
           state.statsView = 'overview'
         }

@@ -14,7 +14,9 @@ import { toast } from 'sonner'
 import { AddFoodSheet } from '@/components/daily/AddFoodSheet'
 import { EditLoggedRecipeSheet } from '@/components/daily/EditLoggedRecipeSheet'
 import { FoodPickerSheet } from '@/components/daily/FoodPickerSheet'
+import { BulkMealAssignBar } from '@/components/daily/BulkMealAssignBar'
 import { MealPicker } from '@/components/daily/MealPicker'
+import { Checkbox } from '@/components/ui/checkbox'
 import { RecipeCustomizeSheet } from '@/components/daily/RecipeCustomizeSheet'
 import { RecipePreviewSheet } from '@/components/daily/RecipePreviewSheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
@@ -69,6 +71,7 @@ export function DailyTab() {
   const getDailyLog = useMacroStore((s) => s.getDailyLog)
   const addLoggedFood = useMacroStore((s) => s.addLoggedFood)
   const updateLoggedFood = useMacroStore((s) => s.updateLoggedFood)
+  const bulkUpdateLoggedFoodMeal = useMacroStore((s) => s.bulkUpdateLoggedFoodMeal)
   const removeLoggedFood = useMacroStore((s) => s.removeLoggedFood)
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
   const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
@@ -105,6 +108,19 @@ export function DailyTab() {
     [settings?.meals],
   )
   const defaultMeal = normalizeMealName(settings?.defaultMeal, meals)
+
+  const [selectFoodsMode, setSelectFoodsMode] = useState(false)
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
+  const [bulkAssignMeal, setBulkAssignMeal] = useState(defaultMeal)
+
+  useEffect(() => {
+    setBulkAssignMeal(defaultMeal)
+  }, [defaultMeal])
+
+  useEffect(() => {
+    setSelectFoodsMode(false)
+    setSelectedLogIds(new Set())
+  }, [currentDate, editDayMode])
 
   const foodsByMeal = useMemo(() => {
     const groups = new Map<string, LoggedFood[]>()
@@ -153,6 +169,29 @@ export function DailyTab() {
     setAddSheetOpen(false)
     setPreviewOpen(false)
     setCustomizeOpen(false)
+  }
+
+  const toggleLogSelection = (id: string) => {
+    setSelectedLogIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const exitSelectMode = () => {
+    setSelectFoodsMode(false)
+    setSelectedLogIds(new Set())
+  }
+
+  const handleBulkAssignMeal = () => {
+    if (selectedLogIds.size === 0) return
+    bulkUpdateLoggedFoodMeal([...selectedLogIds], bulkAssignMeal)
+    toast.success(
+      `Moved ${selectedLogIds.size} ${selectedLogIds.size === 1 ? 'item' : 'items'} to ${bulkAssignMeal}`,
+    )
+    exitSelectMode()
   }
 
   const addRecipe = (overrides?: { foodId: string; quantity: number }[]) => {
@@ -357,7 +396,36 @@ export function DailyTab() {
         )}
 
         <div>
-          <h3 className="font-semibold mb-2">Logged foods</h3>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <h3 className="font-semibold">Logged foods</h3>
+            {editDayMode && log.foods.length > 0 && (
+              <div className="flex gap-2">
+                {selectFoodsMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 text-xs"
+                    onClick={() =>
+                      setSelectedLogIds(new Set(log.foods.map((f) => f.id)))
+                    }
+                  >
+                    All
+                  </Button>
+                )}
+                <Button
+                  variant={selectFoodsMode ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-9"
+                  onClick={() => {
+                    if (selectFoodsMode) exitSelectMode()
+                    else setSelectFoodsMode(true)
+                  }}
+                >
+                  {selectFoodsMode ? 'Cancel' : 'Select'}
+                </Button>
+              </div>
+            )}
+          </div>
           {log.foods.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-8 text-center">
               <p className="text-muted-foreground mb-4">No foods logged yet</p>
@@ -381,14 +449,30 @@ export function DailyTab() {
                         <li key={entry.id}>
                           <button
                             type="button"
-                            className="flex w-full flex-col gap-1 rounded-lg border border-border bg-card px-3 py-2.5 text-left"
+                            className={`flex w-full flex-col gap-1 rounded-lg border bg-card px-3 py-2.5 text-left ${
+                              selectFoodsMode && selectedLogIds.has(entry.id)
+                                ? 'border-primary bg-primary/10'
+                                : 'border-border'
+                            }`}
                             onClick={() => {
                               if (!editDayMode) return
+                              if (selectFoodsMode) {
+                                toggleLogSelection(entry.id)
+                                return
+                              }
                               if (food?.isRecipe) setEditRecipeLogged(entry)
                               else setEditLogged(entry)
                             }}
                           >
                             <div className="flex w-full items-start justify-between gap-2">
+                              {selectFoodsMode && (
+                                <Checkbox
+                                  checked={selectedLogIds.has(entry.id)}
+                                  onChange={() => toggleLogSelection(entry.id)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="mt-0.5"
+                                />
+                              )}
                               <div className="min-w-0 flex-1">
                                 <p className="font-medium text-sm">
                                   {food?.name ?? 'Unknown'}
@@ -406,7 +490,7 @@ export function DailyTab() {
                                 {roundMacro(macros.calories, 0)} cal
                               </span>
                             </div>
-                            {editDayMode && (
+                            {editDayMode && !selectFoodsMode && (
                               <div
                                 className="flex flex-wrap gap-1 pt-0.5"
                                 onClick={(e) => e.stopPropagation()}
@@ -444,7 +528,19 @@ export function DailyTab() {
         </div>
       </div>
 
-      {editDayMode && (
+      {editDayMode && selectFoodsMode && (
+        <BulkMealAssignBar
+          count={selectedLogIds.size}
+          meals={meals}
+          assignMeal={bulkAssignMeal}
+          onAssignMealChange={setBulkAssignMeal}
+          onAssign={handleBulkAssignMeal}
+          onClear={() => setSelectedLogIds(new Set())}
+          onDone={exitSelectMode}
+        />
+      )}
+
+      {editDayMode && !selectFoodsMode && (
         <Button
           size="lg"
           className="fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full shadow-lg p-0"

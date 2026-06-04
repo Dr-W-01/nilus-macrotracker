@@ -74,6 +74,8 @@ export interface Settings {
   meals: string[]
   /** Default meal when logging new food. */
   defaultMeal: string
+  /** Goal body weight in kilograms (optional). */
+  targetWeightKg?: number
   theme: 'dark' | 'light'
   accentColor: string
   /** Secondary / muted text (labels, hints, grey copy) */
@@ -102,5 +104,5 @@ export interface PersistedState {
   statsPeriod: 'week' | 'month' | 'custom'
   statsCustomStart: string
   statsCustomEnd: string
-  statsView: 'overview' | 'trends' | 'breakdowns'
+  statsView: 'overview' | 'trends' | 'breakdowns' | 'weight'
 }

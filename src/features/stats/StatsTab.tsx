@@ -5,6 +5,7 @@ import { StatsPeriodBar } from '@/components/stats/StatsPeriodBar'
 import { StatsOverviewPanel } from '@/features/stats/StatsOverviewPanel'
 import { StatsTrendsPanel } from '@/features/stats/StatsTrendsPanel'
 import { StatsBreakdownsPanel } from '@/features/stats/StatsBreakdownsPanel'
+import { StatsWeightPanel } from '@/features/stats/StatsWeightPanel'
 import { getMonthRange, getWeekRangeForDate } from '@/lib/dates'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -44,7 +45,10 @@ export function StatsTab() {
   }
 
   const activeView =
-    statsView === 'overview' || statsView === 'trends' || statsView === 'breakdowns'
+    statsView === 'overview' ||
+    statsView === 'trends' ||
+    statsView === 'breakdowns' ||
+    statsView === 'weight'
       ? statsView
       : 'overview'
 
@@ -52,18 +56,27 @@ export function StatsTab() {
     <div className="p-4 pb-24 space-y-4">
       <h1 className="text-xl font-bold">Stats</h1>
 
-      <StatsPeriodBar range={range} />
+      {activeView !== 'weight' && <StatsPeriodBar range={range} />}
 
       <Tabs
         value={activeView}
         onValueChange={(v) =>
-          setStatsView(v as 'overview' | 'trends' | 'breakdowns')
+          setStatsView(v as 'overview' | 'trends' | 'breakdowns' | 'weight')
         }
       >
-        <TabsList className="grid h-10 grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="breakdowns">Breakdowns</TabsTrigger>
+        <TabsList className="grid h-10 grid-cols-4">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="trends" className="text-xs sm:text-sm">
+            Trends
+          </TabsTrigger>
+          <TabsTrigger value="weight" className="text-xs sm:text-sm">
+            Weight
+          </TabsTrigger>
+          <TabsTrigger value="breakdowns" className="text-xs sm:text-sm">
+            Breakdowns
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -83,6 +96,15 @@ export function StatsTab() {
           range={range}
           dailyLogs={dailyLogs}
           foodLibrary={foodLibrary}
+          settings={settings}
+          accentColor={accentColor}
+          onDayClick={goToDay}
+        />
+      )}
+
+      {activeView === 'weight' && (
+        <StatsWeightPanel
+          dailyLogs={dailyLogs}
           settings={settings}
           accentColor={accentColor}
           onDayClick={goToDay}

@@ -21,6 +21,7 @@ import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
 import { DEFAULT_MEALS, normalizeMeals } from '@/lib/meals'
 import { formatTargetDeficitShort } from '@/lib/stats'
+import { parseWeightInput, weightFromKg } from '@/lib/weight'
 import type { GoalMode, GoalTemplate, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
@@ -230,6 +231,43 @@ export function SettingsTab() {
           >
             Kilograms (kg)
           </Button>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="target-weight">Target weight (optional)</Label>
+          <Input
+            id="target-weight"
+            type="number"
+            min={0}
+            inputMode="decimal"
+            step={0.1}
+            placeholder={`e.g. ${settings.weightUnit === 'kg' ? '75' : '165'}`}
+            defaultValue={
+              settings.targetWeightKg != null
+                ? String(
+                    weightFromKg(
+                      settings.targetWeightKg,
+                      settings.weightUnit ?? 'lbs',
+                    ),
+                  )
+                : ''
+            }
+            onBlur={(e) => {
+              const kg = parseWeightInput(e.target.value, settings.weightUnit ?? 'lbs')
+              updateSettings({ targetWeightKg: kg })
+              if (kg != null) {
+                e.target.value = String(
+                  weightFromKg(kg, settings.weightUnit ?? 'lbs'),
+                )
+                toast.success('Target weight saved')
+              } else if (e.target.value.trim() === '') {
+                updateSettings({ targetWeightKg: undefined })
+                toast.success('Target weight cleared')
+              }
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Shown as a goal line on Stats → Weight.
+          </p>
         </div>
       </section>
 
