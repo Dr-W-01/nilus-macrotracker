@@ -21,7 +21,7 @@ const OTHER_ADHERENCE: AdherenceKey[] = ['carbs', 'fat', 'fiber', 'sugars']
 const ADHERENCE_HINTS: Partial<Record<AdherenceKey, string>> = {
   calories: 'Within ~15% of intake target',
   protein: 'Met or exceeded target',
-  targetDeficit: 'Within ~15% of deficit or surplus goal',
+  targetDeficit: 'Net calories within ~15% of goal',
   carbs: 'Within ~15% of target',
   fat: 'Within ~15% of target',
   fiber: 'Within ~15% of target',
@@ -106,7 +106,7 @@ export function StatsOverviewPanel({
             <p className="text-sm font-medium">Goal adherence</p>
             <p className="text-xs text-muted-foreground mt-1">
               % of logged days on target. Protein counts when you meet or beat the goal.
-              Energy balance uses days that have a deficit or surplus goal set.
+              Energy balance compares net calories (eaten − burned) to your deficit/surplus goal.
             </p>
           </div>
 

@@ -109,8 +109,8 @@ export const ADHERENCE_LABELS: Record<AdherenceKey, string> = {
 }
 
 function isWithinTarget(actual: number, target: number): boolean {
-  if (target <= 0) return actual <= Math.max(1, target * ADHERENCE_TOLERANCE)
-  return Math.abs(actual - target) <= target * ADHERENCE_TOLERANCE
+  if (target === 0) return Math.abs(actual) <= 25
+  return Math.abs(actual - target) <= Math.abs(target) * ADHERENCE_TOLERANCE
 }
 
 /** Protein: at or above target counts as success */
@@ -119,46 +119,34 @@ function isProteinOnTarget(actual: number, target: number): boolean {
   return actual >= target * (1 - ADHERENCE_TOLERANCE)
 }
 
-/** Maintenance implied by intake target and signed energy goal (negative = deficit, positive = surplus). */
-export function getImpliedMaintenance(calories: number, targetDeficit: number): number {
-  return calories - targetDeficit
+/** Signed target net calories from goal (negative = deficit, positive = surplus). */
+export function getTargetNetCalories(goal: GoalTemplate): number | null {
+  const target = goal.targetDeficit ?? 0
+  if (target === 0) return null
+  return target
 }
 
-/** Target deficit/surplus magnitude in kcal (always positive). */
-export function getEnergyGoalMagnitude(targetDeficit: number): number {
-  return Math.abs(targetDeficit)
+/** Actual net calories for the day (eaten − burned). */
+export function getActualNetCalories(row: StatsDayRow): number {
+  return row.net
 }
 
-/** Positive = under maintenance (deficit); negative = net above maintenance (surplus). */
+/** @deprecated Target net is stored directly on targetDeficit; use getActualNetCalories. */
 export function getActualEnergyBalance(row: StatsDayRow): number | null {
-  const targetDeficit = row.goal.targetDeficit ?? 0
-  if (targetDeficit === 0) return null
-  const maintenance = getImpliedMaintenance(row.goal.calories, targetDeficit)
-  return maintenance - row.net
+  const target = row.goal.targetDeficit ?? 0
+  if (target === 0) return null
+  return row.net
 }
 
-/** @deprecated Use getActualEnergyBalance */
+/** @deprecated Use getActualNetCalories */
 export function getActualDeficit(row: StatsDayRow): number | null {
   return getActualEnergyBalance(row)
 }
 
 function isEnergyBalanceOnTarget(row: StatsDayRow): boolean {
-  const targetDeficit = row.goal.targetDeficit ?? 0
-  if (targetDeficit === 0) return false
-  const actual = getActualEnergyBalance(row)
-  if (actual == null) return false
-  const targetMag = getEnergyGoalMagnitude(targetDeficit)
-
-  if (targetDeficit < 0) {
-    // Deficit goal: actual deficit should be near target (meeting counts; modest overshoot ok)
-    return (
-      actual >= targetMag * (1 - ADHERENCE_TOLERANCE) &&
-      actual <= targetMag * (1 + ADHERENCE_TOLERANCE)
-    )
-  }
-  // Surplus goal: net above maintenance
-  const actualSurplus = -actual
-  return isWithinTarget(actualSurplus, targetMag)
+  const targetNet = getTargetNetCalories(row.goal)
+  if (targetNet == null) return false
+  return isWithinTarget(row.net, targetNet)
 }
 
 export function formatTargetDeficitShort(targetDeficit?: number): string {
@@ -244,57 +232,49 @@ export function generateInsights(
     const surplusRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
 
     if (deficitRows.length > 0) {
-      const avgTargetDeficit =
-        deficitRows.reduce(
-          (s, d) => s + getEnergyGoalMagnitude(d.goal.targetDeficit ?? 0),
-          0,
-        ) / deficitRows.length
-      const avgActualDeficit =
-        deficitRows.reduce((s, d) => s + (getActualEnergyBalance(d) ?? 0), 0) /
+      const avgTargetNet =
+        deficitRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
         deficitRows.length
-      const deficitGap = roundMacro(avgActualDeficit - avgTargetDeficit, 0)
-      const tol = Math.max(50, avgTargetDeficit * ADHERENCE_TOLERANCE)
+      const avgActualNet =
+        deficitRows.reduce((s, d) => s + d.net, 0) / deficitRows.length
+      const netGap = roundMacro(avgActualNet - avgTargetNet, 0)
+      const tol = Math.max(50, Math.abs(avgTargetNet) * ADHERENCE_TOLERANCE)
 
-      if (Math.abs(deficitGap) <= tol) {
+      if (Math.abs(netGap) <= tol) {
         insights.push(
-          `Your average deficit (${roundMacro(avgActualDeficit, 0)} kcal/day) is on track with your ${roundMacro(avgTargetDeficit, 0)} kcal deficit goal.`,
+          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day, very close to your ${roundMacro(avgTargetNet, 0)} deficit goal.`,
         )
-      } else if (deficitGap > 0) {
+      } else if (netGap < 0) {
         insights.push(
-          `Your average deficit is ${roundMacro(avgActualDeficit, 0)} kcal/day — ${deficitGap} kcal deeper than your ${roundMacro(avgTargetDeficit, 0)} kcal goal.`,
+          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${Math.abs(netGap)} kcal more deficit than your ${roundMacro(avgTargetNet, 0)} goal.`,
         )
       } else {
         insights.push(
-          `Your average deficit is ${roundMacro(avgActualDeficit, 0)} kcal/day — ${Math.abs(deficitGap)} kcal short of your ${roundMacro(avgTargetDeficit, 0)} kcal goal.`,
+          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${netGap} kcal less deficit than your ${roundMacro(avgTargetNet, 0)} goal.`,
         )
       }
     }
 
     if (surplusRows.length > 0) {
-      const avgTargetSurplus =
-        surplusRows.reduce(
-          (s, d) => s + getEnergyGoalMagnitude(d.goal.targetDeficit ?? 0),
-          0,
-        ) / surplusRows.length
-      const avgActualSurplus =
-        surplusRows.reduce(
-          (s, d) => s + Math.max(0, -(getActualEnergyBalance(d) ?? 0)),
-          0,
-        ) / surplusRows.length
-      const surplusGap = roundMacro(avgActualSurplus - avgTargetSurplus, 0)
-      const tol = Math.max(50, avgTargetSurplus * ADHERENCE_TOLERANCE)
+      const avgTargetNet =
+        surplusRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
+        surplusRows.length
+      const avgActualNet =
+        surplusRows.reduce((s, d) => s + d.net, 0) / surplusRows.length
+      const netGap = roundMacro(avgActualNet - avgTargetNet, 0)
+      const tol = Math.max(50, Math.abs(avgTargetNet) * ADHERENCE_TOLERANCE)
 
-      if (Math.abs(surplusGap) <= tol) {
+      if (Math.abs(netGap) <= tol) {
         insights.push(
-          `Your average surplus (${roundMacro(avgActualSurplus, 0)} kcal/day) is on track with your ${roundMacro(avgTargetSurplus, 0)} kcal bulk goal.`,
+          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day, very close to your +${roundMacro(avgTargetNet, 0)} surplus goal.`,
         )
-      } else if (surplusGap > 0) {
+      } else if (netGap > 0) {
         insights.push(
-          `Your average surplus is ${roundMacro(avgActualSurplus, 0)} kcal/day — ${surplusGap} kcal above your ${roundMacro(avgTargetSurplus, 0)} kcal goal.`,
+          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${netGap} kcal above your +${roundMacro(avgTargetNet, 0)} surplus goal.`,
         )
       } else {
         insights.push(
-          `Your average surplus is ${roundMacro(avgActualSurplus, 0)} kcal/day — ${Math.abs(surplusGap)} kcal below your ${roundMacro(avgTargetSurplus, 0)} kcal goal.`,
+          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${Math.abs(netGap)} kcal below your +${roundMacro(avgTargetNet, 0)} surplus goal.`,
         )
       }
     }

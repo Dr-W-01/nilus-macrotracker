@@ -437,8 +437,8 @@ function GoalEditDialog({
               onChange={(targetDeficit) => setForm({ ...form, targetDeficit })}
             />
             <p className="text-[10px] text-muted-foreground mt-1">
-              Choose Deficit or Surplus, then enter a positive amount. Leave empty if you only
-              track intake. Stats uses intake − this value as implied maintenance.
+              Choose Deficit or Surplus, then enter a positive amount. Stats compares your daily
+              net calories (eaten − burned) to this signed target (e.g. −1000 deficit).
             </p>
           </div>
           {(['protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (

@@ -45,8 +45,8 @@ export interface GoalTemplate {
   /** Daily target calorie intake */
   calories: number
   /**
-   * Signed daily energy goal (optional).
-   * Negative = target deficit (e.g. -1000), positive = target surplus / bulk (e.g. +500).
+   * Signed target net calories per day (optional): eaten − burned.
+   * Negative = deficit goal (e.g. -1000), positive = surplus goal (e.g. +500).
    */
   targetDeficit?: number
   protein: number
