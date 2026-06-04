@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
-import { NetCaloriesSparkline } from '@/components/stats/NetCaloriesSparkline'
+import { DailyEnergyBalanceChart } from '@/components/stats/DailyEnergyBalanceChart'
 import {
   ADHERENCE_LABELS,
   type AdherenceKey,
@@ -21,11 +21,11 @@ const OTHER_ADHERENCE: AdherenceKey[] = ['carbs', 'fat', 'fiber', 'sugars']
 const ADHERENCE_HINTS: Partial<Record<AdherenceKey, string>> = {
   calories: 'Within ~15% of intake target',
   protein: 'Met or exceeded target',
-  targetDeficit: 'Within ~15% of deficit goal',
+  targetDeficit: 'Within ~15% of deficit or surplus goal',
   carbs: 'Within ~15% of target',
-  fat: 'Within ~15% of target',
-  fiber: 'Within ~15% of target',
-  sugars: 'Within ~15% of target',
+  fat: 'Fat ≤15% of calories',
+  fiber: 'Fiber ≥15% of calories',
+  sugars: 'Sugar ≤15% of calories',
 }
 
 interface StatsOverviewPanelProps {
@@ -62,7 +62,10 @@ export function StatsOverviewPanel({
 
   const adherence = computeAdherenceBreakdown(dayRows)
   const insights = generateInsights(dayRows, statsPeriod, range)
-  const sparkData = dayRows.map((d) => ({ net: roundMacro(d.net, 0) }))
+  const balanceChartData = dayRows.map((d) => ({
+    label: format(parseISO(d.date), 'M/d'),
+    net: roundMacro(d.net, 0),
+  }))
 
   const comparisonText =
     netDelta == null
@@ -102,8 +105,8 @@ export function StatsOverviewPanel({
           <div>
             <p className="text-sm font-medium">Goal adherence</p>
             <p className="text-xs text-muted-foreground mt-1">
-              % of logged days on target for each goal. Protein counts when you meet or
-              beat the target.
+              % of logged days on target. Protein counts when you meet or beat the goal.
+              Fat and sugar are good at ≤15% of calories; fiber at ≥15%.
             </p>
           </div>
 
@@ -157,12 +160,8 @@ export function StatsOverviewPanel({
 
       <Card>
         <CardContent className="pt-4 pb-3">
-          <p className="text-xs text-muted-foreground mb-2">Net calories trend</p>
-          <NetCaloriesSparkline data={sparkData} color={accentColor} />
-          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-            <span>{format(parseISO(dayRows[0].date), 'MMM d')}</span>
-            <span>{format(parseISO(dayRows[dayRows.length - 1].date), 'MMM d')}</span>
-          </div>
+          <p className="text-sm font-medium mb-1">Daily energy balance</p>
+          <DailyEnergyBalanceChart data={balanceChartData} color={accentColor} />
         </CardContent>
       </Card>
     </div>

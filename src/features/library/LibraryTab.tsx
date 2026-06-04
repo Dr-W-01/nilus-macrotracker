@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, ChefHat, ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import {
+  BookOpen,
+  ChefHat,
+  ChevronLeft,
+  ChevronRight,
+  FolderInput,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -21,6 +31,7 @@ import { NewFoodSheet } from '@/components/library/NewFoodSheet'
 import { EditFoodSheet } from '@/components/library/EditFoodSheet'
 import { CreateRecipeSheet } from '@/components/library/CreateRecipeSheet'
 import { AddCategoryDialog } from '@/components/library/AddCategoryDialog'
+import { BulkAssignCategoryDialog } from '@/components/library/BulkAssignCategoryDialog'
 import { CategoryEditSheet } from '@/components/library/CategoryEditSheet'
 
 type BulkDeleteKind = 'items' | 'categories' | 'recipes'
@@ -38,6 +49,7 @@ export function LibraryTab() {
   const [editMode, setEditMode] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [bulkCategoryOpen, setBulkCategoryOpen] = useState(false)
   const [newFoodOpen, setNewFoodOpen] = useState(false)
   const [recipeOpen, setRecipeOpen] = useState(false)
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null)
@@ -301,10 +313,22 @@ export function LibraryTab() {
               {selected.size > 0 ? `${selected.size} selected` : bulkSelectHint}
             </span>
             {selected.size > 0 && (
-              <Button variant="destructive" size="sm" onClick={confirmBulkDelete}>
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete Selected
-              </Button>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {librarySegment === 'items' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBulkCategoryOpen(true)}
+                  >
+                    <FolderInput className="h-4 w-4 mr-1" />
+                    Assign category
+                  </Button>
+                )}
+                <Button variant="destructive" size="sm" onClick={confirmBulkDelete}>
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete Selected
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -366,6 +390,13 @@ export function LibraryTab() {
             ))
         ) : null}
       </div>
+
+      <BulkAssignCategoryDialog
+        open={bulkCategoryOpen}
+        onOpenChange={setBulkCategoryOpen}
+        selectedIds={[...selected]}
+        onAssigned={() => setSelected(new Set())}
+      />
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <DialogContent className="max-w-sm">

@@ -67,7 +67,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 2
+const PERSIST_VERSION = 3
 
 type PersistedSlice = {
   settings?: Settings
@@ -97,7 +97,7 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
           ? persisted.settings.goalTemplates.map((g) => ({
               ...g,
               targetDeficit:
-                g.targetDeficit != null && g.targetDeficit > 0
+                g.targetDeficit != null && g.targetDeficit !== 0
                   ? g.targetDeficit
                   : undefined,
             }))
@@ -533,11 +533,20 @@ export const useMacroStore = create<MacroStore>()(
         statsAnchorDate: state.statsAnchorDate,
       }),
       migrate: (persisted: unknown, version) => {
-        const state = normalizePersistedState((persisted ?? {}) as PersistedSlice)
-        if (version < PERSIST_VERSION) {
-          return state
+        const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 3 && raw.settings?.goalTemplates) {
+          raw.settings = {
+            ...raw.settings,
+            goalTemplates: raw.settings.goalTemplates.map((g) => ({
+              ...g,
+              targetDeficit:
+                g.targetDeficit != null && g.targetDeficit > 0
+                  ? -g.targetDeficit
+                  : g.targetDeficit,
+            })),
+          }
         }
-        return state
+        return normalizePersistedState(raw)
       },
       onRehydrateStorage: () => (state) => {
         if (!state) return

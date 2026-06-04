@@ -22,7 +22,7 @@ type MetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
 
 const METRIC_OPTIONS: { key: MetricKey; label: string }[] = [
   { key: 'net', label: 'Net Calories' },
-  { key: 'calories', label: 'Total Calories' },
+  { key: 'calories', label: 'Calories In' },
   { key: 'protein', label: 'Protein (g)' },
   { key: 'carbs', label: 'Carbs (g)' },
   { key: 'fat', label: 'Fat (g)' },
@@ -54,7 +54,7 @@ export function StatsTrendsPanel({
   onDayClick,
 }: StatsTrendsPanelProps) {
   const [enabled, setEnabled] = useState<Set<MetricKey>>(
-    () => new Set<MetricKey>(['net', 'protein']),
+    () => new Set<MetricKey>(['calories']),
   )
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
   const [showRolling, setShowRolling] = useState(true)

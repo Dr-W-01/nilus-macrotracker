@@ -44,7 +44,10 @@ export interface GoalTemplate {
   name: string
   /** Daily target calorie intake */
   calories: number
-  /** Desired daily calorie deficit (optional); compared when set */
+  /**
+   * Signed daily energy goal (optional).
+   * Negative = target deficit (e.g. -1000), positive = target surplus / bulk (e.g. +500).
+   */
   targetDeficit?: number
   protein: number
   carbs: number

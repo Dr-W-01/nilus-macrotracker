@@ -100,7 +100,7 @@ export type AdherenceBreakdown = Record<AdherenceKey, number | null>
 
 export const ADHERENCE_LABELS: Record<AdherenceKey, string> = {
   calories: 'Calories',
-  targetDeficit: 'Deficit goal',
+  targetDeficit: 'Energy balance',
   protein: 'Protein',
   carbs: 'Carbs',
   fat: 'Fat',
@@ -119,12 +119,56 @@ function isProteinOnTarget(actual: number, target: number): boolean {
   return actual >= target * (1 - ADHERENCE_TOLERANCE)
 }
 
-/** Implied maintenance = intake goal + desired deficit */
-export function getActualDeficit(row: StatsDayRow): number | null {
+/** Maintenance implied by intake target and signed energy goal (negative = deficit, positive = surplus). */
+export function getImpliedMaintenance(calories: number, targetDeficit: number): number {
+  return calories - targetDeficit
+}
+
+/** Positive = under maintenance (deficit); negative = surplus. */
+export function getActualEnergyBalance(row: StatsDayRow): number | null {
   const targetDeficit = row.goal.targetDeficit ?? 0
-  if (targetDeficit <= 0) return null
-  const impliedMaintenance = row.goal.calories + targetDeficit
-  return impliedMaintenance - row.net
+  if (targetDeficit === 0) return null
+  const maintenance = getImpliedMaintenance(row.goal.calories, targetDeficit)
+  return maintenance - row.net
+}
+
+/** @deprecated Use getActualEnergyBalance */
+export function getActualDeficit(row: StatsDayRow): number | null {
+  return getActualEnergyBalance(row)
+}
+
+function macroCalorieShare(grams: number, kcalPerGram: number, totalCalories: number): number | null {
+  if (totalCalories <= 0) return null
+  return (grams * kcalPerGram) / totalCalories
+}
+
+function isFatPercentOnTarget(row: StatsDayRow): boolean {
+  const share = macroCalorieShare(row.fat, 9, row.calories)
+  return share != null && share <= 0.15
+}
+
+function isSugarPercentOnTarget(row: StatsDayRow): boolean {
+  const share = macroCalorieShare(row.sugars, 4, row.calories)
+  return share != null && share <= 0.15
+}
+
+function isFiberPercentOnTarget(row: StatsDayRow): boolean {
+  const share = macroCalorieShare(row.fiber, 4, row.calories)
+  return share != null && share >= 0.15
+}
+
+function isEnergyBalanceOnTarget(row: StatsDayRow): boolean {
+  const targetDeficit = row.goal.targetDeficit ?? 0
+  if (targetDeficit === 0) return false
+  const actual = getActualEnergyBalance(row)
+  if (actual == null) return false
+  return isWithinTarget(actual, -targetDeficit)
+}
+
+export function formatTargetDeficitShort(targetDeficit?: number): string {
+  if (targetDeficit == null || targetDeficit === 0) return ''
+  if (targetDeficit < 0) return `${Math.abs(targetDeficit)} cal deficit`
+  return `${targetDeficit} cal surplus`
 }
 
 function computeMetricAdherence(
@@ -137,19 +181,14 @@ function computeMetricAdherence(
 }
 
 export function computeAdherenceBreakdown(rows: StatsDayRow[]): AdherenceBreakdown {
-  const showDeficit = rows.some((d) => (d.goal.targetDeficit ?? 0) > 0)
+  const showEnergyGoal = rows.some((d) => (d.goal.targetDeficit ?? 0) !== 0)
 
   return {
     calories: computeMetricAdherence(rows, (d) =>
       isWithinTarget(d.calories, d.goal.calories),
     ),
-    targetDeficit: showDeficit
-      ? computeMetricAdherence(rows, (d) => {
-          const target = d.goal.targetDeficit ?? 0
-          if (target <= 0) return false
-          const actual = getActualDeficit(d)
-          return actual != null && isWithinTarget(actual, target)
-        })
+    targetDeficit: showEnergyGoal
+      ? computeMetricAdherence(rows, isEnergyBalanceOnTarget)
       : null,
     protein: computeMetricAdherence(rows, (d) =>
       isProteinOnTarget(d.protein, d.goal.protein),
@@ -157,15 +196,9 @@ export function computeAdherenceBreakdown(rows: StatsDayRow[]): AdherenceBreakdo
     carbs: computeMetricAdherence(rows, (d) =>
       isWithinTarget(d.carbs, d.goal.carbs),
     ),
-    fat: computeMetricAdherence(rows, (d) =>
-      isWithinTarget(d.fat, d.goal.fat),
-    ),
-    fiber: computeMetricAdherence(rows, (d) =>
-      isWithinTarget(d.fiber, d.goal.fiber),
-    ),
-    sugars: computeMetricAdherence(rows, (d) =>
-      isWithinTarget(d.sugars, d.goal.sugars),
-    ),
+    fat: computeMetricAdherence(rows, isFatPercentOnTarget),
+    fiber: computeMetricAdherence(rows, isFiberPercentOnTarget),
+    sugars: computeMetricAdherence(rows, isSugarPercentOnTarget),
   }
 }
 
@@ -200,37 +233,56 @@ export function generateInsights(
   const avgIntakeGoal = rows.reduce((s, d) => s + d.goal.calories, 0) / n
   const avgNet = rows.reduce((s, d) => s + d.net, 0) / n
 
-  const deficitRows = rows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
-  const usesDeficit = deficitRows.length > 0
+  const energyGoalRows = rows.filter((d) => (d.goal.targetDeficit ?? 0) !== 0)
+  const usesEnergyGoal = energyGoalRows.length > 0
 
-  if (usesDeficit) {
-    const avgTargetDeficit =
-      deficitRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
-      deficitRows.length
-    const avgActualDeficit =
-      deficitRows.reduce((s, d) => s + (getActualDeficit(d) ?? 0), 0) /
-      deficitRows.length
-    const defDelta = roundMacro(avgActualDeficit - avgTargetDeficit, 0)
+  if (usesEnergyGoal) {
+    const avgTargetBalance =
+      energyGoalRows.reduce((s, d) => s + -(d.goal.targetDeficit ?? 0), 0) /
+      energyGoalRows.length
+    const avgActualBalance =
+      energyGoalRows.reduce((s, d) => s + (getActualEnergyBalance(d) ?? 0), 0) /
+      energyGoalRows.length
+    const balanceDelta = roundMacro(avgActualBalance - avgTargetBalance, 0)
 
-    if (Math.abs(defDelta) <= Math.max(50, avgTargetDeficit * ADHERENCE_TOLERANCE)) {
-      insights.push(
-        `Your average daily deficit (${roundMacro(avgActualDeficit, 0)} kcal) matches your ${roundMacro(avgTargetDeficit, 0)} kcal deficit goal.`,
-      )
-    } else if (defDelta > 0) {
-      insights.push(
-        `Your average deficit is ${defDelta} kcal above your ${roundMacro(avgTargetDeficit, 0)} kcal target — a larger gap than planned.`,
-      )
-    } else {
-      insights.push(
-        `Your average deficit is ${Math.abs(defDelta)} kcal below your ${roundMacro(avgTargetDeficit, 0)} kcal target — you're eating closer to maintenance than your deficit goal.`,
-      )
+    if (avgTargetBalance > 0) {
+      if (Math.abs(balanceDelta) <= Math.max(50, avgTargetBalance * ADHERENCE_TOLERANCE)) {
+        insights.push(
+          `Your average daily deficit (${roundMacro(avgActualBalance, 0)} kcal) matches your ${roundMacro(avgTargetBalance, 0)} kcal deficit goal.`,
+        )
+      } else if (balanceDelta > 0) {
+        insights.push(
+          `Your average deficit is ${balanceDelta} kcal above your ${roundMacro(avgTargetBalance, 0)} kcal target.`,
+        )
+      } else {
+        insights.push(
+          `Your average deficit is ${Math.abs(balanceDelta)} kcal below your ${roundMacro(avgTargetBalance, 0)} kcal target.`,
+        )
+      }
+    } else if (avgTargetBalance < 0) {
+      const targetSurplus = -avgTargetBalance
+      const actualSurplus = -avgActualBalance
+      const surplusDelta = roundMacro(actualSurplus - targetSurplus, 0)
+      if (Math.abs(surplusDelta) <= Math.max(50, targetSurplus * ADHERENCE_TOLERANCE)) {
+        insights.push(
+          `Your average surplus (${roundMacro(actualSurplus, 0)} kcal) matches your ${roundMacro(targetSurplus, 0)} kcal bulk goal.`,
+        )
+      } else if (surplusDelta > 0) {
+        insights.push(
+          `Your average surplus is ${surplusDelta} kcal above your ${roundMacro(targetSurplus, 0)} kcal target.`,
+        )
+      } else {
+        insights.push(
+          `Your average surplus is ${Math.abs(surplusDelta)} kcal below your ${roundMacro(targetSurplus, 0)} kcal target.`,
+        )
+      }
     }
 
     const intakeDelta = roundMacro(avgIntake - avgIntakeGoal, 0)
     if (Math.abs(intakeDelta) > 25) {
       insights.push(
         intakeDelta > 0
-          ? `Average intake was ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal/day target (separate from your deficit goal).`
+          ? `Average intake was ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal/day target (separate from your energy balance goal).`
           : `Average intake was ${Math.abs(intakeDelta)} cal below your ${roundMacro(avgIntakeGoal, 0)} cal/day target.`,
       )
     }
@@ -258,7 +310,7 @@ export function generateInsights(
   insights.push(
     `Adherence highlights: protein ${adherence.protein}% (met or exceeded), intake ${adherence.calories}%` +
       (adherence.targetDeficit != null
-        ? `, deficit goal ${adherence.targetDeficit}%`
+        ? `, energy balance ${adherence.targetDeficit}%`
         : '') +
       '.',
   )

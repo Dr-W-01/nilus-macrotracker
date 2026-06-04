@@ -17,6 +17,7 @@ import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_SECONDARY_TEXT_COLOR,
 } from '@/lib/theme'
+import { formatTargetDeficitShort } from '@/lib/stats'
 import type { GoalTemplate } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
@@ -103,7 +104,9 @@ export function SettingsTab() {
                 <p className="font-medium">{g.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {g.calories} cal intake
-                  {(g.targetDeficit ?? 0) > 0 ? ` · ${g.targetDeficit} def` : ''}
+                  {formatTargetDeficitShort(g.targetDeficit)
+                    ? ` · ${formatTargetDeficitShort(g.targetDeficit)}`
+                    : ''}
                   {' · '}P{g.protein} C{g.carbs} F{g.fat}
                   {g.id === settings.defaultTemplateId && ' · Default'}
                 </p>
@@ -426,22 +429,23 @@ function GoalEditDialog({
             />
           </div>
           <div>
-            <Label className="text-xs">Target deficit (cal/day, optional)</Label>
+            <Label className="text-xs">Target deficit / surplus (cal/day, optional)</Label>
             <Input
               type="number"
-              min={0}
-              placeholder="e.g. 1000"
+              placeholder="e.g. -1000 deficit or +500 bulk"
               value={form.targetDeficit != null ? String(form.targetDeficit) : ''}
               onChange={(e) => {
                 const raw = e.target.value.trim()
                 setForm({
                   ...form,
-                  targetDeficit: raw === '' ? undefined : parseFloat(raw) || 0,
+                  targetDeficit:
+                    raw === '' ? undefined : Number.isFinite(parseFloat(raw)) ? parseFloat(raw) : undefined,
                 })
               }}
             />
             <p className="text-[10px] text-muted-foreground mt-1">
-              When set, Stats measures deficit as (intake + deficit) − net calories.
+              Negative = deficit (e.g. −1000). Positive = surplus / bulk (e.g. +500). Stats
+              compares net calories to implied maintenance (intake − this value).
             </p>
           </div>
           {(['protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (
