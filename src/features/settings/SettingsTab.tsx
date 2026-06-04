@@ -17,6 +17,7 @@ import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_SECONDARY_TEXT_COLOR,
 } from '@/lib/theme'
+import { SignedDecimalInput } from '@/components/ui/signed-decimal-input'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import type { GoalTemplate } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
@@ -430,22 +431,15 @@ function GoalEditDialog({
           </div>
           <div>
             <Label className="text-xs">Target deficit / surplus (cal/day, optional)</Label>
-            <Input
-              type="number"
-              placeholder="e.g. -1000 deficit or +500 bulk"
-              value={form.targetDeficit != null ? String(form.targetDeficit) : ''}
-              onChange={(e) => {
-                const raw = e.target.value.trim()
-                setForm({
-                  ...form,
-                  targetDeficit:
-                    raw === '' ? undefined : Number.isFinite(parseFloat(raw)) ? parseFloat(raw) : undefined,
-                })
-              }}
+            <SignedDecimalInput
+              key={goal.id || 'new-goal'}
+              placeholder="e.g. -1000 or 500"
+              value={form.targetDeficit}
+              onChange={(targetDeficit) => setForm({ ...form, targetDeficit })}
             />
             <p className="text-[10px] text-muted-foreground mt-1">
-              Negative = deficit (e.g. −1000). Positive = surplus / bulk (e.g. +500). Stats
-              compares net calories to implied maintenance (intake − this value).
+              Tap − then enter amount for deficit, or type a leading minus. Positive = surplus
+              (e.g. 500). Stats uses intake − this value as implied maintenance.
             </p>
           </div>
           {(['protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (
@@ -465,7 +459,16 @@ function GoalEditDialog({
             </div>
           ))}
         </div>
-        <Button className="w-full mt-4" onClick={() => onSave(form)}>
+        <Button
+          className="w-full mt-4"
+          onClick={() =>
+            onSave({
+              ...form,
+              targetDeficit:
+                form.targetDeficit === 0 ? undefined : form.targetDeficit,
+            })
+          }
+        >
           Save
         </Button>
         {form.id && form.id !== defaultId && (
