@@ -75,8 +75,12 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
         >
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
             <SheetTitle>
-              {isRecipe ? 'Edit Recipe' : 'Edit Food'}
+              {isRecipe ? 'Edit master recipe' : 'Edit library food'}
             </SheetTitle>
+            <p className="text-xs text-muted-foreground font-normal">
+              Changes here update your Library for all future logs. To edit a single
+              day&apos;s entry, use the Daily tab.
+            </p>
           </SheetHeader>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
             <FoodFormFields

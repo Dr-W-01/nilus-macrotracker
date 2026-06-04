@@ -33,6 +33,8 @@ import { CreateRecipeSheet } from '@/components/library/CreateRecipeSheet'
 import { AddCategoryDialog } from '@/components/library/AddCategoryDialog'
 import { BulkAssignCategoryDialog } from '@/components/library/BulkAssignCategoryDialog'
 import { CategoryEditSheet } from '@/components/library/CategoryEditSheet'
+import { CategoryManageSheet } from '@/components/library/CategoryManageSheet'
+import { DeleteCategoryDialog } from '@/components/library/DeleteCategoryDialog'
 
 type BulkDeleteKind = 'items' | 'categories' | 'recipes'
 
@@ -44,6 +46,7 @@ export function LibraryTab() {
   const loadSeedLibrary = useMacroStore((s) => s.loadSeedLibrary)
   const deleteFoodItems = useMacroStore((s) => s.deleteFoodItems)
   const removeLibraryCategory = useMacroStore((s) => s.removeLibraryCategory)
+  const deleteLibraryCategory = useMacroStore((s) => s.deleteLibraryCategory)
 
   const [query, setQuery] = useState('')
   const [editMode, setEditMode] = useState(false)
@@ -56,6 +59,9 @@ export function LibraryTab() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [addCategoryOpen, setAddCategoryOpen] = useState(false)
   const [categoryEditOpen, setCategoryEditOpen] = useState(false)
+  const [categoryManageOpen, setCategoryManageOpen] = useState(false)
+  const [deleteCategoryOpen, setDeleteCategoryOpen] = useState(false)
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<string | null>(null)
 
   const exitEditMode = () => {
     setEditMode(false)
@@ -227,10 +233,10 @@ export function LibraryTab() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCategoryEditOpen(true)}
+                onClick={() => setCategoryManageOpen(true)}
               >
                 <Pencil className="h-4 w-4 mr-1" />
-                Edit Category
+                Manage
               </Button>
             ) : showBulkEdit ? (
               <Button
@@ -424,6 +430,51 @@ export function LibraryTab() {
         open={addCategoryOpen}
         onOpenChange={setAddCategoryOpen}
         onCreated={(name) => setActiveCategory(name)}
+      />
+      <CategoryManageSheet
+        open={categoryManageOpen}
+        category={activeCategory}
+        onOpenChange={setCategoryManageOpen}
+        onRenamed={(name) => setActiveCategory(name)}
+        onEditMembership={() => setCategoryEditOpen(true)}
+        onRequestDelete={() => {
+          setDeleteCategoryTarget(activeCategory)
+          setDeleteCategoryOpen(true)
+        }}
+      />
+      <DeleteCategoryDialog
+        open={deleteCategoryOpen}
+        category={deleteCategoryTarget}
+        itemCount={
+          deleteCategoryTarget
+            ? itemsInCategory(foodLibrary, deleteCategoryTarget).filter((f) => !f.isRecipe)
+                .length
+            : 0
+        }
+        onOpenChange={setDeleteCategoryOpen}
+        onUnlinkOnly={() => {
+          if (!deleteCategoryTarget) return
+          deleteLibraryCategory(deleteCategoryTarget, false)
+          toast.success(`Removed category "${deleteCategoryTarget}"`)
+          if (activeCategory === deleteCategoryTarget) setActiveCategory(null)
+          setDeleteCategoryTarget(null)
+          setDeleteCategoryOpen(false)
+        }}
+        onDeleteItems={() => {
+          if (!deleteCategoryTarget) return
+          const count = itemsInCategory(foodLibrary, deleteCategoryTarget).filter(
+            (f) => !f.isRecipe,
+          ).length
+          deleteLibraryCategory(deleteCategoryTarget, true)
+          toast.success(
+            count > 0
+              ? `Deleted category and ${count} ${count === 1 ? 'item' : 'items'}`
+              : `Removed category "${deleteCategoryTarget}"`,
+          )
+          if (activeCategory === deleteCategoryTarget) setActiveCategory(null)
+          setDeleteCategoryTarget(null)
+          setDeleteCategoryOpen(false)
+        }}
       />
       <CategoryEditSheet
         open={categoryEditOpen}

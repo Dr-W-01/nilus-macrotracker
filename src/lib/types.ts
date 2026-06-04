@@ -27,6 +27,8 @@ export interface LoggedFood {
   quantity: number
   /** Actual amount eaten (scale items), in the food's unit */
   scaleAmountEaten?: number
+  /** Meal grouping label (e.g. Breakfast, Lunch) */
+  meal?: string
   note?: string
   overriddenComponents?: { foodId: string; quantity: number }[]
 }
@@ -68,6 +70,10 @@ export interface Settings {
   goalMode: GoalMode
   /** Display unit for body weight logging. */
   weightUnit: WeightUnit
+  /** Meal names for grouping foods on the Daily tab. */
+  meals: string[]
+  /** Default meal when logging new food. */
+  defaultMeal: string
   theme: 'dark' | 'light'
   accentColor: string
   /** Secondary / muted text (labels, hints, grey copy) */

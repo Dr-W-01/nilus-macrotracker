@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import {
   CartesianGrid,
@@ -60,8 +60,14 @@ export function StatsTrendsPanel({
   const [enabled, setEnabled] = useState<Set<MetricKey>>(
     () => new Set<MetricKey>(defaultMetrics as MetricKey[]),
   )
+  const [showMoreMetrics, setShowMoreMetrics] = useState(false)
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
   const [showRolling, setShowRolling] = useState(false)
+
+  useEffect(() => {
+    setEnabled(new Set<MetricKey>(defaultTrendMetricsForMode(goalMode) as MetricKey[]))
+    setShowMoreMetrics(false)
+  }, [goalMode])
 
   const dayRows = useMemo(
     () => buildStatsDayRows(range, dailyLogs, foodLibrary, settings),
@@ -117,6 +123,12 @@ export function StatsTrendsPanel({
   }
 
   const singleMetric = enabled.size === 1
+  const primaryMetrics = METRIC_OPTIONS.filter((m) =>
+    (defaultMetrics as MetricKey[]).includes(m.key),
+  )
+  const secondaryMetrics = METRIC_OPTIONS.filter(
+    (m) => !(defaultMetrics as MetricKey[]).includes(m.key),
+  )
 
   return (
     <div className="space-y-3">
@@ -125,15 +137,15 @@ export function StatsTrendsPanel({
           <CardTitle className="text-sm">Chart lines</CardTitle>
           <p className="text-xs text-muted-foreground">
             {goalMode === 'cut'
-              ? 'Net calories selected by default for cut mode. Tap to add more.'
+              ? 'Net calories is the primary line in cut mode.'
               : goalMode === 'bulk'
-                ? 'Net calories selected by default for bulk mode.'
-                : 'Calories in selected by default for maintain mode.'}
+                ? 'Net calories is the primary line in bulk mode.'
+                : 'Calories in is the primary line in maintain mode.'}
           </p>
         </CardHeader>
         <CardContent className="space-y-3 pb-3">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-            {METRIC_OPTIONS.map(({ key, short }) => {
+          <div className="flex flex-wrap gap-2">
+            {primaryMetrics.map(({ key, short, label }) => {
               const on = enabled.has(key)
               return (
                 <Button
@@ -141,14 +153,45 @@ export function StatsTrendsPanel({
                   type="button"
                   size="sm"
                   variant={on ? 'default' : 'outline'}
-                  className={cn('h-10 text-xs', on && key === 'net' && 'ring-1 ring-primary/40')}
+                  className={cn('h-10 min-w-[4.5rem]', on && 'ring-1 ring-primary/40')}
                   onClick={() => toggleMetric(key)}
                 >
                   {short}
+                  <span className="sr-only">{label}</span>
                 </Button>
               )
             })}
+            {secondaryMetrics.length > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-10 text-xs"
+                onClick={() => setShowMoreMetrics((v) => !v)}
+              >
+                {showMoreMetrics ? 'Fewer' : '+ More'}
+              </Button>
+            )}
           </div>
+          {showMoreMetrics && secondaryMetrics.length > 0 && (
+            <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+              {secondaryMetrics.map(({ key, short }) => {
+                const on = enabled.has(key)
+                return (
+                  <Button
+                    key={key}
+                    type="button"
+                    size="sm"
+                    variant={on ? 'default' : 'outline'}
+                    className="h-9 text-xs"
+                    onClick={() => toggleMetric(key)}
+                  >
+                    {short}
+                  </Button>
+                )
+              })}
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
             <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
             <Button

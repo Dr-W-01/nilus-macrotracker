@@ -19,6 +19,7 @@ import {
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
+import { DEFAULT_MEALS, normalizeMeals } from '@/lib/meals'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import type { GoalMode, GoalTemplate, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
@@ -180,6 +181,31 @@ export function SettingsTab() {
         >
           Create new template
         </Button>
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-semibold">Daily meals</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Group logged foods on the Daily tab. Comma-separated names; defaults are kept.
+          </p>
+        </div>
+        <Input
+          defaultValue={(settings.meals ?? DEFAULT_MEALS).join(', ')}
+          placeholder={DEFAULT_MEALS.join(', ')}
+          onBlur={(e) => {
+            const parsed = normalizeMeals(
+              e.target.value.split(',').map((s) => s.trim()),
+            )
+            const meals = parsed.length > 0 ? parsed : [...DEFAULT_MEALS]
+            const defaultMeal = meals.includes(settings.defaultMeal)
+              ? settings.defaultMeal
+              : meals[0]
+            updateSettings({ meals, defaultMeal })
+            e.target.value = meals.join(', ')
+            toast.success('Meals updated')
+          }}
+        />
       </section>
 
       <section className="space-y-3">

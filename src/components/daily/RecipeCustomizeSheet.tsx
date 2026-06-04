@@ -72,6 +72,10 @@ export function RecipeCustomizeSheet({
         <SheetHeader>
           <SheetTitle>Customize {recipe.name}</SheetTitle>
         </SheetHeader>
+        <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-muted-foreground">
+          Adjust portions for <span className="font-medium text-foreground">this log entry</span> only.
+          The library recipe stays unchanged.
+        </div>
         <div className="space-y-6 py-4">
           {recipe.recipeComponents.map((comp) => {
             const food = library.find((f) => f.id === comp.foodId)

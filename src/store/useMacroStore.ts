@@ -7,6 +7,7 @@ import {
   addCategoryToItem,
   collectAllCategories,
   foodCategories,
+  itemsInCategory,
   normalizeCategoryList,
   removeCategoryFromItem,
 } from '@/lib/categories'
@@ -21,6 +22,11 @@ import type {
   Settings,
 } from '@/lib/types'
 import { DEFAULT_GOAL_MODE, normalizeGoalMode } from '@/lib/goalMode'
+import {
+  DEFAULT_MEALS,
+  normalizeMealName,
+  normalizeMeals,
+} from '@/lib/meals'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
 import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
 import { generateId } from '@/lib/utils'
@@ -41,6 +47,8 @@ const defaultSettings: Settings = {
   defaultTemplateId: 'default',
   goalMode: DEFAULT_GOAL_MODE,
   weightUnit: DEFAULT_WEIGHT_UNIT,
+  meals: [...DEFAULT_MEALS],
+  defaultMeal: DEFAULT_MEALS[0],
   theme: 'dark',
   accentColor: DEFAULT_ACCENT_COLOR,
   secondaryTextColor: DEFAULT_SECONDARY_TEXT_COLOR,
@@ -71,7 +79,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 4
+const PERSIST_VERSION = 5
 
 type PersistedSlice = {
   settings?: Settings
@@ -114,6 +122,11 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
         persisted.settings?.secondaryTextColor ?? defaultSettings.secondaryTextColor,
       goalMode: normalizeGoalMode(persisted.settings?.goalMode),
       weightUnit: normalizeWeightUnit(persisted.settings?.weightUnit),
+      meals: normalizeMeals(persisted.settings?.meals),
+      defaultMeal: normalizeMealName(
+        persisted.settings?.defaultMeal,
+        normalizeMeals(persisted.settings?.meals),
+      ),
     },
     dailyLogs: Object.fromEntries(
       Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
@@ -199,6 +212,7 @@ interface MacroStore {
   addLibraryCategory: (name: string) => boolean
   renameLibraryCategory: (oldName: string, newName: string) => boolean
   removeLibraryCategory: (name: string) => void
+  deleteLibraryCategory: (name: string, deleteItems: boolean) => void
   applyCategoryMembership: (
     category: string,
     addIds: string[],
@@ -268,7 +282,13 @@ export const useMacroStore = create<MacroStore>()(
       addLoggedFood: (logged, date) => {
         const d = date ?? get().currentDate
         const log = get().getDailyLog(d)
-        const entry: LoggedFood = { ...logged, id: generateId() }
+        const meals = normalizeMeals(get().settings.meals)
+        const defaultMeal = normalizeMealName(get().settings.defaultMeal, meals)
+        const entry: LoggedFood = {
+          ...logged,
+          id: generateId(),
+          meal: normalizeMealName(logged.meal ?? defaultMeal, meals),
+        }
         get().touchFoodUsage(logged.foodId)
         get().updateDailyLog(d, { foods: [...log.foods, entry] })
       },
@@ -450,6 +470,18 @@ export const useMacroStore = create<MacroStore>()(
         })
       },
 
+      deleteLibraryCategory: (name, deleteItems) => {
+        if (deleteItems) {
+          const ids = itemsInCategory(get().foodLibrary, name).map((f) => f.id)
+          if (ids.length > 0) {
+            set({
+              foodLibrary: get().foodLibrary.filter((f) => !ids.includes(f.id)),
+            })
+          }
+        }
+        get().removeLibraryCategory(name)
+      },
+
       applyCategoryMembership: (category, addIds, removeIds) => {
         const addSet = new Set(addIds)
         const removeSet = new Set(removeIds)
@@ -563,6 +595,14 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 5 && raw.settings) {
+          const meals = normalizeMeals(raw.settings.meals)
+          raw.settings = {
+            ...raw.settings,
+            meals,
+            defaultMeal: normalizeMealName(raw.settings.defaultMeal, meals),
+          }
+        }
         if (version < 4 && raw.settings) {
           raw.settings = {
             ...raw.settings,
