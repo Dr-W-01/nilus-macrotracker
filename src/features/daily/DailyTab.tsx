@@ -223,7 +223,7 @@ export function DailyTab() {
   }
 
   return (
-    <div className="daily-tab flex flex-col pb-24">
+    <div className="daily-tab flex flex-col pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center justify-between">
           <Button
@@ -565,7 +565,8 @@ export function DailyTab() {
       {editDayMode && !selectFoodsMode && (
         <Button
           size="lg"
-          className="fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full shadow-lg p-0"
+          className="fixed right-4 z-30 h-14 w-14 rounded-full shadow-lg p-0"
+          style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))' }}
           onClick={() => setPickerOpen(true)}
         >
           <Plus className="h-7 w-7" />

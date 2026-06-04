@@ -93,7 +93,7 @@ export function SettingsTab() {
   }
 
   return (
-    <div className="p-4 pb-24 space-y-6">
+    <div className="p-4 pb-below-nav space-y-6">
       <h1 className="text-xl font-bold">Settings</h1>
 
       <section className="space-y-3">

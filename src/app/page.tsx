@@ -9,14 +9,14 @@ export default function AppPage() {
   const currentTab = useMacroStore((s) => s.currentTab)
 
   return (
-    <>
-      <main>
+    <div className="app-viewport">
+      <main className="app-main">
         {currentTab === 'daily' && <DailyTab />}
         {currentTab === 'library' && <LibraryTab />}
         {currentTab === 'stats' && <StatsTab />}
         {currentTab === 'settings' && <SettingsTab />}
       </main>
       <BottomNav />
-    </>
+    </div>
   )
 }

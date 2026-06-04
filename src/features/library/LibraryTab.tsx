@@ -211,7 +211,7 @@ export function LibraryTab() {
 
   if (foodLibrary.length === 0) {
     return (
-      <div className="p-6 pb-24 text-center space-y-6">
+      <div className="p-6 pb-below-nav text-center space-y-6">
         <BookOpen className="h-16 w-16 mx-auto text-primary opacity-80" />
         <h2 className="text-xl font-semibold">Your food library is empty</h2>
         <p className="text-muted-foreground">
@@ -236,7 +236,7 @@ export function LibraryTab() {
 
   return (
     <div
-      className={`flex flex-col ${librarySearchEngaged ? 'pb-4' : 'pb-28'}`}
+      className={`flex flex-col ${librarySearchEngaged ? 'pb-below-nav-search' : 'pb-below-nav'}`}
     >
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <header className="border-b border-border p-4 space-y-3">

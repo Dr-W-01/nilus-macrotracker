@@ -49,7 +49,7 @@ export function StatsTab() {
       : 'overview'
 
   return (
-    <div className="p-4 pb-24 space-y-4">
+    <div className="p-4 pb-below-nav space-y-4">
       <h1 className="text-xl font-bold">Stats</h1>
 
       <StatsPeriodBar range={range} />

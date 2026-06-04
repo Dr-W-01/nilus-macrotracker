@@ -22,8 +22,11 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur safe-bottom">
-      <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 safe-bottom"
+      style={{ paddingLeft: 'var(--safe-left)', paddingRight: 'var(--safe-right)' }}
+    >
+      <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2 pb-1">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = currentTab === id
           return (
