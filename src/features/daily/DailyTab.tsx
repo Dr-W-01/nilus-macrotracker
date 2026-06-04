@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Flame,
   Plus,
+  Scale,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AddFoodSheet } from '@/components/daily/AddFoodSheet'
@@ -23,6 +24,12 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { formatDisplayDate, shiftDate } from '@/lib/dates'
+import {
+  formatWeight,
+  parseWeightInput,
+  weightFromKg,
+  weightUnitLabel,
+} from '@/lib/weight'
 import {
   amountEatenFromServings,
   buildScaleLogPayload,
@@ -61,6 +68,7 @@ export function DailyTab() {
   const updateLoggedFood = useMacroStore((s) => s.updateLoggedFood)
   const removeLoggedFood = useMacroStore((s) => s.removeLoggedFood)
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
+  const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
   const setDailyNote = useMacroStore((s) => s.setDailyNote)
   const updateDailyLog = useMacroStore((s) => s.updateDailyLog)
 
@@ -89,6 +97,15 @@ export function DailyTab() {
   const [noteExpanded, setNoteExpanded] = useState(!!log.note)
   const [burnEditOpen, setBurnEditOpen] = useState(false)
   const [burnInput, setBurnInput] = useState(String(log.burnedCalories))
+  const [weightEditOpen, setWeightEditOpen] = useState(false)
+  const weightUnit = settings?.weightUnit ?? 'lbs'
+  const weightDisplay =
+    log.weightKg != null
+      ? formatWeight(log.weightKg, weightUnit)
+      : null
+  const [weightInput, setWeightInput] = useState(
+    log.weightKg != null ? String(weightFromKg(log.weightKg, weightUnit)) : '',
+  )
 
   const handleSelectFood = (food: FoodItem) => {
     setPickerOpen(false)
@@ -239,6 +256,31 @@ export function DailyTab() {
             Burned calories
           </span>
           <span className="font-semibold">{log.burnedCalories} cal</span>
+        </button>
+
+        <button
+          type="button"
+          className="flex w-full items-center justify-between rounded-lg border border-border px-4 py-3"
+          disabled={!editDayMode}
+          onClick={() => {
+            if (!editDayMode) return
+            setWeightInput(
+              log.weightKg != null
+                ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+                : '',
+            )
+            setWeightEditOpen(true)
+          }}
+        >
+          <span className="flex items-center gap-2">
+            <Scale className="h-5 w-5 text-primary" />
+            Weight
+          </span>
+          <span className="font-semibold">
+            {weightDisplay ?? (
+              <span className="text-muted-foreground font-normal">Not logged</span>
+            )}
+          </span>
         </button>
 
         <div className="rounded-lg border border-border">
@@ -422,6 +464,51 @@ export function DailyTab() {
           >
             Save
           </Button>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle>Weight ({weightUnitLabel(weightUnit)})</SheetTitle>
+          </SheetHeader>
+          <p className="text-xs text-muted-foreground">Optional — leave blank to clear</p>
+          <Input
+            type="number"
+            min={0}
+            inputMode="decimal"
+            step={0.1}
+            placeholder={`e.g. ${weightUnit === 'kg' ? '82' : '180'}`}
+            value={weightInput}
+            onChange={(e) => setWeightInput(e.target.value)}
+            className="text-2xl text-center h-14 my-4"
+          />
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={() => {
+              const kg = parseWeightInput(weightInput, weightUnit)
+              setDailyWeight(kg)
+              setWeightEditOpen(false)
+              toast.success(kg != null ? 'Weight saved' : 'Weight cleared')
+            }}
+          >
+            Save
+          </Button>
+          {log.weightKg != null && (
+            <Button
+              variant="ghost"
+              className="w-full mt-2"
+              onClick={() => {
+                setDailyWeight(undefined)
+                setWeightInput('')
+                setWeightEditOpen(false)
+                toast.success('Weight cleared')
+              }}
+            >
+              Clear weight
+            </Button>
+          )}
         </SheetContent>
       </Sheet>
     </div>

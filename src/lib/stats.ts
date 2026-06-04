@@ -12,6 +12,7 @@ import {
   getLoggedServingMultiplier,
   roundAmount,
 } from '@/lib/scale'
+import { normalizeGoalMode, type GoalMode } from '@/lib/goalMode'
 import type { DailyLog, FoodItem, GoalTemplate, LoggedFood, Settings } from '@/lib/types'
 
 export type StatsDayRow = {
@@ -213,9 +214,11 @@ export function generateInsights(
   rows: StatsDayRow[],
   period: 'week' | 'month' | 'custom',
   range: { start: string; end: string },
+  goalMode: GoalMode = 'cut',
 ): string[] {
   if (rows.length === 0) return ['Log foods on the Daily tab to unlock insights for this period.']
 
+  const mode = normalizeGoalMode(goalMode)
   const insights: string[] = []
   const periodLabel = period === 'month' ? 'month' : 'period'
   const n = rows.length
@@ -231,7 +234,12 @@ export function generateInsights(
     const deficitRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) < 0)
     const surplusRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
 
-    if (deficitRows.length > 0) {
+    const showDeficitInsight =
+      deficitRows.length > 0 && (mode === 'cut' || mode === 'maintain')
+    const showSurplusInsight =
+      surplusRows.length > 0 && (mode === 'bulk' || mode === 'maintain')
+
+    if (showDeficitInsight) {
       const avgTargetNet =
         deficitRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
         deficitRows.length
@@ -255,7 +263,7 @@ export function generateInsights(
       }
     }
 
-    if (surplusRows.length > 0) {
+    if (showSurplusInsight) {
       const avgTargetNet =
         surplusRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
         surplusRows.length
@@ -308,10 +316,16 @@ export function generateInsights(
   }
 
   const adherence = computeAdherenceBreakdown(rows)
+  const energyLabel =
+    mode === 'cut'
+      ? 'deficit goal'
+      : mode === 'bulk'
+        ? 'surplus goal'
+        : 'energy balance'
   insights.push(
-    `Adherence highlights: protein ${adherence.protein}% (met or exceeded), intake ${adherence.calories}%` +
+    `Adherence: protein ${adherence.protein}%, intake ${adherence.calories}%` +
       (adherence.targetDeficit != null
-        ? `, energy balance ${adherence.targetDeficit}%`
+        ? `, ${energyLabel} ${adherence.targetDeficit}%`
         : '') +
       '.',
   )

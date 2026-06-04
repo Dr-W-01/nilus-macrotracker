@@ -36,6 +36,8 @@ export interface DailyLog {
   goalTemplateId: string
   foods: LoggedFood[]
   burnedCalories: number
+  /** Body weight stored in kilograms (optional). */
+  weightKg?: number
   note: string
 }
 
@@ -56,9 +58,16 @@ export interface GoalTemplate {
   sugars: number
 }
 
+export type GoalMode = 'cut' | 'maintain' | 'bulk'
+export type WeightUnit = 'lbs' | 'kg'
+
 export interface Settings {
   goalTemplates: GoalTemplate[]
   defaultTemplateId: string
+  /** Presentation focus for Stats (does not change active templates). */
+  goalMode: GoalMode
+  /** Display unit for body weight logging. */
+  weightUnit: WeightUnit
   theme: 'dark' | 'light'
   accentColor: string
   /** Secondary / muted text (labels, hints, grey copy) */

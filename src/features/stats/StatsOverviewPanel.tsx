@@ -1,6 +1,12 @@
+import { useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
 import { DailyEnergyBalanceChart } from '@/components/stats/DailyEnergyBalanceChart'
+import { PeriodComparisonCard } from '@/components/stats/PeriodComparisonCard'
+import {
+  goalModeOverviewDescription,
+  goalModeOverviewTitle,
+} from '@/lib/goalMode'
 import {
   ADHERENCE_LABELS,
   type AdherenceKey,
@@ -15,7 +21,6 @@ import { roundMacro } from '@/lib/macros'
 import type { FoodItem, Settings } from '@/lib/types'
 import type { DailyLog } from '@/lib/types'
 
-const PRIMARY_ADHERENCE: AdherenceKey[] = ['calories', 'protein', 'targetDeficit']
 const OTHER_ADHERENCE: AdherenceKey[] = ['carbs', 'fat', 'fiber', 'sugars']
 
 const ADHERENCE_HINTS: Partial<Record<AdherenceKey, string>> = {
@@ -45,27 +50,49 @@ export function StatsOverviewPanel({
   settings,
   accentColor,
 }: StatsOverviewPanelProps) {
+  const goalMode = settings.goalMode ?? 'cut'
   const dayRows = buildStatsDayRows(range, dailyLogs, foodLibrary, settings)
   const prevRange = getPreviousRange(range)
   const prevRows = buildStatsDayRows(prevRange, dailyLogs, foodLibrary, settings)
 
   const totals = sumDayRows(dayRows)
-  const prevTotals = sumDayRows(prevRows)
   const loggedDays = dayRows.length
   const avgNet = loggedDays > 0 ? totals.net / loggedDays : 0
   const prevAvgNet =
-    prevRows.length > 0 ? prevTotals.net / prevRows.length : null
+    prevRows.length > 0 ? sumDayRows(prevRows).net / prevRows.length : null
   const netDelta =
     prevAvgNet != null && loggedDays > 0
       ? roundMacro(avgNet - prevAvgNet, 0)
       : null
 
   const adherence = computeAdherenceBreakdown(dayRows)
-  const insights = generateInsights(dayRows, statsPeriod, range)
+  const insights = generateInsights(dayRows, statsPeriod, range, goalMode)
   const balanceChartData = dayRows.map((d) => ({
     label: format(parseISO(d.date), 'M/d'),
     net: roundMacro(d.net, 0),
   }))
+
+  const primaryKeys = useMemo(() => {
+    const keys: AdherenceKey[] = []
+    if (
+      adherence.targetDeficit != null &&
+      (goalMode === 'cut' || goalMode === 'bulk')
+    ) {
+      keys.push('targetDeficit')
+    }
+    keys.push('calories', 'protein')
+    if (adherence.targetDeficit != null && goalMode === 'maintain') {
+      keys.push('targetDeficit')
+    }
+    return keys
+  }, [adherence.targetDeficit, goalMode])
+
+  const netHeadline =
+    goalMode === 'cut'
+      ? 'Net Calories (deficit tracking)'
+      : goalMode === 'bulk'
+        ? 'Net Calories (surplus tracking)'
+        : 'Net Calories (period total)'
 
   const comparisonText =
     netDelta == null
@@ -84,12 +111,19 @@ export function StatsOverviewPanel({
     )
   }
 
-  const primaryKeys = PRIMARY_ADHERENCE.filter((key) => adherence[key] != null)
-
   return (
     <div className="space-y-4">
+      <Card className="border-primary/25 bg-primary/5">
+        <CardContent className="pt-3 pb-3">
+          <p className="text-sm font-semibold">{goalModeOverviewTitle(goalMode)}</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-snug">
+            {goalModeOverviewDescription(goalMode)}
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="text-center py-2">
-        <p className="text-sm text-muted-foreground">Net Calories (period total)</p>
+        <p className="text-sm text-muted-foreground">{netHeadline}</p>
         <p className="text-5xl font-bold tracking-tight text-primary">
           {roundMacro(totals.net, 0)}
         </p>
@@ -100,19 +134,35 @@ export function StatsOverviewPanel({
         </p>
       </div>
 
+      <PeriodComparisonCard
+        range={range}
+        prevRange={prevRange}
+        statsPeriod={statsPeriod}
+        dailyLogs={dailyLogs}
+        foodLibrary={foodLibrary}
+        settings={settings}
+        goalMode={goalMode}
+      />
+
       <Card>
         <CardContent className="pt-4 pb-3 space-y-4">
           <div>
             <p className="text-sm font-medium">Goal adherence</p>
             <p className="text-xs text-muted-foreground mt-1">
               % of logged days on target. Protein counts when you meet or beat the goal.
-              Energy balance compares net calories (eaten − burned) to your deficit/surplus goal.
+              {goalMode === 'cut'
+                ? ' Energy balance is your deficit net calorie goal.'
+                : goalMode === 'bulk'
+                  ? ' Energy balance is your surplus net calorie goal.'
+                  : ' Energy balance uses your template net goal when set.'}
             </p>
           </div>
 
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Calories &amp; protein
+              {goalMode === 'cut' || goalMode === 'bulk'
+                ? 'Priority metrics'
+                : 'Calories & protein'}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {primaryKeys.map((key) => (
@@ -121,7 +171,11 @@ export function StatsOverviewPanel({
                   label={ADHERENCE_LABELS[key]}
                   hint={ADHERENCE_HINTS[key]}
                   percent={adherence[key]!}
-                  prominent={key === 'calories' || key === 'protein'}
+                  prominent={
+                    key === 'targetDeficit' ||
+                    key === 'calories' ||
+                    key === 'protein'
+                  }
                 />
               ))}
             </div>

@@ -20,7 +20,9 @@ import type {
   LoggedFood,
   Settings,
 } from '@/lib/types'
+import { DEFAULT_GOAL_MODE, normalizeGoalMode } from '@/lib/goalMode'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
+import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
 import { generateId } from '@/lib/utils'
 
 const defaultGoal: GoalTemplate = {
@@ -37,6 +39,8 @@ const defaultGoal: GoalTemplate = {
 const defaultSettings: Settings = {
   goalTemplates: [defaultGoal],
   defaultTemplateId: 'default',
+  goalMode: DEFAULT_GOAL_MODE,
+  weightUnit: DEFAULT_WEIGHT_UNIT,
   theme: 'dark',
   accentColor: DEFAULT_ACCENT_COLOR,
   secondaryTextColor: DEFAULT_SECONDARY_TEXT_COLOR,
@@ -67,7 +71,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 3
+const PERSIST_VERSION = 4
 
 type PersistedSlice = {
   settings?: Settings
@@ -108,14 +112,28 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
       accentColor: persisted.settings?.accentColor ?? defaultSettings.accentColor,
       secondaryTextColor:
         persisted.settings?.secondaryTextColor ?? defaultSettings.secondaryTextColor,
+      goalMode: normalizeGoalMode(persisted.settings?.goalMode),
+      weightUnit: normalizeWeightUnit(persisted.settings?.weightUnit),
     },
+    dailyLogs: Object.fromEntries(
+      Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
+        date,
+        {
+          ...log,
+          weightKg:
+            log.weightKg != null && Number.isFinite(log.weightKg) && log.weightKg > 0
+              ? log.weightKg
+              : undefined,
+        },
+      ]),
+    ),
     customCategories: Array.isArray(persisted.customCategories)
       ? persisted.customCategories
       : [],
     foodLibrary: (persisted.foodLibrary ?? []).map((item) =>
       normalizeLibraryItem(item, persisted.foodLibrary),
     ),
-    dailyLogs: persisted.dailyLogs ?? {},
+
     statsRangeStart: persisted.statsRangeStart ?? week.start,
     statsRangeEnd: persisted.statsRangeEnd ?? week.end,
   }
@@ -168,6 +186,7 @@ interface MacroStore {
   updateLoggedFood: (loggedId: string, patch: Partial<LoggedFood>, date?: string) => void
   removeLoggedFood: (loggedId: string, date?: string) => void
   setBurnedCalories: (value: number, date?: string) => void
+  setDailyWeight: (weightKg: number | undefined, date?: string) => void
   setDailyNote: (note: string, date?: string) => void
 
   loadSeedLibrary: () => void
@@ -275,6 +294,16 @@ export const useMacroStore = create<MacroStore>()(
       setBurnedCalories: (value, date) => {
         const d = date ?? get().currentDate
         get().updateDailyLog(d, { burnedCalories: Math.max(0, value) })
+      },
+
+      setDailyWeight: (weightKg, date) => {
+        const d = date ?? get().currentDate
+        get().updateDailyLog(d, {
+          weightKg:
+            weightKg != null && Number.isFinite(weightKg) && weightKg > 0
+              ? weightKg
+              : undefined,
+        })
       },
 
       setDailyNote: (note, date) => {
@@ -534,6 +563,13 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 4 && raw.settings) {
+          raw.settings = {
+            ...raw.settings,
+            goalMode: normalizeGoalMode(raw.settings.goalMode),
+            weightUnit: normalizeWeightUnit(raw.settings.weightUnit),
+          }
+        }
         if (version < 3 && raw.settings?.goalTemplates) {
           raw.settings = {
             ...raw.settings,

@@ -13,19 +13,20 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+import { defaultTrendMetricsForMode } from '@/lib/goalMode'
 import { buildStatsDayRows, rollingAverage } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 type MetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
 
-const METRIC_OPTIONS: { key: MetricKey; label: string }[] = [
-  { key: 'net', label: 'Net Calories' },
-  { key: 'calories', label: 'Calories In' },
-  { key: 'protein', label: 'Protein (g)' },
-  { key: 'carbs', label: 'Carbs (g)' },
-  { key: 'fat', label: 'Fat (g)' },
+const METRIC_OPTIONS: { key: MetricKey; label: string; short: string }[] = [
+  { key: 'net', label: 'Net Calories', short: 'Net' },
+  { key: 'calories', label: 'Calories In', short: 'In' },
+  { key: 'protein', label: 'Protein', short: 'Protein' },
+  { key: 'carbs', label: 'Carbs', short: 'Carbs' },
+  { key: 'fat', label: 'Fat', short: 'Fat' },
 ]
 
 const COLORS: Record<MetricKey, string> = {
@@ -53,11 +54,14 @@ export function StatsTrendsPanel({
   accentColor,
   onDayClick,
 }: StatsTrendsPanelProps) {
+  const goalMode = settings.goalMode ?? 'cut'
+  const defaultMetrics = defaultTrendMetricsForMode(goalMode)
+
   const [enabled, setEnabled] = useState<Set<MetricKey>>(
-    () => new Set<MetricKey>(['calories']),
+    () => new Set<MetricKey>(defaultMetrics as MetricKey[]),
   )
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
-  const [showRolling, setShowRolling] = useState(true)
+  const [showRolling, setShowRolling] = useState(false)
 
   const dayRows = useMemo(
     () => buildStatsDayRows(range, dailyLogs, foodLibrary, settings),
@@ -112,49 +116,65 @@ export function StatsTrendsPanel({
     )
   }
 
+  const singleMetric = enabled.size === 1
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Metrics to display</CardTitle>
+        <CardHeader className="pb-2 pt-3">
+          <CardTitle className="text-sm">Chart lines</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            {goalMode === 'cut'
+              ? 'Net calories selected by default for cut mode. Tap to add more.'
+              : goalMode === 'bulk'
+                ? 'Net calories selected by default for bulk mode.'
+                : 'Calories in selected by default for maintain mode.'}
+          </p>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-x-4 gap-y-2">
-          {METRIC_OPTIONS.map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
+        <CardContent className="space-y-3 pb-3">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {METRIC_OPTIONS.map(({ key, short }) => {
+              const on = enabled.has(key)
+              return (
+                <Button
+                  key={key}
+                  type="button"
+                  size="sm"
+                  variant={on ? 'default' : 'outline'}
+                  className={cn('h-10 text-xs', on && key === 'net' && 'ring-1 ring-primary/40')}
+                  onClick={() => toggleMetric(key)}
+                >
+                  {short}
+                </Button>
+              )
+            })}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
+            <Button
+              size="sm"
+              variant={rollingWindow === 7 ? 'default' : 'outline'}
+              onClick={() => setRollingWindow(7)}
+            >
+              7d
+            </Button>
+            <Button
+              size="sm"
+              variant={rollingWindow === 14 ? 'default' : 'outline'}
+              onClick={() => setRollingWindow(14)}
+            >
+              14d
+            </Button>
+            <label className="flex items-center gap-2 text-xs ml-auto cursor-pointer">
               <Checkbox
-                checked={enabled.has(key)}
-                onChange={() => toggleMetric(key)}
+                checked={showRolling}
+                onChange={() => setShowRolling((v) => !v)}
               />
-              <span>{label}</span>
+              Show average line
             </label>
-          ))}
+          </div>
         </CardContent>
       </Card>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Label className="text-xs text-muted-foreground shrink-0">Rolling avg:</Label>
-        <Button
-          size="sm"
-          variant={rollingWindow === 7 ? 'default' : 'outline'}
-          onClick={() => setRollingWindow(7)}
-        >
-          7-day
-        </Button>
-        <Button
-          size="sm"
-          variant={rollingWindow === 14 ? 'default' : 'outline'}
-          onClick={() => setRollingWindow(14)}
-        >
-          14-day
-        </Button>
-        <label className="flex items-center gap-2 text-sm ml-auto cursor-pointer">
-          <Checkbox
-            checked={showRolling}
-            onChange={() => setShowRolling((v) => !v)}
-          />
-          Show average
-        </label>
-      </div>
 
       <Card>
         <CardHeader className="pb-2">
@@ -178,7 +198,7 @@ export function StatsTrendsPanel({
               <XAxis dataKey="date" stroke="#888" fontSize={11} />
               <YAxis stroke="#888" fontSize={11} />
               <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
-              <Legend />
+              {!singleMetric && <Legend wrapperStyle={{ fontSize: 11 }} />}
               {[...enabled].map((key) => (
                 <Line
                   key={key}
@@ -186,7 +206,7 @@ export function StatsTrendsPanel({
                   dataKey={key}
                   name={METRIC_OPTIONS.find((m) => m.key === key)?.label ?? key}
                   stroke={key === 'net' ? accentColor : COLORS[key]}
-                  strokeWidth={2}
+                  strokeWidth={key === 'net' ? 2.5 : 2}
                   dot={{ r: 3, cursor: 'pointer' }}
                 />
               ))}

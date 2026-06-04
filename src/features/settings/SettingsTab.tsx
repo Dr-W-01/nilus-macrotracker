@@ -18,8 +18,9 @@ import {
   DEFAULT_SECONDARY_TEXT_COLOR,
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
+import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
 import { formatTargetDeficitShort } from '@/lib/stats'
-import type { GoalTemplate } from '@/lib/types'
+import type { GoalMode, GoalTemplate, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
 
@@ -93,6 +94,30 @@ export function SettingsTab() {
     <div className="p-4 pb-24 space-y-6">
       <h1 className="text-xl font-bold">Settings</h1>
 
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-semibold">Current Goal Mode</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Shapes Stats messaging and defaults. Does not change which goal template you use on
+            Daily.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-1 rounded-lg border border-border bg-secondary/50 p-1">
+          {GOAL_MODE_OPTIONS.map(({ value, label }) => (
+            <Button
+              key={value}
+              type="button"
+              size="sm"
+              variant={(settings.goalMode ?? 'cut') === value ? 'default' : 'ghost'}
+              className="h-10"
+              onClick={() => updateSettings({ goalMode: value as GoalMode })}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+      </section>
+
       <section>
         <h2 className="font-semibold mb-3">Goals & Templates</h2>
         <ul className="space-y-2 mb-3">
@@ -155,6 +180,31 @@ export function SettingsTab() {
         >
           Create new template
         </Button>
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-semibold">Units</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Weight logged on the Daily tab uses this unit.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            className="flex-1"
+            variant={(settings.weightUnit ?? 'lbs') === 'lbs' ? 'default' : 'outline'}
+            onClick={() => updateSettings({ weightUnit: 'lbs' as WeightUnit })}
+          >
+            Pounds (lbs)
+          </Button>
+          <Button
+            className="flex-1"
+            variant={settings.weightUnit === 'kg' ? 'default' : 'outline'}
+            onClick={() => updateSettings({ weightUnit: 'kg' })}
+          >
+            Kilograms (kg)
+          </Button>
+        </div>
       </section>
 
       <section className="space-y-4">
