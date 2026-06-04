@@ -432,6 +432,21 @@ export function DailyTab() {
               </div>
             )}
           </div>
+
+          {editDayMode && selectFoodsMode && log.foods.length > 0 && (
+            <div className="sticky top-0 z-10 -mx-1 mb-3 bg-background/95 py-1 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+              <BulkMealAssignBar
+                count={selectedLogIds.size}
+                meals={meals}
+                assignMeal={bulkAssignMeal}
+                onAssignMealChange={setBulkAssignMeal}
+                onAssign={handleBulkAssignMeal}
+                onClear={() => setSelectedLogIds(new Set())}
+                onDone={exitSelectMode}
+              />
+            </div>
+          )}
+
           {log.foods.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-8 text-center">
               <p className="text-muted-foreground mb-4">No foods logged yet</p>
@@ -546,18 +561,6 @@ export function DailyTab() {
           )}
         </div>
       </div>
-
-      {editDayMode && selectFoodsMode && (
-        <BulkMealAssignBar
-          count={selectedLogIds.size}
-          meals={meals}
-          assignMeal={bulkAssignMeal}
-          onAssignMealChange={setBulkAssignMeal}
-          onAssign={handleBulkAssignMeal}
-          onClear={() => setSelectedLogIds(new Set())}
-          onDone={exitSelectMode}
-        />
-      )}
 
       {editDayMode && !selectFoodsMode && (
         <Button

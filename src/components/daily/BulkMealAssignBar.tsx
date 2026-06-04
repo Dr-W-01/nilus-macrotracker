@@ -20,19 +20,21 @@ export function BulkMealAssignBar({
   onClear,
   onDone,
 }: BulkMealAssignBarProps) {
-  if (count === 0) return null
-
   return (
-    <div className="fixed bottom-20 left-0 right-0 z-40 mx-3 rounded-xl border border-primary/40 bg-card/95 backdrop-blur shadow-lg p-3 space-y-2 safe-bottom">
+    <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2.5 space-y-2">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium">
-          {count} {count === 1 ? 'item' : 'items'} selected
+          {count > 0
+            ? `${count} ${count === 1 ? 'item' : 'items'} selected`
+            : 'Tap foods below to select'}
         </span>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={onClear}>
-            Clear
-          </Button>
-          <Button variant="ghost" size="sm" onClick={onDone}>
+        <div className="flex shrink-0 gap-1">
+          {count > 0 && (
+            <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onClear}>
+              Clear
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onDone}>
             Done
           </Button>
         </div>
@@ -44,8 +46,8 @@ export function BulkMealAssignBar({
         onChange={onAssignMealChange}
         compact
       />
-      <Button className="w-full" onClick={onAssign}>
-        Assign to {assignMeal}
+      <Button className="w-full h-10" disabled={count === 0} onClick={onAssign}>
+        {count > 0 ? `Assign to ${assignMeal}` : 'Select items to assign'}
       </Button>
     </div>
   )
