@@ -13,8 +13,13 @@ const TABS: { id: AppTab; label: string; icon: typeof CalendarDays }[] = [
 
 export function BottomNav() {
   const currentTab = useMacroStore((s) => s.currentTab)
+  const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
   const setCurrentTab = useMacroStore((s) => s.setCurrentTab)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
+
+  if (currentTab === 'library' && librarySearchEngaged) {
+    return null
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur safe-bottom">

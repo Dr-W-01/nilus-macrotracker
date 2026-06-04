@@ -188,9 +188,12 @@ interface MacroStore {
   statsRangeEnd: string
   statsView: 'overview' | 'trends' | 'breakdowns'
   statsAnchorDate: string
+  /** Hide bottom nav while Library search is active (focused or filtering) */
+  librarySearchEngaged: boolean
 
   setHasHydrated: (v: boolean) => void
   setCurrentTab: (tab: AppTab) => void
+  setLibrarySearchEngaged: (v: boolean) => void
   setCurrentDate: (date: string) => void
   setEditDayMode: (v: boolean) => void
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
@@ -257,9 +260,16 @@ export const useMacroStore = create<MacroStore>()(
       statsRangeEnd: getWeekRange().end,
       statsView: 'overview',
       statsAnchorDate: todayString(),
+      librarySearchEngaged: false,
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
-      setCurrentTab: (tab) => set({ currentTab: tab }),
+      setCurrentTab: (tab) =>
+        set({
+          currentTab: tab,
+          librarySearchEngaged:
+            tab === 'library' ? get().librarySearchEngaged : false,
+        }),
+      setLibrarySearchEngaged: (v) => set({ librarySearchEngaged: v }),
       setCurrentDate: (date) => set({ currentDate: date }),
       setEditDayMode: (v) => set({ editDayMode: v }),
       setLibrarySegment: (s) => set({ librarySegment: s }),

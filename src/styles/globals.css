@@ -112,3 +112,19 @@ body {
 .daily-tab .text-muted-foreground {
   color: var(--daily-muted, var(--muted-foreground));
 }
+
+/* Library search: lean mobile keyboard, fewer browser decorations */
+input[type='search'].library-search-input,
+#library-filter-input {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type='search'].library-search-input::-webkit-search-decoration,
+input[type='search'].library-search-input::-webkit-search-cancel-button,
+#library-filter-input::-webkit-search-decoration,
+#library-filter-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}

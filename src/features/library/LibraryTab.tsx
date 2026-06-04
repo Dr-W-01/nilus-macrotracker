@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+import { LibrarySearchInput } from '@/components/library/LibrarySearchInput'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
 import { collectAllCategories, itemsInCategory } from '@/lib/categories'
@@ -47,8 +47,11 @@ export function LibraryTab() {
   const deleteFoodItems = useMacroStore((s) => s.deleteFoodItems)
   const removeLibraryCategory = useMacroStore((s) => s.removeLibraryCategory)
   const deleteLibraryCategory = useMacroStore((s) => s.deleteLibraryCategory)
+  const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
+  const setLibrarySearchEngaged = useMacroStore((s) => s.setLibrarySearchEngaged)
 
   const [query, setQuery] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
@@ -84,6 +87,14 @@ export function LibraryTab() {
       : librarySegment === 'recipes'
         ? 'recipes'
         : 'items'
+
+  useEffect(() => {
+    setLibrarySearchEngaged(searchFocused || query.trim().length > 0)
+  }, [searchFocused, query, setLibrarySearchEngaged])
+
+  useEffect(() => {
+    return () => setLibrarySearchEngaged(false)
+  }, [setLibrarySearchEngaged])
 
   useEffect(() => {
     setActiveCategory(null)
@@ -224,7 +235,9 @@ export function LibraryTab() {
   }
 
   return (
-    <div className="flex flex-col pb-28">
+    <div
+      className={`flex flex-col ${librarySearchEngaged ? 'pb-4' : 'pb-28'}`}
+    >
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <header className="border-b border-border p-4 space-y-3">
           <div className="flex items-center justify-between gap-2">
@@ -274,7 +287,7 @@ export function LibraryTab() {
           )}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
+            <LibrarySearchInput
               placeholder={
                 librarySegment === 'categories' && !activeCategory
                   ? 'Search categories...'
@@ -284,7 +297,9 @@ export function LibraryTab() {
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 [&::-webkit-search-cancel-button]:appearance-none"
+              onSearchFocus={() => setSearchFocused(true)}
+              onSearchBlur={() => setSearchFocused(false)}
             />
           </div>
           {!editMode && librarySegment === 'items' && (
