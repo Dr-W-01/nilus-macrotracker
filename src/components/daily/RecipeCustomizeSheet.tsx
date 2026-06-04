@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import { MealPicker } from '@/components/daily/MealPicker'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import {
   amountEatenFromServings,
@@ -55,7 +62,7 @@ export function RecipeCustomizeSheet({
       }
     })
     setOverrides(initial)
-  }, [recipe, library, open])
+  }, [recipe, library, open, meals])
 
   if (!recipe?.recipeComponents) return null
 
@@ -77,24 +84,56 @@ export function RecipeCustomizeSheet({
         onOpenChange(v)
       }}
     >
-      <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto">
-        <SheetHeader>
+      <ModalViewport active={open} />
+      <SheetContent
+        side="bottom"
+        className={scrollSheetContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollSheetHeader>
           <SheetTitle>Customize {recipe.name}</SheetTitle>
-        </SheetHeader>
-        <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-muted-foreground">
-          Adjust portions for <span className="font-medium text-foreground">this log entry</span> only.
-          The library recipe stays unchanged.
-        </div>
-        <div className="space-y-6 py-4">
-          {recipe.recipeComponents.map((comp) => {
-            const food = library.find((f) => f.id === comp.foodId)
-            if (!food) return null
-            const state = overrides[comp.foodId] ?? { quantity: comp.quantity }
+        </ScrollSheetHeader>
+        <ScrollSheetBody className="space-y-4">
+          <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-muted-foreground">
+            Adjust portions for <span className="font-medium text-foreground">this log entry</span> only.
+            The library recipe stays unchanged.
+          </div>
+          <div className="space-y-6">
+            {recipe.recipeComponents.map((comp) => {
+              const food = library.find((f) => f.id === comp.foodId)
+              if (!food) return null
+              const state = overrides[comp.foodId] ?? { quantity: comp.quantity }
 
-            if (food.scaleType === 'scale') {
-              const eaten =
-                state.scaleAmountEaten ??
-                amountEatenFromServings(getFoodBaseAmount(food), state.quantity)
+              if (food.scaleType === 'scale') {
+                const eaten =
+                  state.scaleAmountEaten ??
+                  amountEatenFromServings(getFoodBaseAmount(food), state.quantity)
+
+                return (
+                  <div key={comp.foodId} className="border-b border-border pb-4 last:border-0">
+                    <p className="font-medium mb-2">{food.name}</p>
+                    <QuantityInput
+                      food={food}
+                      note=""
+                      onNoteChange={() => {}}
+                      showNote={false}
+                      amountEaten={eaten}
+                      onAmountEatenChange={(amount) => {
+                        const payload = buildScaleLogPayload(food, amount)
+                        setOverrides((prev) => ({
+                          ...prev,
+                          [comp.foodId]: {
+                            quantity: payload.quantity,
+                            scaleAmountEaten: payload.scaleAmountEaten,
+                          },
+                        }))
+                      }}
+                    />
+                  </div>
+                )
+              }
+
+              const countQty = Math.max(1, Math.round(state.quantity))
 
               return (
                 <div key={comp.foodId} className="border-b border-border pb-4 last:border-0">
@@ -104,57 +143,33 @@ export function RecipeCustomizeSheet({
                     note=""
                     onNoteChange={() => {}}
                     showNote={false}
-                    amountEaten={eaten}
-                    onAmountEatenChange={(amount) => {
-                      const payload = buildScaleLogPayload(food, amount)
+                    countQuantity={countQty}
+                    onCountQuantityChange={(q) =>
                       setOverrides((prev) => ({
                         ...prev,
-                        [comp.foodId]: {
-                          quantity: payload.quantity,
-                          scaleAmountEaten: payload.scaleAmountEaten,
-                        },
+                        [comp.foodId]: { quantity: q },
                       }))
-                    }}
+                    }
                   />
                 </div>
               )
-            }
-
-            const countQty = Math.max(1, Math.round(state.quantity))
-
-            return (
-              <div key={comp.foodId} className="border-b border-border pb-4 last:border-0">
-                <p className="font-medium mb-2">{food.name}</p>
-                <QuantityInput
-                  food={food}
-                  note=""
-                  onNoteChange={() => {}}
-                  showNote={false}
-                  countQuantity={countQty}
-                  onCountQuantityChange={(q) =>
-                    setOverrides((prev) => ({
-                      ...prev,
-                      [comp.foodId]: { quantity: q },
-                    }))
-                  }
-                />
-              </div>
-            )
-          })}
-        </div>
-        <MealPicker
-          label="Add to meal"
-          meals={meals}
-          value={meal}
-          onChange={setMeal}
-          className="mb-4"
-        />
-        <Button size="lg" className="w-full" onClick={handleConfirm}>
-          Add customized recipe
-        </Button>
-        <Button size="lg" variant="ghost" className="w-full mt-2" onClick={onCancel}>
-          Cancel
-        </Button>
+            })}
+          </div>
+          <MealPicker
+            label="Add to meal"
+            meals={meals}
+            value={meal}
+            onChange={setMeal}
+          />
+        </ScrollSheetBody>
+        <ScrollSheetFooter>
+          <Button size="lg" className="w-full" onClick={handleConfirm}>
+            Add customized recipe
+          </Button>
+          <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
+            Cancel
+          </Button>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

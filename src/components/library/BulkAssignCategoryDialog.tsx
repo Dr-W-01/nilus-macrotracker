@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { collectAllCategories, normalizeCategoryList } from '@/lib/categories'
@@ -76,68 +78,72 @@ export function BulkAssignCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <ModalViewport active={open} />
+      <DialogContent className={scrollDialogContentClass}>
+        <ScrollDialogHeader>
           <DialogTitle>Assign category</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground">
-          Tap a category to add it to {selectedIds.length} selected{' '}
-          {selectedIds.length === 1 ? 'item' : 'items'}. Existing tags are kept.
-        </p>
+        </ScrollDialogHeader>
+        <ScrollDialogBody className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Tap a category to add it to {selectedIds.length} selected{' '}
+            {selectedIds.length === 1 ? 'item' : 'items'}. Existing tags are kept.
+          </p>
 
-        {categories.length > 0 && (
-          <ul className="max-h-56 overflow-y-auto rounded-lg border border-border divide-y divide-border">
-            {categories.map((cat) => (
-              <li key={cat}>
-                <button
-                  type="button"
-                  className="w-full px-3 py-3 text-left text-sm font-medium active:bg-primary/15 hover:bg-secondary/40"
-                  onClick={() => assignToCategory(cat)}
-                >
-                  {cat}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <div className="space-y-2 pt-1">
-          {!showCreate && categories.length > 0 ? (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setShowCreate(true)}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              New category
-            </Button>
-          ) : (
-            <>
-              <Label className="text-xs">New category</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Category name..."
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleCreateAndAssign()
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleCreateAndAssign}>
-                  Add
-                </Button>
-              </div>
-            </>
+          {categories.length > 0 && (
+            <ul className="rounded-lg border border-border divide-y divide-border">
+              {categories.map((cat) => (
+                <li key={cat}>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-3 text-left text-sm font-medium active:bg-primary/15 hover:bg-secondary/40"
+                    onClick={() => assignToCategory(cat)}
+                  >
+                    {cat}
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
 
-        <Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
+          <div className="space-y-2">
+            {!showCreate && categories.length > 0 ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowCreate(true)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                New category
+              </Button>
+            ) : (
+              <>
+                <Label className="text-xs">New category</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Category name..."
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleCreateAndAssign()
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={handleCreateAndAssign}>
+                    Add
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </ScrollDialogBody>
+        <ScrollDialogFooter>
+          <Button size="lg" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </ScrollDialogFooter>
       </DialogContent>
     </Dialog>
   )

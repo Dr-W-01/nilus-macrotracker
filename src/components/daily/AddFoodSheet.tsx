@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { MealPicker } from '@/components/daily/MealPicker'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { buildScaleLogPayload, getFoodBaseAmount } from '@/lib/scale'
@@ -91,40 +98,51 @@ export function AddFoodSheet({
         onOpenChange(v)
       }}
     >
-      <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto">
-        <SheetHeader>
+      <ModalViewport active={open} />
+      <SheetContent
+        side="bottom"
+        className={scrollSheetContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollSheetHeader>
           <SheetTitle>{food.name}</SheetTitle>
-        </SheetHeader>
-        <QuantityInput
-          food={food}
-          note={note}
-          onNoteChange={setNote}
-          countQuantity={countQty}
-          onCountQuantityChange={setCountQty}
-          amountEaten={amountEaten}
-          onAmountEatenChange={setAmountEaten}
-        />
-        {macros && (
-          <p className="text-center text-sm text-muted-foreground my-4">
-            Total: {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C{' '}
-            {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)}
-          </p>
-        )}
-        <MealPicker
-          label="Add to meal"
-          meals={meals}
-          value={meal}
-          onChange={setMeal}
-          className="mb-4"
-        />
-        <div className="flex flex-col gap-2">
-          <Button size="lg" onClick={handleAdd} disabled={food.scaleType === 'scale' && amountEaten <= 0}>
+        </ScrollSheetHeader>
+        <ScrollSheetBody className="space-y-4">
+          <QuantityInput
+            food={food}
+            note={note}
+            onNoteChange={setNote}
+            countQuantity={countQty}
+            onCountQuantityChange={setCountQty}
+            amountEaten={amountEaten}
+            onAmountEatenChange={setAmountEaten}
+          />
+          {macros && (
+            <p className="text-center text-sm text-muted-foreground">
+              Total: {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C{' '}
+              {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)}
+            </p>
+          )}
+          <MealPicker
+            label="Add to meal"
+            meals={meals}
+            value={meal}
+            onChange={setMeal}
+          />
+        </ScrollSheetBody>
+        <ScrollSheetFooter>
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handleAdd}
+            disabled={food.scaleType === 'scale' && amountEaten <= 0}
+          >
             Add to {dateLabel}
           </Button>
-          <Button size="lg" variant="ghost" onClick={onCancel}>
+          <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
             Cancel
           </Button>
-        </div>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

@@ -1,10 +1,12 @@
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
 
 interface DeleteCategoryDialogProps {
   open: boolean
@@ -27,26 +29,31 @@ export function DeleteCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
+      <ModalViewport active={open} />
+      <DialogContent className={scrollDialogContentClass}>
+        <ScrollDialogHeader>
           <DialogTitle>Delete &quot;{category}&quot;?</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground">
-          {itemCount > 0
-            ? `${itemCount} ${itemCount === 1 ? 'item uses' : 'items use'} this category.`
-            : 'No items are tagged with this category.'}
-        </p>
-        <Button variant="outline" className="w-full" onClick={onUnlinkOnly}>
-          Remove category from items
-        </Button>
-        {itemCount > 0 && (
-          <Button variant="destructive" className="w-full" onClick={onDeleteItems}>
-            Delete {itemCount} {itemCount === 1 ? 'item' : 'items'} too
+        </ScrollDialogHeader>
+        <ScrollDialogBody className="py-2">
+          <p className="text-sm text-muted-foreground">
+            {itemCount > 0
+              ? `${itemCount} ${itemCount === 1 ? 'item uses' : 'items use'} this category.`
+              : 'No items are tagged with this category.'}
+          </p>
+        </ScrollDialogBody>
+        <ScrollDialogFooter>
+          <Button size="lg" variant="outline" className="w-full" onClick={onUnlinkOnly}>
+            Remove category from items
           </Button>
-        )}
-        <Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
+          {itemCount > 0 && (
+            <Button size="lg" variant="destructive" className="w-full" onClick={onDeleteItems}>
+              Delete {itemCount} {itemCount === 1 ? 'item' : 'items'} too
+            </Button>
+          )}
+          <Button size="lg" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </ScrollDialogFooter>
       </DialogContent>
     </Dialog>
   )

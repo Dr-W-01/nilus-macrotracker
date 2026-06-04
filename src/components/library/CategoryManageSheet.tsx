@@ -3,7 +3,14 @@ import { Pencil, Trash2, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { itemsInCategory } from '@/lib/categories'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -64,73 +71,85 @@ export function CategoryManageSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl">
-        <SheetHeader>
+      <ModalViewport active={open} />
+      <SheetContent side="bottom" className={scrollSheetContentClass}>
+        <ScrollSheetHeader>
           <SheetTitle>{category}</SheetTitle>
           <p className="text-xs text-muted-foreground font-normal">
             {memberCount} {memberCount === 1 ? 'item' : 'items'}
           </p>
-        </SheetHeader>
+        </ScrollSheetHeader>
 
-        <div className="space-y-2 py-4">
+        <ScrollSheetBody className="space-y-2">
           {renaming ? (
-            <div className="space-y-2">
-              <Input
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                placeholder="Category name"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleRename()
-                  }
-                }}
-              />
-              <div className="flex gap-2">
-                <Button className="flex-1" onClick={handleRename}>
-                  Save name
-                </Button>
-                <Button variant="ghost" onClick={() => setRenaming(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
+            <Input
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              placeholder="Category name"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleRename()
+                }
+              }}
+            />
           ) : (
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={() => setRenaming(true)}
-            >
-              <Pencil className="h-4 w-4" />
-              Rename category
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={() => setRenaming(true)}
+              >
+                <Pencil className="h-4 w-4" />
+                Rename category
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={() => {
+                  onOpenChange(false)
+                  onEditMembership()
+                }}
+              >
+                <Users className="h-4 w-4" />
+                Add or remove items
+              </Button>
+            </>
           )}
+        </ScrollSheetBody>
 
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-2"
-            onClick={() => {
-              onOpenChange(false)
-              onEditMembership()
-            }}
-          >
-            <Users className="h-4 w-4" />
-            Add or remove items
-          </Button>
-
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-2 text-destructive border-destructive/40"
-            onClick={() => {
-              onOpenChange(false)
-              onRequestDelete()
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete category…
-          </Button>
-        </div>
+        <ScrollSheetFooter>
+          {renaming ? (
+            <>
+              <Button size="lg" className="w-full" onClick={handleRename}>
+                Save name
+              </Button>
+              <Button size="lg" variant="ghost" className="w-full" onClick={() => setRenaming(false)}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full justify-center gap-2 text-destructive border-destructive/40"
+                onClick={() => {
+                  onOpenChange(false)
+                  onRequestDelete()
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete category…
+              </Button>
+              <Button size="lg" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            </>
+          )}
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

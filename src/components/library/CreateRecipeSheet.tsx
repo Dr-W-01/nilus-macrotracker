@@ -5,7 +5,14 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { computeComponentMacros, roundMacro } from '@/lib/macros'
 import type { FoodItem } from '@/lib/types'
@@ -77,9 +84,16 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto">
-        <SheetHeader><SheetTitle>Create Recipe</SheetTitle></SheetHeader>
-        <div className="space-y-4 py-2">
+      <ModalViewport active={open} />
+      <SheetContent
+        side="bottom"
+        className={scrollSheetContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollSheetHeader>
+          <SheetTitle>Create Recipe</SheetTitle>
+        </ScrollSheetHeader>
+        <ScrollSheetBody className="space-y-4">
           <div>
             <Label>Recipe name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="My meal..." />
@@ -135,29 +149,34 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input placeholder="Search foods to add..." value={query} onChange={(e) => setQuery(e.target.value)} className="pl-9" />
               </div>
-              <div className="max-h-40 overflow-y-auto space-y-1">
+              <ul className="space-y-1">
                 {nonRecipes.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    className="w-full text-left rounded-lg border px-3 py-2 text-sm hover:bg-secondary"
-                    onClick={() => {
-                      setAdding(f)
-                      setAddQty(1)
-                      setAddAmountEaten(getFoodBaseAmount(f))
-                    }}
-                  >
-                    {f.name}
-                  </button>
+                  <li key={f.id}>
+                    <button
+                      type="button"
+                      className="w-full text-left rounded-lg border px-3 py-2 text-sm hover:bg-secondary"
+                      onClick={() => {
+                        setAdding(f)
+                        setAddQty(1)
+                        setAddAmountEaten(getFoodBaseAmount(f))
+                      }}
+                    >
+                      {f.name}
+                    </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </>
           )}
-        </div>
-        <Button size="lg" className="w-full" onClick={save} disabled={!name || components.length === 0}>
-          Save Recipe
-        </Button>
-        <Button variant="ghost" className="w-full mt-2" onClick={() => onOpenChange(false)}>Cancel</Button>
+        </ScrollSheetBody>
+        <ScrollSheetFooter>
+          <Button size="lg" className="w-full" onClick={save} disabled={!name || components.length === 0}>
+            Save Recipe
+          </Button>
+          <Button size="lg" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

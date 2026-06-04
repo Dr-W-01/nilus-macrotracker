@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
 import { Input } from '@/components/ui/input'
 import { useMacroStore } from '@/store/useMacroStore'
 import type { FoodItem } from '@/lib/types'
@@ -17,7 +20,7 @@ interface FoodPickerSheetProps {
   onSelectFood: (food: FoodItem) => void
 }
 
-/** Full-height dialog picker — fixed layout so mobile keyboard does not collapse the search bar */
+/** Full-height dialog picker — search stays visible; list scrolls; Cancel pinned in footer */
 export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPickerSheetProps) {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const [query, setQuery] = useState('')
@@ -40,20 +43,13 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="
-          fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))]
-          z-50 flex h-[min(92dvh,100%)] max-h-[92dvh] w-[calc(100%-1rem)]
-          max-w-lg -translate-x-1/2 translate-y-0 flex-col gap-0 overflow-hidden
-          rounded-xl border border-border bg-card p-0 shadow-lg
-          sm:top-[5dvh] sm:h-[90dvh] sm:max-h-[90dvh]
-        "
-      >
-        <DialogHeader className="shrink-0 space-y-0 border-b border-border px-4 py-3 pr-12 text-left">
+      <ModalViewport active={open} />
+      <DialogContent className={scrollDialogContentClass}>
+        <ScrollDialogHeader>
           <DialogTitle>Add Food</DialogTitle>
-        </DialogHeader>
+        </ScrollDialogHeader>
 
-        <div className="sticky top-0 z-10 shrink-0 border-b border-border bg-card px-4 py-3">
+        <div className="shrink-0 border-b border-border bg-card px-4 py-3 sm:px-6">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -71,7 +67,7 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
           </p>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-2">
+        <ScrollDialogBody className="pt-2 pb-2">
           {items.length === 0 ? (
             <p className="py-12 text-center text-muted-foreground">
               No foods found. Add items in Library or load the seed library.
@@ -100,7 +96,13 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
               ))}
             </ul>
           )}
-        </div>
+        </ScrollDialogBody>
+
+        <ScrollDialogFooter>
+          <Button size="lg" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </ScrollDialogFooter>
       </DialogContent>
     </Dialog>
   )

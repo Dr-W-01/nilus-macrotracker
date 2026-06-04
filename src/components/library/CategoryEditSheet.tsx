@@ -4,7 +4,14 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { itemHasCategory } from '@/lib/categories'
 import type { FoodItem } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
@@ -82,19 +89,20 @@ export function CategoryEditSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
+      <ModalViewport active={open} />
       <SheetContent
         side="bottom"
-        className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+        className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+        <ScrollSheetHeader>
           <SheetTitle>Edit category: {category}</SheetTitle>
           <p className="text-xs text-muted-foreground font-normal">
             Add or remove items from this category. Items are not deleted.
           </p>
-        </SheetHeader>
+        </ScrollSheetHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        <ScrollSheetBody className="space-y-6">
           <section>
             <h3 className="text-sm font-semibold mb-2">
               In this category ({members.length})
@@ -157,9 +165,9 @@ export function CategoryEditSheet({
               </ul>
             )}
           </section>
-        </div>
+        </ScrollSheetBody>
 
-        <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+        <ScrollSheetFooter>
           <Button size="lg" className="w-full" onClick={handleSave}>
             Save changes
           </Button>
@@ -171,7 +179,7 @@ export function CategoryEditSheet({
           >
             Cancel
           </Button>
-        </div>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

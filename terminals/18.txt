@@ -3,7 +3,7 @@ pid: 40824
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-03T20:47:25.908Z
-running_for_ms: 86150011 
+running_for_ms: 86400001 
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -18,3 +18,9 @@ running_for_ms: 86150011
 5:08:21 PM [vite] (client) page reload index.html
 5:08:21 PM [vite] server restarted.
 10:34:41 PM [vite] (client) page reload index.html
+
+---
+exit_code: -1
+elapsed_ms: 86400001
+ended_at: 2026-06-04T20:47:23.805Z
+---

@@ -2,7 +2,14 @@ import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
 import { MealPicker } from '@/components/daily/MealPicker'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { computeComponentMacros } from '@/lib/macros'
 import { roundMacro } from '@/lib/macros'
 import type { FoodItem } from '@/lib/types'
@@ -51,48 +58,60 @@ export function RecipePreviewSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom">
-        <SheetHeader>
+      <ModalViewport active={open} />
+      <SheetContent
+        side="bottom"
+        className={scrollSheetContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollSheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <span>🍱</span> {food.name}
           </SheetTitle>
-        </SheetHeader>
-        <p className="text-sm text-muted-foreground mb-4">Standard recipe quantities</p>
-        <ul className="space-y-2 mb-4 max-h-[40dvh] overflow-y-auto">
-          {components.map((c) => (
-            <li
-              key={c.foodId}
-              className="flex justify-between rounded-lg border border-border px-3 py-2 text-sm"
-            >
-              <span>{c.item?.name ?? 'Unknown'}</span>
-              <span className="text-muted-foreground">
-                {c.quantity} {c.item?.scaleType === 'scale' ? c.item.unit : '×'}
-              </span>
-            </li>
-          ))}
-        </ul>
-        {totals && (
-          <div className="rounded-lg bg-secondary/50 p-3 text-sm mb-4 grid grid-cols-3 gap-2">
-            <div><span className="text-muted-foreground">Cal</span><br />{roundMacro(totals.calories, 0)}</div>
-            <div><span className="text-muted-foreground">P</span><br />{roundMacro(totals.protein)}g</div>
-            <div><span className="text-muted-foreground">C</span><br />{roundMacro(totals.carbs)}g</div>
-            <div><span className="text-muted-foreground">F</span><br />{roundMacro(totals.fat)}g</div>
-            <div><span className="text-muted-foreground">Fiber</span><br />{roundMacro(totals.fiber)}g</div>
-            <div><span className="text-muted-foreground">Sugar</span><br />{roundMacro(totals.sugars)}g</div>
-          </div>
-        )}
-        <MealPicker
-          label="Add to meal"
-          meals={meals}
-          value={meal}
-          onChange={setMeal}
-          className="mb-4"
-        />
-        <div className="flex flex-col gap-2 mt-auto">
-          <Button size="lg" onClick={() => onAdd(meal)}>Add</Button>
-          <Button size="lg" variant="outline" onClick={onEdit}>Edit</Button>
-          <Button size="lg" variant="ghost" onClick={onCancel}>Cancel</Button>
-        </div>
+        </ScrollSheetHeader>
+        <ScrollSheetBody className="space-y-4">
+          <p className="text-sm text-muted-foreground">Standard recipe quantities</p>
+          <ul className="space-y-2">
+            {components.map((c) => (
+              <li
+                key={c.foodId}
+                className="flex justify-between rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <span>{c.item?.name ?? 'Unknown'}</span>
+                <span className="text-muted-foreground">
+                  {c.quantity} {c.item?.scaleType === 'scale' ? c.item.unit : '×'}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {totals && (
+            <div className="rounded-lg bg-secondary/50 p-3 text-sm grid grid-cols-3 gap-2">
+              <div><span className="text-muted-foreground">Cal</span><br />{roundMacro(totals.calories, 0)}</div>
+              <div><span className="text-muted-foreground">P</span><br />{roundMacro(totals.protein)}g</div>
+              <div><span className="text-muted-foreground">C</span><br />{roundMacro(totals.carbs)}g</div>
+              <div><span className="text-muted-foreground">F</span><br />{roundMacro(totals.fat)}g</div>
+              <div><span className="text-muted-foreground">Fiber</span><br />{roundMacro(totals.fiber)}g</div>
+              <div><span className="text-muted-foreground">Sugar</span><br />{roundMacro(totals.sugars)}g</div>
+            </div>
+          )}
+          <MealPicker
+            label="Add to meal"
+            meals={meals}
+            value={meal}
+            onChange={setMeal}
+          />
+        </ScrollSheetBody>
+        <ScrollSheetFooter>
+          <Button size="lg" className="w-full" onClick={() => onAdd(meal)}>
+            Add
+          </Button>
+          <Button size="lg" variant="outline" className="w-full" onClick={onEdit}>
+            Edit
+          </Button>
+          <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
+            Cancel
+          </Button>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

@@ -26,7 +26,14 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { formatDisplayDate, shiftDate } from '@/lib/dates'
 import {
   formatWeight,
@@ -675,73 +682,90 @@ export function DailyTab() {
       />
 
       <Sheet open={burnEditOpen} onOpenChange={setBurnEditOpen}>
-        <SheetContent side="bottom">
-          <SheetHeader>
+        <ModalViewport active={burnEditOpen} />
+        <SheetContent side="bottom" className={scrollSheetContentClass}>
+          <ScrollSheetHeader>
             <SheetTitle>Burned calories</SheetTitle>
-          </SheetHeader>
-          <Input
-            type="number"
-            min={0}
-            value={burnInput}
-            onChange={(e) => setBurnInput(e.target.value)}
-            className="text-2xl text-center h-14 my-4"
-          />
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={() => {
-              setBurnedCalories(parseInt(burnInput, 10) || 0)
-              setBurnEditOpen(false)
-              toast.success('Burned calories updated')
-            }}
-          >
-            Save
-          </Button>
+          </ScrollSheetHeader>
+          <ScrollSheetBody>
+            <Input
+              type="number"
+              min={0}
+              value={burnInput}
+              onChange={(e) => setBurnInput(e.target.value)}
+              className="text-2xl text-center h-14"
+            />
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                setBurnedCalories(parseInt(burnInput, 10) || 0)
+                setBurnEditOpen(false)
+                toast.success('Burned calories updated')
+              }}
+            >
+              Save
+            </Button>
+            <Button size="lg" variant="ghost" className="w-full" onClick={() => setBurnEditOpen(false)}>
+              Cancel
+            </Button>
+          </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
 
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>
-        <SheetContent side="bottom">
-          <SheetHeader>
+        <ModalViewport active={weightEditOpen} />
+        <SheetContent side="bottom" className={scrollSheetContentClass}>
+          <ScrollSheetHeader>
             <SheetTitle>Weight ({weightUnitLabel(weightUnit)})</SheetTitle>
-          </SheetHeader>
-          <p className="text-xs text-muted-foreground">Optional — leave blank to clear</p>
-          <Input
-            type="number"
-            min={0}
-            inputMode="decimal"
-            step={0.1}
-            placeholder={`e.g. ${weightUnit === 'kg' ? '82' : '180'}`}
-            value={weightInput}
-            onChange={(e) => setWeightInput(e.target.value)}
-            className="text-2xl text-center h-14 my-4"
-          />
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={() => {
-              const kg = parseWeightInput(weightInput, weightUnit)
-              setDailyWeight(kg)
-              setWeightEditOpen(false)
-              toast.success(kg != null ? 'Weight saved' : 'Weight cleared')
-            }}
-          >
-            Save
-          </Button>
-          {log.weightKg != null && (
+          </ScrollSheetHeader>
+          <ScrollSheetBody className="space-y-2">
+            <p className="text-xs text-muted-foreground">Optional — leave blank to clear</p>
+            <Input
+              type="number"
+              min={0}
+              inputMode="decimal"
+              step={0.1}
+              placeholder={`e.g. ${weightUnit === 'kg' ? '82' : '180'}`}
+              value={weightInput}
+              onChange={(e) => setWeightInput(e.target.value)}
+              className="text-2xl text-center h-14"
+            />
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
             <Button
-              variant="ghost"
-              className="w-full mt-2"
+              size="lg"
+              className="w-full"
               onClick={() => {
-                setDailyWeight(undefined)
-                setWeightInput('')
+                const kg = parseWeightInput(weightInput, weightUnit)
+                setDailyWeight(kg)
                 setWeightEditOpen(false)
-                toast.success('Weight cleared')
+                toast.success(kg != null ? 'Weight saved' : 'Weight cleared')
               }}
             >
-              Clear weight
+              Save
             </Button>
-          )}
+            {log.weightKg != null && (
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  setDailyWeight(undefined)
+                  setWeightInput('')
+                  setWeightEditOpen(false)
+                  toast.success('Weight cleared')
+                }}
+              >
+                Clear weight
+              </Button>
+            )}
+            <Button size="lg" variant="ghost" className="w-full" onClick={() => setWeightEditOpen(false)}>
+              Cancel
+            </Button>
+          </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
     </div>
@@ -802,28 +826,26 @@ function EditLoggedSheet({
   if (!entry || !food || food.isRecipe) {
     return (
       <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-        <SheetContent
-          side="bottom"
-          className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
-        >
-          <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+        <ModalViewport active={open} />
+        <SheetContent side="bottom" className={scrollSheetContentClass}>
+          <ScrollSheetHeader>
             <SheetTitle>Edit entry</SheetTitle>
-          </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]">
+          </ScrollSheetHeader>
+          <ScrollSheetBody>
             {food?.isRecipe && (
               <p className="text-sm text-muted-foreground">
                 Recipe entries: remove and re-add to change components.
               </p>
             )}
-          </div>
-          <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
             <Button variant="destructive" size="lg" className="w-full" onClick={onDelete}>
               Remove from day
             </Button>
             <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
               Cancel
             </Button>
-          </div>
+          </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
     )
@@ -850,18 +872,19 @@ function EditLoggedSheet({
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+      <ModalViewport active={open} />
       <SheetContent
         side="bottom"
-        className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+        className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+        <ScrollSheetHeader>
           <SheetTitle>Edit {food.name}</SheetTitle>
           <p className="text-xs text-muted-foreground font-normal">
             Changes apply to this day&apos;s log only.
           </p>
-        </SheetHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]">
+        </ScrollSheetHeader>
+        <ScrollSheetBody className="space-y-4">
           <MealPicker label="Meal" meals={meals} value={meal} onChange={setMeal} compact />
           {previewMacros && (
             <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
@@ -882,8 +905,8 @@ function EditLoggedSheet({
             onAmountEatenChange={setAmountEaten}
             showInlineMacroPreview={false}
           />
-        </div>
-        <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+        </ScrollSheetBody>
+        <ScrollSheetFooter>
           <Button size="lg" className="w-full" onClick={handleSave}>
             Save for {dateLabel}
           </Button>
@@ -893,7 +916,7 @@ function EditLoggedSheet({
           <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
             Cancel
           </Button>
-        </div>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

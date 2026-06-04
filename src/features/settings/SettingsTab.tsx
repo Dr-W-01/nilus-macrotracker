@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
 import { exportFullBackup, parseFullBackup } from '@/lib/importExport'
 import { clearAllStorage } from '@/lib/storage'
@@ -440,37 +442,43 @@ export function SettingsTab() {
       </section>
 
       <Dialog open={backupConfirmOpen} onOpenChange={setBackupConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <ModalViewport active={backupConfirmOpen} />
+        <DialogContent className={scrollDialogContentClass}>
+          <ScrollDialogHeader>
             <DialogTitle>Restore full backup?</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            This replaces your current food library, daily logs, goal templates,
-            and settings with the backup file.
-          </p>
-          {pendingBackup && (
-            <ul className="text-sm space-y-1 rounded-lg bg-secondary/40 p-3">
-              <li>{pendingBackup.foodLibrary?.length ?? 0} food items</li>
-              <li>{Object.keys(pendingBackup.dailyLogs ?? {}).length} daily logs</li>
-              <li>
-                {pendingBackup.settings?.goalTemplates?.length ?? 0} goal templates
-              </li>
-              <li>{pendingBackup.customCategories?.length ?? 0} custom categories</li>
-            </ul>
-          )}
-          <Button className="w-full" onClick={applyBackup}>
-            Restore backup
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => {
-              setBackupConfirmOpen(false)
-              setPendingBackup(null)
-            }}
-          >
-            Cancel
-          </Button>
+          </ScrollDialogHeader>
+          <ScrollDialogBody className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              This replaces your current food library, daily logs, goal templates,
+              and settings with the backup file.
+            </p>
+            {pendingBackup && (
+              <ul className="text-sm space-y-1 rounded-lg bg-secondary/40 p-3">
+                <li>{pendingBackup.foodLibrary?.length ?? 0} food items</li>
+                <li>{Object.keys(pendingBackup.dailyLogs ?? {}).length} daily logs</li>
+                <li>
+                  {pendingBackup.settings?.goalTemplates?.length ?? 0} goal templates
+                </li>
+                <li>{pendingBackup.customCategories?.length ?? 0} custom categories</li>
+              </ul>
+            )}
+          </ScrollDialogBody>
+          <ScrollDialogFooter>
+            <Button size="lg" className="w-full" onClick={applyBackup}>
+              Restore backup
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setBackupConfirmOpen(false)
+                setPendingBackup(null)
+              }}
+            >
+              Cancel
+            </Button>
+          </ScrollDialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -520,11 +528,15 @@ function GoalEditDialog({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
-        <DialogHeader>
+      <ModalViewport active />
+      <DialogContent
+        className={scrollDialogContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollDialogHeader>
           <DialogTitle>{goal.id ? 'Edit' : 'New'} template</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-2">
+        </ScrollDialogHeader>
+        <ScrollDialogBody className="space-y-2">
           <div>
             <Label className="text-xs">Name</Label>
             <Input
@@ -571,31 +583,35 @@ function GoalEditDialog({
               />
             </div>
           ))}
-        </div>
-        <Button
-          className="w-full mt-4"
-          onClick={() =>
-            onSave({
-              ...form,
-              targetDeficit:
-                form.targetDeficit === 0 ? undefined : form.targetDeficit,
-            })
-          }
-        >
-          Save
-        </Button>
-        {form.id && form.id !== defaultId && (
+        </ScrollDialogBody>
+        <ScrollDialogFooter>
           <Button
-            variant="outline"
-            className="w-full mt-2"
-            onClick={() => onSetDefault(form.id)}
+            size="lg"
+            className="w-full"
+            onClick={() =>
+              onSave({
+                ...form,
+                targetDeficit:
+                  form.targetDeficit === 0 ? undefined : form.targetDeficit,
+              })
+            }
           >
-            Set as default
+            Save
           </Button>
-        )}
-        <Button variant="ghost" className="w-full mt-2" onClick={onClose}>
-          Cancel
-        </Button>
+          {form.id && form.id !== defaultId && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full"
+              onClick={() => onSetDefault(form.id)}
+            >
+              Set as default
+            </Button>
+          )}
+          <Button size="lg" variant="ghost" className="w-full" onClick={onClose}>
+            Cancel
+          </Button>
+        </ScrollDialogFooter>
       </DialogContent>
     </Dialog>
   )

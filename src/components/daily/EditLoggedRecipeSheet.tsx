@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  ModalViewport,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { computeComponentMacros } from '@/lib/macros'
@@ -89,15 +96,16 @@ export function EditLoggedRecipeSheet({
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+      <ModalViewport active={open} />
       <SheetContent
         side="bottom"
-        className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+        className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+        <ScrollSheetHeader>
           <SheetTitle>Edit {recipe.name}</SheetTitle>
-        </SheetHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]">
+        </ScrollSheetHeader>
+        <ScrollSheetBody>
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200/90 mb-4">
             Editing <span className="font-semibold">today&apos;s log only</span> for {dateLabel}.
             Library recipe is unchanged — edit the master recipe from Library → Recipes.
@@ -164,8 +172,8 @@ export function EditLoggedRecipeSheet({
               )
             })}
           </div>
-        </div>
-        <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+        </ScrollSheetBody>
+        <ScrollSheetFooter>
           <Button size="lg" className="w-full" onClick={handleSave}>
             Save for {dateLabel}
           </Button>
@@ -175,7 +183,7 @@ export function EditLoggedRecipeSheet({
           <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
             Cancel
           </Button>
-        </div>
+        </ScrollSheetFooter>
       </SheetContent>
     </Sheet>
   )

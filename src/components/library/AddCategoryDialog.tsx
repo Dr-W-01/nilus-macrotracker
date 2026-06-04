@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
 import { Input } from '@/components/ui/input'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -46,27 +48,35 @@ export function AddCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <ModalViewport active={open} />
+      <DialogContent
+        className={scrollDialogContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollDialogHeader>
           <DialogTitle>Add category</DialogTitle>
-        </DialogHeader>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Protein, Snacks..."
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              handleCreate()
-            }
-          }}
-        />
-        <Button className="w-full" onClick={handleCreate}>
-          Create category
-        </Button>
-        <Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
+        </ScrollDialogHeader>
+        <ScrollDialogBody className="py-2">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Protein, Snacks..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleCreate()
+              }
+            }}
+          />
+        </ScrollDialogBody>
+        <ScrollDialogFooter>
+          <Button size="lg" className="w-full" onClick={handleCreate}>
+            Create category
+          </Button>
+          <Button size="lg" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+        </ScrollDialogFooter>
       </DialogContent>
     </Dialog>
   )

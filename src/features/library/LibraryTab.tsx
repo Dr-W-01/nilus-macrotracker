@@ -16,9 +16,15 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
 import { LibrarySearchInput } from '@/components/library/LibrarySearchInput'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
@@ -420,21 +426,27 @@ export function LibraryTab() {
       />
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
+        <ModalViewport active={deleteConfirmOpen} />
+        <DialogContent className={scrollDialogContentClass}>
+          <ScrollDialogHeader>
             <DialogTitle>{bulkDeleteTitle}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">{bulkDeleteDescription}</p>
-          <Button variant="destructive" className="w-full" onClick={handleBulkDelete}>
-            {bulkDeleteKind === 'categories' ? 'Remove categories' : 'Delete permanently'}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => setDeleteConfirmOpen(false)}
-          >
-            Cancel
-          </Button>
+          </ScrollDialogHeader>
+          <ScrollDialogBody className="py-2">
+            <p className="text-sm text-muted-foreground">{bulkDeleteDescription}</p>
+          </ScrollDialogBody>
+          <ScrollDialogFooter>
+            <Button size="lg" variant="destructive" className="w-full" onClick={handleBulkDelete}>
+              {bulkDeleteKind === 'categories' ? 'Remove categories' : 'Delete permanently'}
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ScrollDialogFooter>
         </DialogContent>
       </Dialog>
 

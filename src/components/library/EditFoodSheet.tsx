@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  ScrollSheetBody,
+  ScrollSheetFooter,
+  ScrollSheetHeader,
+  scrollDialogContentClass,
+  scrollSheetContentClass,
+} from '@/components/ui/scroll-modal'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import {
   FoodFormFields,
   foodItemToFormValues,
@@ -68,12 +74,13 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
   return (
     <>
       <Sheet open onOpenChange={(open) => !open && onClose()}>
+        <ModalViewport active />
         <SheetContent
           side="bottom"
-          className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0"
+          className={scrollSheetContentClass}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-12 text-left">
+          <ScrollSheetHeader>
             <SheetTitle>
               {isRecipe ? 'Edit master recipe' : 'Edit library food'}
             </SheetTitle>
@@ -81,8 +88,8 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
               Changes here update your Library for all future logs. To edit a single
               day&apos;s entry, use the Daily tab.
             </p>
-          </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          </ScrollSheetHeader>
+          <ScrollSheetBody>
             <FoodFormFields
               values={values}
               onChange={setValues}
@@ -90,8 +97,8 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
               macrosReadOnly={isRecipe}
               scaleReadOnly={isRecipe}
             />
-          </div>
-          <div className="shrink-0 space-y-2 border-t border-border bg-card px-4 py-4 safe-bottom">
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
             <Button size="lg" className="w-full" onClick={save}>
               Save changes
             </Button>
@@ -106,29 +113,35 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
             <Button size="lg" variant="ghost" className="w-full" onClick={onClose}>
               Cancel
             </Button>
-          </div>
+          </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <ModalViewport active={deleteConfirmOpen} />
+        <DialogContent className={scrollDialogContentClass}>
+          <ScrollDialogHeader>
             <DialogTitle>Delete {food.name}?</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            This removes the item from your library. Logged entries that reference
-            it may show as unknown.
-          </p>
-          <Button variant="destructive" className="w-full" onClick={handleDelete}>
-            Delete permanently
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full mt-2"
-            onClick={() => setDeleteConfirmOpen(false)}
-          >
-            Cancel
-          </Button>
+          </ScrollDialogHeader>
+          <ScrollDialogBody className="py-2">
+            <p className="text-sm text-muted-foreground">
+              This removes the item from your library. Logged entries that reference
+              it may show as unknown.
+            </p>
+          </ScrollDialogBody>
+          <ScrollDialogFooter>
+            <Button variant="destructive" size="lg" className="w-full" onClick={handleDelete}>
+              Delete permanently
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              className="w-full"
+              onClick={() => setDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ScrollDialogFooter>
         </DialogContent>
       </Dialog>
     </>
