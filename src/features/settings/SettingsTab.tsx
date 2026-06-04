@@ -17,7 +17,7 @@ import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_SECONDARY_TEXT_COLOR,
 } from '@/lib/theme'
-import { SignedDecimalInput } from '@/components/ui/signed-decimal-input'
+import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import type { GoalTemplate } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
@@ -431,15 +431,14 @@ function GoalEditDialog({
           </div>
           <div>
             <Label className="text-xs">Target deficit / surplus (cal/day, optional)</Label>
-            <SignedDecimalInput
+            <DeficitSurplusInput
               key={goal.id || 'new-goal'}
-              placeholder="e.g. -1000 or 500"
               value={form.targetDeficit}
               onChange={(targetDeficit) => setForm({ ...form, targetDeficit })}
             />
             <p className="text-[10px] text-muted-foreground mt-1">
-              Tap − then enter amount for deficit, or type a leading minus. Positive = surplus
-              (e.g. 500). Stats uses intake − this value as implied maintenance.
+              Choose Deficit or Surplus, then enter a positive amount. Leave empty if you only
+              track intake. Stats uses intake − this value as implied maintenance.
             </p>
           </div>
           {(['protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (
