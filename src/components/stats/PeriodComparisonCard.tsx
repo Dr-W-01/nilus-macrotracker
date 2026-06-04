@@ -4,7 +4,6 @@ import {
   formatComparisonValue,
 } from '@/lib/periodComparison'
 import { roundMacro } from '@/lib/macros'
-import type { GoalMode } from '@/lib/types'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 
 interface PeriodComparisonCardProps {
@@ -14,7 +13,6 @@ interface PeriodComparisonCardProps {
   dailyLogs: Record<string, DailyLog>
   foodLibrary: FoodItem[]
   settings: Settings
-  goalMode: GoalMode
 }
 
 export function PeriodComparisonCard({
@@ -24,7 +22,6 @@ export function PeriodComparisonCard({
   dailyLogs,
   foodLibrary,
   settings,
-  goalMode,
 }: PeriodComparisonCardProps) {
   const { periodLabel, rows } = buildPeriodComparison(
     range,
@@ -32,7 +29,6 @@ export function PeriodComparisonCard({
     dailyLogs,
     foodLibrary,
     settings,
-    goalMode,
     statsPeriod,
   )
 
@@ -44,7 +40,7 @@ export function PeriodComparisonCard({
         <div>
           <p className="text-sm font-medium">This period vs {periodLabel}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Averages and totals for logged days only
+            Daily averages for logged days (— if not tracked)
           </p>
         </div>
         <div className="space-y-2">

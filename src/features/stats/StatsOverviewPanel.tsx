@@ -196,7 +196,6 @@ export function StatsOverviewPanel({
         dailyLogs={dailyLogs}
         foodLibrary={foodLibrary}
         settings={settings}
-        goalMode={goalMode}
       />
 
       <Card className="border-primary/20 bg-primary/5">

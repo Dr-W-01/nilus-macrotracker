@@ -1,10 +1,8 @@
-import type { GoalMode } from '@/lib/goalMode'
 import { roundMacro } from '@/lib/macros'
 import {
   buildStatsDayRows,
   computeAdherenceBreakdown,
   previousPeriodLabel,
-  sumDayRows,
   type StatsDayRow,
 } from '@/lib/stats'
 import { weightFromKg, type WeightUnit } from '@/lib/weight'
@@ -27,15 +25,23 @@ function avg(rows: StatsDayRow[], pick: (r: StatsDayRow) => number): number | nu
   return rows.reduce((s, r) => s + pick(r), 0) / rows.length
 }
 
-function avgWeightKg(
+function avgWeightDisplay(
   logs: Record<string, DailyLog>,
   dates: string[],
+  unit: WeightUnit,
 ): number | null {
   const values = dates
     .map((d) => logs[d]?.weightKg)
     .filter((w): w is number => w != null && Number.isFinite(w) && w > 0)
   if (values.length === 0) return null
-  return values.reduce((a, b) => a + b, 0) / values.length
+  const avgKg = values.reduce((a, b) => a + b, 0) / values.length
+  return weightFromKg(avgKg, unit)
+}
+
+function energyBalancePercent(rows: StatsDayRow[]): number | null {
+  const energyRows = rows.filter((d) => (d.goal.targetDeficit ?? 0) !== 0)
+  if (energyRows.length === 0) return null
+  return computeAdherenceBreakdown(energyRows).targetDeficit
 }
 
 function delta(current: number | null, previous: number | null): number | null {
@@ -67,7 +73,6 @@ export function buildPeriodComparison(
   dailyLogs: Record<string, DailyLog>,
   foodLibrary: FoodItem[],
   settings: Settings,
-  goalMode: GoalMode,
   statsPeriod: 'week' | 'month' | 'custom',
 ): { periodLabel: string; rows: PeriodComparisonRow[] } {
   const currentRows = buildStatsDayRows(range, dailyLogs, foodLibrary, settings)
@@ -75,126 +80,50 @@ export function buildPeriodComparison(
   const periodLabel = previousPeriodLabel(statsPeriod)
   const weightUnit = settings.weightUnit ?? 'lbs'
 
-  const rows: PeriodComparisonRow[] = []
+  const curDates = currentRows.map((r) => r.date)
+  const prevDates = prevRows.map((r) => r.date)
 
-  const netLabel =
-    goalMode === 'cut'
-      ? 'Avg net calories'
-      : goalMode === 'bulk'
-        ? 'Avg net calories'
-        : 'Avg net calories'
-
-  rows.push(
+  const rows: PeriodComparisonRow[] = [
     row(
-      netLabel,
-      avg(currentRows, (r) => r.net),
-      avg(prevRows, (r) => r.net),
-      'signedCal',
-      { emphasized: goalMode === 'cut' || goalMode === 'bulk' },
-    ),
-  )
-
-  if (goalMode === 'cut') {
-    const curDeficitRows = currentRows.filter((d) => (d.goal.targetDeficit ?? 0) < 0)
-    const prevDeficitRows = prevRows.filter((d) => (d.goal.targetDeficit ?? 0) < 0)
-    if (curDeficitRows.length > 0 || prevDeficitRows.length > 0) {
-      rows.push(
-        row(
-          'Target net (avg goal)',
-          avg(curDeficitRows, (r) => r.goal.targetDeficit ?? 0),
-          avg(prevDeficitRows, (r) => r.goal.targetDeficit ?? 0),
-          'signedCal',
-        ),
-      )
-    }
-    const curAdh = computeAdherenceBreakdown(curDeficitRows.length ? curDeficitRows : currentRows)
-    const prevAdh = computeAdherenceBreakdown(prevDeficitRows.length ? prevDeficitRows : prevRows)
-    if (curAdh.targetDeficit != null || prevAdh.targetDeficit != null) {
-      rows.push(
-        row(
-          'Energy balance adherence',
-          curAdh.targetDeficit,
-          prevAdh.targetDeficit,
-          'percent',
-          { emphasized: true },
-        ),
-      )
-    }
-  } else if (goalMode === 'bulk') {
-    const curSurplusRows = currentRows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
-    const prevSurplusRows = prevRows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
-    if (curSurplusRows.length > 0 || prevSurplusRows.length > 0) {
-      rows.push(
-        row(
-          'Target net (avg goal)',
-          avg(curSurplusRows, (r) => r.goal.targetDeficit ?? 0),
-          avg(prevSurplusRows, (r) => r.goal.targetDeficit ?? 0),
-          'signedCal',
-        ),
-      )
-    }
-    const curAdh = computeAdherenceBreakdown(curSurplusRows.length ? curSurplusRows : currentRows)
-    const prevAdh = computeAdherenceBreakdown(prevSurplusRows.length ? prevSurplusRows : prevRows)
-    if (curAdh.targetDeficit != null || prevAdh.targetDeficit != null) {
-      rows.push(
-        row(
-          'Energy balance adherence',
-          curAdh.targetDeficit,
-          prevAdh.targetDeficit,
-          'percent',
-          { emphasized: true },
-        ),
-      )
-    }
-  }
-
-  rows.push(
-    row(
-      'Avg calories in',
+      'Calories In',
       avg(currentRows, (r) => r.calories),
       avg(prevRows, (r) => r.calories),
       'cal',
-      { emphasized: goalMode === 'maintain' },
     ),
-  )
-
-  rows.push(
     row(
-      'Avg protein',
+      'Calories Out',
+      avg(currentRows, (r) => r.burned),
+      avg(prevRows, (r) => r.burned),
+      'cal',
+    ),
+    row(
+      'Net Calories',
+      avg(currentRows, (r) => r.net),
+      avg(prevRows, (r) => r.net),
+      'signedCal',
+      { emphasized: true },
+    ),
+    row(
+      'Protein',
       avg(currentRows, (r) => r.protein),
       avg(prevRows, (r) => r.protein),
       'grams',
     ),
-  )
-
-  const curTotals = sumDayRows(currentRows)
-  const prevTotals = sumDayRows(prevRows)
-  if (currentRows.length > 0 && prevRows.length > 0) {
-    rows.push(
-      row(
-        'Period net total',
-        roundMacro(curTotals.net, 0),
-        roundMacro(prevTotals.net, 0),
-        'signedCal',
-      ),
-    )
-  }
-
-  const curDates = currentRows.map((r) => r.date)
-  const prevDates = prevRows.map((r) => r.date)
-  const curWt = avgWeightKg(dailyLogs, curDates)
-  const prevWt = avgWeightKg(dailyLogs, prevDates)
-  if (curWt != null || prevWt != null) {
-    rows.push(
-      row(
-        `Avg weight (${weightUnit})`,
-        curWt != null ? weightFromKg(curWt, weightUnit) : null,
-        prevWt != null ? weightFromKg(prevWt, weightUnit) : null,
-        'weight',
-        { weightUnit },
-      ),
-    )
-  }
+    row(
+      'Weight',
+      avgWeightDisplay(dailyLogs, curDates, weightUnit),
+      avgWeightDisplay(dailyLogs, prevDates, weightUnit),
+      'weight',
+      { weightUnit },
+    ),
+    row(
+      'Energy Balance',
+      energyBalancePercent(currentRows),
+      energyBalancePercent(prevRows),
+      'percent',
+      { emphasized: true },
+    ),
+  ]
 
   return { periodLabel, rows }
 }
