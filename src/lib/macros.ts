@@ -84,3 +84,8 @@ export function roundMacro(value: number, decimals = 1): number {
 export function formatCompactMacroLine(m: MacroTotals): string {
   return `P: ${roundMacro(m.protein)}g • C: ${roundMacro(m.carbs)}g • F: ${roundMacro(m.fat)}g • Fib: ${roundMacro(m.fiber)}g • S: ${roundMacro(m.sugars)}g`
 }
+
+/** Meal group header totals, e.g. Cal 620 • P 45g • C 60g • F 22g • Fib 8g • S 12g */
+export function formatMealGroupTotals(m: MacroTotals): string {
+  return `Cal ${roundMacro(m.calories, 0)} • P ${roundMacro(m.protein)}g • C ${roundMacro(m.carbs)}g • F ${roundMacro(m.fat)}g • Fib ${roundMacro(m.fiber)}g • S ${roundMacro(m.sugars)}g`
+}

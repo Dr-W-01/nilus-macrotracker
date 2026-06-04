@@ -44,6 +44,7 @@ import {
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import {
   computeDayMacros,
+  formatMealGroupTotals,
   getLoggedFoodMacros,
   roundMacro,
   scaleMacros,
@@ -139,8 +140,15 @@ export function DailyTab() {
     mealOrder.sort((a, b) => mealSortIndex(a, meals) - mealSortIndex(b, meals))
     return mealOrder
       .filter((meal) => (groups.get(meal)?.length ?? 0) > 0)
-      .map((meal) => ({ meal, entries: groups.get(meal)! }))
-  }, [log.foods, meals])
+      .map((meal) => {
+        const entries = groups.get(meal)!
+        return {
+          meal,
+          entries,
+          totals: computeDayMacros(foodLibrary, entries),
+        }
+      })
+  }, [log.foods, meals, foodLibrary])
   const [noteExpanded, setNoteExpanded] = useState(!!log.note)
   const [burnEditOpen, setBurnEditOpen] = useState(false)
   const [burnInput, setBurnInput] = useState(String(log.burnedCalories))
@@ -435,10 +443,13 @@ export function DailyTab() {
             </div>
           ) : (
             <div className="space-y-4">
-              {foodsByMeal.map(({ meal, entries }) => (
+              {foodsByMeal.map(({ meal, entries, totals }) => (
                 <section key={meal}>
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-primary mb-1.5 px-0.5">
-                    {meal}
+                  <h4 className="text-xs font-semibold text-primary mb-1.5 px-0.5 leading-snug">
+                    <span className="uppercase tracking-wide">{meal}</span>{' '}
+                    <span className="font-normal text-muted-foreground normal-case tracking-normal tabular-nums">
+                      ({formatMealGroupTotals(totals)})
+                    </span>
                   </h4>
                   <ul className="space-y-2">
                     {entries.map((entry) => {
