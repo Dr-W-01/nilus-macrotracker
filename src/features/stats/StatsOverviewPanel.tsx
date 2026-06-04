@@ -134,16 +134,6 @@ export function StatsOverviewPanel({
         </p>
       </div>
 
-      <PeriodComparisonCard
-        range={range}
-        prevRange={prevRange}
-        statsPeriod={statsPeriod}
-        dailyLogs={dailyLogs}
-        foodLibrary={foodLibrary}
-        settings={settings}
-        goalMode={goalMode}
-      />
-
       <Card>
         <CardContent className="pt-4 pb-3 space-y-4">
           <div>
@@ -198,6 +188,16 @@ export function StatsOverviewPanel({
           </div>
         </CardContent>
       </Card>
+
+      <PeriodComparisonCard
+        range={range}
+        prevRange={prevRange}
+        statsPeriod={statsPeriod}
+        dailyLogs={dailyLogs}
+        foodLibrary={foodLibrary}
+        settings={settings}
+        goalMode={goalMode}
+      />
 
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-4 pb-3 space-y-2">
