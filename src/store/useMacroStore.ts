@@ -290,11 +290,12 @@ export const useMacroStore = create<MacroStore>()(
         const d = date ?? get().currentDate
         const log = get().getDailyLog(d)
         const meals = normalizeMeals(get().settings.meals)
-        const defaultMeal = normalizeMealName(get().settings.defaultMeal, meals)
         const entry: LoggedFood = {
           ...logged,
           id: generateId(),
-          meal: normalizeMealName(logged.meal ?? defaultMeal, meals),
+          meal: logged.meal?.trim()
+            ? normalizeMealName(logged.meal, meals)
+            : undefined,
         }
         get().touchFoodUsage(logged.foodId)
         get().updateDailyLog(d, { foods: [...log.foods, entry] })

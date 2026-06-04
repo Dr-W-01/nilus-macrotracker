@@ -49,7 +49,12 @@ import {
   roundMacro,
   scaleMacros,
 } from '@/lib/macros'
-import { mealSortIndex, normalizeMealName, normalizeMeals } from '@/lib/meals'
+import {
+  mealSortIndex,
+  normalizeMealName,
+  normalizeMeals,
+  UNCATEGORIZED_MEAL,
+} from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -78,7 +83,7 @@ export function DailyTab() {
   const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
   const setDailyNote = useMacroStore((s) => s.setDailyNote)
   const updateDailyLog = useMacroStore((s) => s.updateDailyLog)
-  const updateSettings = useMacroStore((s) => s.updateSettings)
+
 
   const log = getDailyLog(currentDate)
   const templates = settings?.goalTemplates ?? []
@@ -108,15 +113,13 @@ export function DailyTab() {
     () => normalizeMeals(settings?.meals),
     [settings?.meals],
   )
-  const defaultMeal = normalizeMealName(settings?.defaultMeal, meals)
-
   const [selectFoodsMode, setSelectFoodsMode] = useState(false)
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
-  const [bulkAssignMeal, setBulkAssignMeal] = useState(defaultMeal)
+  const [bulkAssignMeal, setBulkAssignMeal] = useState(meals[0] ?? 'Breakfast')
 
   useEffect(() => {
-    setBulkAssignMeal(defaultMeal)
-  }, [defaultMeal])
+    setBulkAssignMeal(meals[0] ?? 'Breakfast')
+  }, [meals])
 
   useEffect(() => {
     setSelectFoodsMode(false)
@@ -126,7 +129,9 @@ export function DailyTab() {
   const foodsByMeal = useMemo(() => {
     const groups = new Map<string, LoggedFood[]>()
     for (const entry of log.foods) {
-      const meal = normalizeMealName(entry.meal, meals)
+      const meal = entry.meal?.trim()
+        ? normalizeMealName(entry.meal, meals)
+        : UNCATEGORIZED_MEAL
       const list = groups.get(meal) ?? []
       list.push(entry)
       groups.set(meal, list)
@@ -202,12 +207,15 @@ export function DailyTab() {
     exitSelectMode()
   }
 
-  const addRecipe = (overrides?: { foodId: string; quantity: number }[]) => {
+  const addRecipe = (
+    meal: string,
+    overrides?: { foodId: string; quantity: number }[],
+  ) => {
     if (!selectedFood) return
     addLoggedFood({
       foodId: selectedFood.id,
       quantity: 1,
-      meal: defaultMeal,
+      meal,
       overriddenComponents: overrides,
     })
     toast.success(`Added ${selectedFood.name}`)
@@ -393,16 +401,6 @@ export function DailyTab() {
           )}
         </div>
 
-        {editDayMode && (
-          <MealPicker
-            label="New entries log to"
-            meals={meals}
-            value={defaultMeal}
-            onChange={(meal) => updateSettings({ defaultMeal: meal })}
-            compact
-          />
-        )}
-
         <div>
           <div className="flex items-center justify-between gap-2 mb-2">
             <h3 className="font-semibold">Logged foods</h3>
@@ -445,17 +443,21 @@ export function DailyTab() {
             <div className="space-y-4">
               {foodsByMeal.map(({ meal, entries, totals }) => (
                 <section key={meal}>
-                  <h4 className="text-xs font-semibold text-primary mb-1.5 px-0.5 leading-snug">
-                    <span className="uppercase tracking-wide">{meal}</span>{' '}
-                    <span className="font-normal text-muted-foreground normal-case tracking-normal tabular-nums">
-                      ({formatMealGroupTotals(totals)})
-                    </span>
-                  </h4>
+                  <div className="mb-1.5 px-0.5 space-y-0.5">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                      {meal}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground tabular-nums leading-snug">
+                      {formatMealGroupTotals(totals)}
+                    </p>
+                  </div>
                   <ul className="space-y-2">
                     {entries.map((entry) => {
                       const food = foodLibrary.find((f) => f.id === entry.foodId)
                       const macros = getLoggedFoodMacros(foodLibrary, entry)
-                      const entryMeal = normalizeMealName(entry.meal, meals)
+                      const entryMeal = entry.meal?.trim()
+                        ? normalizeMealName(entry.meal, meals)
+                        : null
                       return (
                         <li key={entry.id}>
                           <button
@@ -512,12 +514,18 @@ export function DailyTab() {
                                     key={m}
                                     type="button"
                                     className={`rounded-full px-2 py-0.5 text-[10px] border min-h-7 ${
+                                      entryMeal &&
                                       m.toLowerCase() === entryMeal.toLowerCase()
                                         ? 'border-primary bg-primary/20 text-primary'
                                         : 'border-border text-muted-foreground'
                                     }`}
                                     onClick={() => {
-                                      if (m.toLowerCase() === entryMeal.toLowerCase()) return
+                                      if (
+                                        entryMeal &&
+                                        m.toLowerCase() === entryMeal.toLowerCase()
+                                      ) {
+                                        return
+                                      }
                                       updateLoggedFood(entry.id, { meal: m })
                                     }}
                                   >
@@ -570,6 +578,7 @@ export function DailyTab() {
       <AddFoodSheet
         open={addSheetOpen}
         food={selectedFood && !selectedFood.isRecipe ? selectedFood : null}
+        meals={meals}
         date={currentDate}
         onOpenChange={setAddSheetOpen}
         onAdd={(result) => {
@@ -579,7 +588,7 @@ export function DailyTab() {
             quantity: result.quantity,
             scaleAmountEaten: result.scaleAmountEaten,
             note: result.note,
-            meal: defaultMeal,
+            meal: result.meal,
           })
           toast.success(`Added ${selectedFood.name}`)
           resetFoodFlow()
@@ -590,8 +599,9 @@ export function DailyTab() {
       <RecipePreviewSheet
         open={previewOpen}
         food={selectedFood}
+        meals={meals}
         onOpenChange={setPreviewOpen}
-        onAdd={() => addRecipe()}
+        onAdd={(meal) => addRecipe(meal)}
         onEdit={() => {
           setPreviewOpen(false)
           setCustomizeOpen(true)
@@ -606,8 +616,9 @@ export function DailyTab() {
         open={customizeOpen}
         recipe={selectedFood}
         library={foodLibrary}
+        meals={meals}
         onOpenChange={setCustomizeOpen}
-        onConfirm={(overrides) => addRecipe(overrides)}
+        onConfirm={(meal, overrides) => addRecipe(meal, overrides)}
         onCancel={() => {
           setCustomizeOpen(false)
           setPreviewOpen(true)
@@ -760,7 +771,11 @@ function EditLoggedSheet({
   useEffect(() => {
     if (!entry || !food) return
     setNote(entry.note ?? '')
-    setMeal(normalizeMealName(entry.meal, meals))
+    setMeal(
+      entry.meal?.trim()
+        ? normalizeMealName(entry.meal, meals)
+        : meals[0] ?? 'Breakfast',
+    )
     if (food.scaleType === 'scale') {
       setAmountEaten(
         entry.scaleAmountEaten ??

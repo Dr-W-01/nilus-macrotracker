@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { MealPicker } from '@/components/daily/MealPicker'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
@@ -13,8 +14,12 @@ interface RecipeCustomizeSheetProps {
   open: boolean
   recipe: FoodItem | null
   library: FoodItem[]
+  meals: string[]
   onOpenChange: (open: boolean) => void
-  onConfirm: (overrides: { foodId: string; quantity: number }[]) => void
+  onConfirm: (
+    meal: string,
+    overrides: { foodId: string; quantity: number }[],
+  ) => void
   onCancel: () => void
 }
 
@@ -22,6 +27,7 @@ export function RecipeCustomizeSheet({
   open,
   recipe,
   library,
+  meals,
   onOpenChange,
   onConfirm,
   onCancel,
@@ -29,9 +35,11 @@ export function RecipeCustomizeSheet({
   const [overrides, setOverrides] = useState<
     Record<string, { quantity: number; scaleAmountEaten?: number }>
   >({})
+  const [meal, setMeal] = useState(meals[0] ?? 'Breakfast')
 
   useEffect(() => {
     if (!recipe?.recipeComponents || !open) return
+    setMeal(meals[0] ?? 'Breakfast')
     const initial: Record<string, { quantity: number; scaleAmountEaten?: number }> =
       {}
     recipe.recipeComponents.forEach((c) => {
@@ -53,6 +61,7 @@ export function RecipeCustomizeSheet({
 
   const handleConfirm = () => {
     onConfirm(
+      meal,
       recipe.recipeComponents!.map((c) => ({
         foodId: c.foodId,
         quantity: overrides[c.foodId]?.quantity ?? c.quantity,
@@ -133,6 +142,13 @@ export function RecipeCustomizeSheet({
             )
           })}
         </div>
+        <MealPicker
+          label="Add to meal"
+          meals={meals}
+          value={meal}
+          onChange={setMeal}
+          className="mb-4"
+        />
         <Button size="lg" className="w-full" onClick={handleConfirm}>
           Add customized recipe
         </Button>

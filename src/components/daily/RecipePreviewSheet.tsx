@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { MealPicker } from '@/components/daily/MealPicker'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { computeComponentMacros } from '@/lib/macros'
@@ -9,8 +11,9 @@ import { useMacroStore } from '@/store/useMacroStore'
 interface RecipePreviewSheetProps {
   open: boolean
   food: FoodItem | null
+  meals: string[]
   onOpenChange: (open: boolean) => void
-  onAdd: () => void
+  onAdd: (meal: string) => void
   onEdit: () => void
   onCancel: () => void
 }
@@ -18,12 +21,18 @@ interface RecipePreviewSheetProps {
 export function RecipePreviewSheet({
   open,
   food,
+  meals,
   onOpenChange,
   onAdd,
   onEdit,
   onCancel,
 }: RecipePreviewSheetProps) {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
+  const [meal, setMeal] = useState(meals[0] ?? 'Breakfast')
+
+  useEffect(() => {
+    if (open) setMeal(meals[0] ?? 'Breakfast')
+  }, [open, meals])
 
   const components = useMemo(() => {
     if (!food?.recipeComponents) return []
@@ -72,8 +81,15 @@ export function RecipePreviewSheet({
             <div><span className="text-muted-foreground">Sugar</span><br />{roundMacro(totals.sugars)}g</div>
           </div>
         )}
+        <MealPicker
+          label="Add to meal"
+          meals={meals}
+          value={meal}
+          onChange={setMeal}
+          className="mb-4"
+        />
         <div className="flex flex-col gap-2 mt-auto">
-          <Button size="lg" onClick={onAdd}>Add</Button>
+          <Button size="lg" onClick={() => onAdd(meal)}>Add</Button>
           <Button size="lg" variant="outline" onClick={onEdit}>Edit</Button>
           <Button size="lg" variant="ghost" onClick={onCancel}>Cancel</Button>
         </div>

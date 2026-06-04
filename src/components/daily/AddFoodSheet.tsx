@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { MealPicker } from '@/components/daily/MealPicker'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { buildScaleLogPayload, getFoodBaseAmount } from '@/lib/scale'
 import { scaleMacros, roundMacro } from '@/lib/macros'
@@ -11,11 +12,13 @@ export interface AddFoodResult {
   quantity: number
   scaleAmountEaten?: number
   note?: string
+  meal: string
 }
 
 interface AddFoodSheetProps {
   open: boolean
   food: FoodItem | null
+  meals: string[]
   date: string
   onOpenChange: (open: boolean) => void
   onAdd: (result: AddFoodResult) => void
@@ -25,6 +28,7 @@ interface AddFoodSheetProps {
 export function AddFoodSheet({
   open,
   food,
+  meals,
   date,
   onOpenChange,
   onAdd,
@@ -33,6 +37,7 @@ export function AddFoodSheet({
   const [countQty, setCountQty] = useState(1)
   const [amountEaten, setAmountEaten] = useState(1)
   const [note, setNote] = useState('')
+  const [meal, setMeal] = useState(meals[0] ?? 'Breakfast')
 
   useEffect(() => {
     if (!food || !open) return
@@ -42,7 +47,8 @@ export function AddFoodSheet({
       setCountQty(1)
     }
     setNote('')
-  }, [food, open])
+    setMeal(meals[0] ?? 'Breakfast')
+  }, [food, open, meals])
 
   const macros = useMemo(() => {
     if (!food) return null
@@ -65,6 +71,7 @@ export function AddFoodSheet({
       onAdd({
         quantity: Math.max(1, Math.round(countQty)),
         note: note || undefined,
+        meal,
       })
       return
     }
@@ -72,6 +79,7 @@ export function AddFoodSheet({
     onAdd({
       ...payload,
       note: note || undefined,
+      meal,
     })
   }
 
@@ -102,6 +110,13 @@ export function AddFoodSheet({
             {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)}
           </p>
         )}
+        <MealPicker
+          label="Add to meal"
+          meals={meals}
+          value={meal}
+          onChange={setMeal}
+          className="mb-4"
+        />
         <div className="flex flex-col gap-2">
           <Button size="lg" onClick={handleAdd} disabled={food.scaleType === 'scale' && amountEaten <= 0}>
             Add to {dateLabel}

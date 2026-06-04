@@ -16,7 +16,7 @@ export function normalizeMeals(meals?: string[]): string[] {
 }
 
 export function normalizeMealName(meal: string | undefined, meals: string[]): string {
-  if (!meal?.trim()) return meals[0] ?? DEFAULT_MEALS[0]
+  if (!meal?.trim()) return UNCATEGORIZED_MEAL
   const key = meal.trim().toLowerCase()
   const found = meals.find((m) => m.toLowerCase() === key)
   return found ?? meal.trim()
