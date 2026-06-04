@@ -23,9 +23,9 @@ const ADHERENCE_HINTS: Partial<Record<AdherenceKey, string>> = {
   protein: 'Met or exceeded target',
   targetDeficit: 'Within ~15% of deficit or surplus goal',
   carbs: 'Within ~15% of target',
-  fat: 'Fat ≤15% of calories',
-  fiber: 'Fiber ≥15% of calories',
-  sugars: 'Sugar ≤15% of calories',
+  fat: 'Within ~15% of target',
+  fiber: 'Within ~15% of target',
+  sugars: 'Within ~15% of target',
 }
 
 interface StatsOverviewPanelProps {
@@ -106,7 +106,7 @@ export function StatsOverviewPanel({
             <p className="text-sm font-medium">Goal adherence</p>
             <p className="text-xs text-muted-foreground mt-1">
               % of logged days on target. Protein counts when you meet or beat the goal.
-              Fat and sugar are good at ≤15% of calories; fiber at ≥15%.
+              Energy balance uses days that have a deficit or surplus goal set.
             </p>
           </div>
 
