@@ -3,7 +3,7 @@ pid: 35080
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-04T20:47:08.994Z
-running_for_ms: 21830003 
+running_for_ms: 22449991 
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -16,3 +16,7 @@ Port 5174 is in use, trying another one...
 
   ➜  Local:   http://localhost:5175/nilus-macrotracker/
   ➜  Network: http://192.168.1.69:5175/nilus-macrotracker/
+11:00:15 PM [vite] (client) page reload index.html
+11:00:15 PM [vite] vite.config.ts changed, restarting server...
+11:00:15 PM [vite] (client) page reload index.html
+11:00:15 PM [vite] server restarted.
