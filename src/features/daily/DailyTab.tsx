@@ -61,6 +61,7 @@ import {
   normalizeMeals,
 } from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
+import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
 const METRICS = [
@@ -306,7 +307,12 @@ export function DailyTab() {
         </div>
       </header>
 
-      <div className="p-4 space-y-4">
+      <div
+        className={cn(
+          'flex-1 p-4 space-y-4 transition-colors duration-200',
+          editDayMode && 'bg-daily-edit-surface',
+        )}
+      >
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">Net Calories</p>
           <p className="text-5xl font-bold tracking-tight text-primary">

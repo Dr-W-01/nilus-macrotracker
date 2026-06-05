@@ -28,6 +28,7 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --bottom-nav-inner: 4.5rem;
+  --daily-edit-surface: #111318;
 }
 
 .light {
@@ -50,6 +51,7 @@
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #b22222;
+  --daily-edit-surface: #eceef2;
 }
 
 @theme inline {
@@ -72,6 +74,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-daily-edit-surface: var(--daily-edit-surface);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
