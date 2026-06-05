@@ -123,6 +123,8 @@ export function DailyTab() {
   const [selectFoodsMode, setSelectFoodsMode] = useState(false)
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
   const [bulkAssignMeal, setBulkAssignMeal] = useState(meals[0] ?? 'Breakfast')
+  /** Meal names that are collapsed (default: all expanded). */
+  const [collapsedMeals, setCollapsedMeals] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setBulkAssignMeal(meals[0] ?? 'Breakfast')
@@ -132,6 +134,19 @@ export function DailyTab() {
     setSelectFoodsMode(false)
     setSelectedLogIds(new Set())
   }, [currentDate, editDayMode])
+
+  useEffect(() => {
+    setCollapsedMeals(new Set())
+  }, [currentDate])
+
+  const toggleMealCollapsed = (meal: string) => {
+    setCollapsedMeals((prev) => {
+      const next = new Set(prev)
+      if (next.has(meal)) next.delete(meal)
+      else next.add(meal)
+      return next
+    })
+  }
 
   const foodsByMeal = useMemo(() => {
     const groups = new Map<string, LoggedFood[]>()
@@ -463,17 +478,44 @@ export function DailyTab() {
             </div>
           ) : (
             <div className="space-y-4">
-              {foodsByMeal.map(({ meal, entries, totals }) => (
+              {foodsByMeal.map(({ meal, entries, totals }) => {
+                const mealExpanded = !collapsedMeals.has(meal)
+                return (
                 <section key={meal}>
-                  <div className="mb-1.5 px-0.5 space-y-0.5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                      {meal}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground tabular-nums leading-snug">
-                      {formatMealGroupTotals(totals)}
-                    </p>
-                  </div>
-                  <ul className="space-y-2">
+                  <button
+                    type="button"
+                    className="mb-1.5 flex w-full min-h-11 items-start gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50"
+                    onClick={() => toggleMealCollapsed(meal)}
+                    aria-expanded={mealExpanded}
+                    aria-controls={`meal-foods-${meal.replace(/\s+/g, '-')}`}
+                  >
+                    <span className="mt-0.5 shrink-0 text-primary">
+                      {mealExpanded ? (
+                        <ChevronUp className="h-4 w-4" aria-hidden />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" aria-hidden />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1 space-y-0.5">
+                      <span className="block text-xs font-semibold uppercase tracking-wide text-primary">
+                        {meal}
+                        <span className="sr-only">
+                          {mealExpanded ? ', expanded' : ', collapsed'}
+                        </span>
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
+                        {formatMealGroupTotals(totals)}
+                      </span>
+                    </span>
+                    <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground tabular-nums">
+                      {entries.length} {entries.length === 1 ? 'item' : 'items'}
+                    </span>
+                  </button>
+                  {mealExpanded && (
+                  <ul
+                    id={`meal-foods-${meal.replace(/\s+/g, '-')}`}
+                    className="space-y-2"
+                  >
                     {entries.map((entry) => {
                       const food = foodLibrary.find((f) => f.id === entry.foodId)
                       const macros = getLoggedFoodMacros(foodLibrary, entry)
@@ -562,8 +604,9 @@ export function DailyTab() {
                       )
                     })}
                   </ul>
+                  )}
                 </section>
-              ))}
+              )})}
             </div>
           )}
         </div>
