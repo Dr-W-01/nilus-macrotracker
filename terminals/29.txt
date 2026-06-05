@@ -3,7 +3,7 @@ pid: 22736
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-04T01:37:02.384Z
-running_for_ms: 68780008 
+running_for_ms: 86400012 
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -26,3 +26,9 @@ Port 5183 is in use, trying another one...
   ➜  Local:   http://localhost:5184/nilus-macrotracker/
   ➜  Network: http://192.168.1.69:5184/nilus-macrotracker/
 10:34:41 PM [vite] (client) page reload index.html
+
+---
+exit_code: -1
+elapsed_ms: 86400012
+ended_at: 2026-06-05T01:36:54.207Z
+---

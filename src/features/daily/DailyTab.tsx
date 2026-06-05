@@ -74,6 +74,8 @@ const METRICS = [
   { key: 'sugars', label: 'Sugars', unit: 'g' },
 ] as const
 
+const NO_COLLAPSED_MEALS: string[] = []
+
 export function DailyTab() {
   const currentDate = useMacroStore((s) => s.currentDate)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
@@ -89,6 +91,10 @@ export function DailyTab() {
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
   const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
   const setDailyNote = useMacroStore((s) => s.setDailyNote)
+  const toggleMealCollapsed = useMacroStore((s) => s.toggleMealCollapsed)
+  const collapsedMealNames = useMacroStore(
+    (s) => s.mealCollapseByDate[s.currentDate] ?? NO_COLLAPSED_MEALS,
+  )
   const updateDailyLog = useMacroStore((s) => s.updateDailyLog)
 
 
@@ -123,8 +129,10 @@ export function DailyTab() {
   const [selectFoodsMode, setSelectFoodsMode] = useState(false)
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
   const [bulkAssignMeal, setBulkAssignMeal] = useState(meals[0] ?? 'Breakfast')
-  /** Meal names that are collapsed (default: all expanded). */
-  const [collapsedMeals, setCollapsedMeals] = useState<Set<string>>(new Set())
+  const collapsedMeals = useMemo(
+    () => new Set(collapsedMealNames),
+    [collapsedMealNames],
+  )
 
   useEffect(() => {
     setBulkAssignMeal(meals[0] ?? 'Breakfast')
@@ -134,19 +142,6 @@ export function DailyTab() {
     setSelectFoodsMode(false)
     setSelectedLogIds(new Set())
   }, [currentDate, editDayMode])
-
-  useEffect(() => {
-    setCollapsedMeals(new Set())
-  }, [currentDate])
-
-  const toggleMealCollapsed = (meal: string) => {
-    setCollapsedMeals((prev) => {
-      const next = new Set(prev)
-      if (next.has(meal)) next.delete(meal)
-      else next.add(meal)
-      return next
-    })
-  }
 
   const foodsByMeal = useMemo(() => {
     const groups = new Map<string, LoggedFood[]>()
@@ -485,7 +480,7 @@ export function DailyTab() {
                   <button
                     type="button"
                     className="mb-1.5 flex w-full min-h-11 items-start gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50"
-                    onClick={() => toggleMealCollapsed(meal)}
+                    onClick={() => toggleMealCollapsed(meal, currentDate)}
                     aria-expanded={mealExpanded}
                     aria-controls={`meal-foods-${meal.replace(/\s+/g, '-')}`}
                   >

@@ -79,13 +79,17 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 6
+const PERSIST_VERSION = 7
+
+const EMPTY_COLLAPSED_MEALS: string[] = []
 
 type PersistedSlice = {
   settings?: Settings
   foodLibrary?: FoodItem[]
   customCategories?: string[]
   dailyLogs?: Record<string, DailyLog>
+  /** Per calendar day: meal names that are collapsed on the Daily tab */
+  mealCollapseByDate?: Record<string, string[]>
   currentDate?: string
   currentTab?: AppTab
   editDayMode?: boolean
@@ -95,6 +99,20 @@ type PersistedSlice = {
   statsRangeEnd?: string
   statsView?: 'overview' | 'trends' | 'breakdowns' | 'weight' | 'table' | 'charts'
   statsAnchorDate?: string
+}
+
+function normalizeMealCollapseByDate(
+  raw?: Record<string, string[]>,
+): Record<string, string[]> {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Record<string, string[]> = {}
+  for (const [date, meals] of Object.entries(raw)) {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue
+    if (!Array.isArray(meals)) continue
+    const names = meals.filter((m): m is string => typeof m === 'string' && m.length > 0)
+    if (names.length > 0) out[date] = names
+  }
+  return out
 }
 
 function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
@@ -152,6 +170,7 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
     foodLibrary: (persisted.foodLibrary ?? []).map((item) =>
       normalizeLibraryItem(item, persisted.foodLibrary),
     ),
+    mealCollapseByDate: normalizeMealCollapseByDate(persisted.mealCollapseByDate),
 
     statsRangeStart: persisted.statsRangeStart ?? week.start,
     statsRangeEnd: persisted.statsRangeEnd ?? week.end,
@@ -179,6 +198,8 @@ interface MacroStore {
   /** User-created category names (may exist before any item uses them) */
   customCategories: string[]
   dailyLogs: Record<string, DailyLog>
+  /** Collapsed meal category names keyed by calendar date (yyyy-MM-dd) */
+  mealCollapseByDate: Record<string, string[]>
   currentDate: string
   currentTab: AppTab
   editDayMode: boolean
@@ -211,6 +232,7 @@ interface MacroStore {
   setBurnedCalories: (value: number, date?: string) => void
   setDailyWeight: (weightKg: number | undefined, date?: string) => void
   setDailyNote: (note: string, date?: string) => void
+  toggleMealCollapsed: (meal: string, date?: string) => void
 
   loadSeedLibrary: () => void
   mergeFoodLibrary: (items: FoodItem[], replace?: boolean) => void
@@ -251,6 +273,7 @@ export const useMacroStore = create<MacroStore>()(
       foodLibrary: [],
       customCategories: [],
       dailyLogs: {},
+      mealCollapseByDate: {},
       currentDate: todayString(),
       currentTab: 'daily',
       editDayMode: false,
@@ -360,6 +383,23 @@ export const useMacroStore = create<MacroStore>()(
       setDailyNote: (note, date) => {
         const d = date ?? get().currentDate
         get().updateDailyLog(d, { note })
+      },
+
+      toggleMealCollapsed: (meal, date) => {
+        const d = date ?? get().currentDate
+        const name = meal.trim()
+        if (!name) return
+        set((state) => {
+          const prev = state.mealCollapseByDate[d] ?? EMPTY_COLLAPSED_MEALS
+          const nextSet = new Set(prev)
+          if (nextSet.has(name)) nextSet.delete(name)
+          else nextSet.add(name)
+          const nextList = [...nextSet]
+          const mealCollapseByDate = { ...state.mealCollapseByDate }
+          if (nextList.length === 0) delete mealCollapseByDate[d]
+          else mealCollapseByDate[d] = nextList
+          return { mealCollapseByDate }
+        })
       },
 
       loadSeedLibrary: () => {
@@ -593,6 +633,7 @@ export const useMacroStore = create<MacroStore>()(
           foodLibrary: [],
           customCategories: [],
           dailyLogs: {},
+          mealCollapseByDate: {},
           currentDate: todayString(),
           currentTab: 'daily',
           editDayMode: false,
@@ -614,6 +655,7 @@ export const useMacroStore = create<MacroStore>()(
         foodLibrary: state.foodLibrary,
         customCategories: state.customCategories,
         dailyLogs: state.dailyLogs,
+        mealCollapseByDate: state.mealCollapseByDate,
         currentDate: state.currentDate,
         currentTab: state.currentTab,
         editDayMode: state.editDayMode,
