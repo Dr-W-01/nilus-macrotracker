@@ -45,6 +45,7 @@ export function BulkMealAssignBar({
         value={assignMeal}
         onChange={onAssignMealChange}
         compact
+        optional={false}
       />
       <Button className="w-full h-10" disabled={count === 0} onClick={onAssign}>
         {count > 0 ? `Assign to ${assignMeal}` : 'Select items to assign'}

@@ -20,7 +20,7 @@ interface RecipePreviewSheetProps {
   food: FoodItem | null
   meals: string[]
   onOpenChange: (open: boolean) => void
-  onAdd: (meal: string) => void
+  onAdd: (meal?: string) => void
   onEdit: () => void
   onCancel: () => void
 }
@@ -35,10 +35,10 @@ export function RecipePreviewSheet({
   onCancel,
 }: RecipePreviewSheetProps) {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
-  const [meal, setMeal] = useState(meals[0] ?? 'Breakfast')
+  const [meal, setMeal] = useState('')
 
   useEffect(() => {
-    if (open) setMeal(meals[0] ?? 'Breakfast')
+    if (open) setMeal('')
   }, [open, meals])
 
   const components = useMemo(() => {
@@ -95,14 +95,14 @@ export function RecipePreviewSheet({
             </div>
           )}
           <MealPicker
-            label="Add to meal"
+            label="Meal"
             meals={meals}
             value={meal}
             onChange={setMeal}
           />
         </ScrollSheetBody>
         <ScrollSheetFooter>
-          <Button size="lg" className="w-full" onClick={() => onAdd(meal)}>
+          <Button size="lg" className="w-full" onClick={() => onAdd(meal || undefined)}>
             Add
           </Button>
           <Button size="lg" variant="outline" className="w-full" onClick={onEdit}>

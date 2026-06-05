@@ -24,7 +24,7 @@ interface RecipeCustomizeSheetProps {
   meals: string[]
   onOpenChange: (open: boolean) => void
   onConfirm: (
-    meal: string,
+    meal: string | undefined,
     overrides: { foodId: string; quantity: number }[],
   ) => void
   onCancel: () => void
@@ -42,11 +42,11 @@ export function RecipeCustomizeSheet({
   const [overrides, setOverrides] = useState<
     Record<string, { quantity: number; scaleAmountEaten?: number }>
   >({})
-  const [meal, setMeal] = useState(meals[0] ?? 'Breakfast')
+  const [meal, setMeal] = useState('')
 
   useEffect(() => {
     if (!recipe?.recipeComponents || !open) return
-    setMeal(meals[0] ?? 'Breakfast')
+    setMeal('')
     const initial: Record<string, { quantity: number; scaleAmountEaten?: number }> =
       {}
     recipe.recipeComponents.forEach((c) => {
@@ -68,7 +68,7 @@ export function RecipeCustomizeSheet({
 
   const handleConfirm = () => {
     onConfirm(
-      meal,
+      meal || undefined,
       recipe.recipeComponents!.map((c) => ({
         foodId: c.foodId,
         quantity: overrides[c.foodId]?.quantity ?? c.quantity,
@@ -155,12 +155,12 @@ export function RecipeCustomizeSheet({
               )
             })}
           </div>
-          <MealPicker
-            label="Add to meal"
-            meals={meals}
-            value={meal}
-            onChange={setMeal}
-          />
+        <MealPicker
+          label="Meal"
+          meals={meals}
+          value={meal}
+          onChange={setMeal}
+        />
         </ScrollSheetBody>
         <ScrollSheetFooter>
           <Button size="lg" className="w-full" onClick={handleConfirm}>

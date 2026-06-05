@@ -26,6 +26,7 @@ import {
   DEFAULT_MEALS,
   normalizeMealName,
   normalizeMeals,
+  resolveLoggedMeal,
 } from '@/lib/meals'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
 import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
@@ -326,9 +327,7 @@ export const useMacroStore = create<MacroStore>()(
         const entry: LoggedFood = {
           ...logged,
           id: generateId(),
-          meal: logged.meal?.trim()
-            ? normalizeMealName(logged.meal, meals)
-            : undefined,
+          meal: resolveLoggedMeal(logged.meal, meals),
         }
         get().touchFoodUsage(logged.foodId)
         get().updateDailyLog(d, { foods: [...log.foods, entry] })
@@ -337,10 +336,16 @@ export const useMacroStore = create<MacroStore>()(
       updateLoggedFood: (loggedId, patch, date) => {
         const d = date ?? get().currentDate
         const log = get().getDailyLog(d)
+        const meals = normalizeMeals(get().settings.meals)
         get().updateDailyLog(d, {
-          foods: log.foods.map((f) =>
-            f.id === loggedId ? { ...f, ...patch } : f,
-          ),
+          foods: log.foods.map((f) => {
+            if (f.id !== loggedId) return f
+            const next = { ...f, ...patch }
+            if ('meal' in patch) {
+              next.meal = resolveLoggedMeal(patch.meal, meals)
+            }
+            return next
+          }),
         })
       },
 
@@ -348,7 +353,7 @@ export const useMacroStore = create<MacroStore>()(
         const d = date ?? get().currentDate
         const log = get().getDailyLog(d)
         const meals = normalizeMeals(get().settings.meals)
-        const tag = normalizeMealName(meal, meals)
+        const tag = resolveLoggedMeal(meal, meals) ?? meal.trim()
         const idSet = new Set(loggedIds)
         get().updateDailyLog(d, {
           foods: log.foods.map((f) =>

@@ -19,7 +19,7 @@ export interface AddFoodResult {
   quantity: number
   scaleAmountEaten?: number
   note?: string
-  meal: string
+  meal?: string
 }
 
 interface AddFoodSheetProps {
@@ -44,7 +44,7 @@ export function AddFoodSheet({
   const [countQty, setCountQty] = useState(1)
   const [amountEaten, setAmountEaten] = useState(1)
   const [note, setNote] = useState('')
-  const [meal, setMeal] = useState(meals[0] ?? 'Breakfast')
+  const [meal, setMeal] = useState('')
 
   useEffect(() => {
     if (!food || !open) return
@@ -54,7 +54,7 @@ export function AddFoodSheet({
       setCountQty(1)
     }
     setNote('')
-    setMeal(meals[0] ?? 'Breakfast')
+    setMeal('')
   }, [food, open, meals])
 
   const macros = useMemo(() => {
@@ -78,7 +78,7 @@ export function AddFoodSheet({
       onAdd({
         quantity: Math.max(1, Math.round(countQty)),
         note: note || undefined,
-        meal,
+        meal: meal || undefined,
       })
       return
     }
@@ -86,7 +86,7 @@ export function AddFoodSheet({
     onAdd({
       ...payload,
       note: note || undefined,
-      meal,
+      meal: meal || undefined,
     })
   }
 
@@ -124,7 +124,7 @@ export function AddFoodSheet({
             </p>
           )}
           <MealPicker
-            label="Add to meal"
+            label="Meal"
             meals={meals}
             value={meal}
             onChange={setMeal}
