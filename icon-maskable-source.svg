@@ -1,8 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NullTracker">
   <rect width="512" height="512" fill="#000000"/>
   <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Empty set (∅): circle + diagonal, optically centered -->
-    <circle cx="256" cy="256" r="118" stroke-width="36"/>
-    <path d="M 168 338 L 344 162" stroke-width="36"/>
+    <circle cx="256" cy="256" r="86" stroke-width="28"/>
+    <path d="M 188 324 L 324 188" stroke-width="28"/>
   </g>
 </svg>
