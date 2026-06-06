@@ -1,3 +1,7 @@
+import {
+  MACRO_NUTRIENT_ORDER,
+  MACRO_SHORT_LABELS,
+} from '@/lib/macroColors'
 import { getLoggedServingMultiplier } from './scale'
 import type { FoodItem, LoggedFood, MacroTotals } from './types'
 
@@ -80,12 +84,22 @@ export function roundMacro(value: number, decimals = 1): number {
   return Math.round(value * factor) / factor
 }
 
+function formatMacroSequence(
+  formatValue: (key: (typeof MACRO_NUTRIENT_ORDER)[number]) => string,
+): string {
+  return MACRO_NUTRIENT_ORDER.map((key) => formatValue(key)).join(' • ')
+}
+
 /** Compact macro line for logged food rows, e.g. P: 42g • C: 8g • F: 12g */
 export function formatCompactMacroLine(m: MacroTotals): string {
-  return `P: ${roundMacro(m.protein)}g • C: ${roundMacro(m.carbs)}g • F: ${roundMacro(m.fat)}g • Fib: ${roundMacro(m.fiber)}g • S: ${roundMacro(m.sugars)}g`
+  return formatMacroSequence(
+    (key) => `${MACRO_SHORT_LABELS[key]}: ${roundMacro(m[key])}g`,
+  )
 }
 
 /** Meal group header totals, e.g. Cal 620 • P 45g • C 60g • F 22g • Fib 8g • S 12g */
 export function formatMealGroupTotals(m: MacroTotals): string {
-  return `Cal ${roundMacro(m.calories, 0)} • P ${roundMacro(m.protein)}g • C ${roundMacro(m.carbs)}g • F ${roundMacro(m.fat)}g • Fib ${roundMacro(m.fiber)}g • S ${roundMacro(m.sugars)}g`
+  return `Cal ${roundMacro(m.calories, 0)} • ${formatMacroSequence(
+    (key) => `${MACRO_SHORT_LABELS[key]} ${roundMacro(m[key])}g`,
+  )}`
 }

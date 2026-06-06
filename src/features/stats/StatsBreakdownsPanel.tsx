@@ -24,7 +24,11 @@ import {
   macroCalorieDistribution,
 } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
-import { MACRO_CHART_COLORS } from '@/lib/macroColors'
+import {
+  MACRO_CHART_COLORS,
+  MACRO_DISPLAY_LABELS,
+  MACRO_NUTRIENT_ORDER,
+} from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 
 type SortKey =
@@ -215,11 +219,13 @@ export function StatsBreakdownsPanel({
         <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
           <AvgCell label="Calories" value={roundMacro(avg.calories, 0)} />
           <AvgCell label="Net" value={roundMacro(avg.net, 0)} accent />
-          <AvgCell label="Protein" value={`${avg.protein}g`} />
-          <AvgCell label="Carbs" value={`${avg.carbs}g`} />
-          <AvgCell label="Fat" value={`${avg.fat}g`} />
-          <AvgCell label="Fiber" value={`${avg.fiber}g`} />
-          <AvgCell label="Sugars" value={`${avg.sugars}g`} />
+          {MACRO_NUTRIENT_ORDER.map((key) => (
+            <AvgCell
+              key={key}
+              label={MACRO_DISPLAY_LABELS[key]}
+              value={`${avg[key]}g`}
+            />
+          ))}
         </CardContent>
       </Card>
 

@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CategoryPicker } from '@/components/library/CategoryPicker'
 import { normalizeCategoryList } from '@/lib/categories'
+import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import {
   inferBaseAmountFromServing,
   normalizeScaleFoodItem,
@@ -123,11 +124,15 @@ export function FoodFormFields({
       </FormField>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        <MacroField label="Protein (g)" value={values.protein} readOnly={macrosReadOnly} onChange={(v) => patch({ protein: v })} />
-        <MacroField label="Carbs (g)" value={values.carbs} readOnly={macrosReadOnly} onChange={(v) => patch({ carbs: v })} />
-        <MacroField label="Fat (g)" value={values.fat} readOnly={macrosReadOnly} onChange={(v) => patch({ fat: v })} />
-        <MacroField label="Fiber (g)" value={values.fiber} readOnly={macrosReadOnly} onChange={(v) => patch({ fiber: v })} />
-        <MacroField label="Sugars (g)" value={values.sugars} readOnly={macrosReadOnly} onChange={(v) => patch({ sugars: v })} />
+        {MACRO_NUTRIENT_ORDER.map((key) => (
+          <MacroField
+            key={key}
+            label={`${MACRO_DISPLAY_LABELS[key]} (g)`}
+            value={values[key]}
+            readOnly={macrosReadOnly}
+            onChange={(v) => patch({ [key]: v })}
+          />
+        ))}
       </div>
 
       {macrosReadOnly && (

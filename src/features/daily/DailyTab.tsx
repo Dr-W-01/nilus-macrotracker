@@ -61,16 +61,17 @@ import {
   normalizeMeals,
 } from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
+import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
 const METRICS = [
   { key: 'calories', label: 'Calories', unit: '' },
-  { key: 'protein', label: 'Protein', unit: 'g' },
-  { key: 'carbs', label: 'Carbs', unit: 'g' },
-  { key: 'fat', label: 'Fat', unit: 'g' },
-  { key: 'fiber', label: 'Fiber', unit: 'g' },
-  { key: 'sugars', label: 'Sugars', unit: 'g' },
+  ...MACRO_NUTRIENT_ORDER.map((key) => ({
+    key,
+    label: MACRO_DISPLAY_LABELS[key],
+    unit: 'g',
+  })),
 ] as const
 
 const NO_COLLAPSED_MEALS: string[] = []

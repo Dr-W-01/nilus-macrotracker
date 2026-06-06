@@ -24,7 +24,7 @@ import {
   type TrendMetricKey,
 } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
-import { MACRO_CHART_COLORS } from '@/lib/macroColors'
+import { MACRO_CHART_COLORS, macroMetricOptions } from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 
@@ -33,13 +33,7 @@ const CALORIE_METRICS: { key: TrendMetricKey; label: string }[] = [
   { key: 'calories', label: 'Calories In' },
 ]
 
-const MACRO_METRICS: { key: TrendMetricKey; label: string }[] = [
-  { key: 'protein', label: 'Protein' },
-  { key: 'carbs', label: 'Carbs' },
-  { key: 'fat', label: 'Fat' },
-  { key: 'fiber', label: 'Fiber' },
-  { key: 'sugars', label: 'Sugars' },
-]
+const MACRO_METRICS = macroMetricOptions()
 
 const CALORIE_LINE_COLORS: Record<'net' | 'calories', string> = {
   net: 'var(--primary)',
@@ -77,6 +71,44 @@ interface StatsTrendsPanelProps {
   settings: Settings
   accentColor: string
   onDayClick: (date: string) => void
+}
+
+function TrendsChartLegend({
+  metrics,
+  accentColor,
+  showRolling,
+  rollingWindow,
+}: {
+  metrics: { key: TrendMetricKey; label: string }[]
+  accentColor: string
+  showRolling: boolean
+  rollingWindow: 7 | 14
+}) {
+  return (
+    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 pt-2 text-[10px]">
+      {metrics.map(({ key, label }) => (
+        <span key={key} className="inline-flex items-center gap-1.5">
+          <span
+            className="inline-block h-0.5 w-3 rounded-sm"
+            style={{ backgroundColor: lineColor(key, accentColor) }}
+          />
+          <span className="text-muted-foreground">{label}</span>
+        </span>
+      ))}
+      {showRolling &&
+        metrics.map(({ key, label }) => (
+          <span key={`roll-${key}`} className="inline-flex items-center gap-1.5 opacity-80">
+            <span
+              className="inline-block h-0 w-3 border-t-2 border-dashed"
+              style={{ borderColor: lineColor(key, accentColor) }}
+            />
+            <span className="text-muted-foreground">
+              {label} ({rollingWindow}d avg)
+            </span>
+          </span>
+        ))}
+    </div>
+  )
 }
 
 type ChartRow = {
@@ -164,8 +196,14 @@ function TrendsLineChart({
             ))}
             <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
             <Legend
-              wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
-              iconSize={8}
+              content={
+                <TrendsChartLegend
+                  metrics={metrics}
+                  accentColor={accentColor}
+                  showRolling={showRolling}
+                  rollingWindow={rollingWindow}
+                />
+              }
             />
             {metrics.map(({ key, label }) => (
               <Line
@@ -173,6 +211,7 @@ function TrendsLineChart({
                 type="monotone"
                 dataKey={key}
                 name={label}
+                legendType="none"
                 stroke={lineColor(key, accentColor)}
                 strokeWidth={key === 'net' ? 2.5 : 2}
                 dot={{ r: compactDots ? 2.5 : 3, cursor: 'pointer' }}
@@ -186,6 +225,7 @@ function TrendsLineChart({
                   type="monotone"
                   dataKey={ROLL_KEY[key]}
                   name={`${label} (${rollingWindow}d avg)`}
+                  legendType="none"
                   stroke={lineColor(key, accentColor)}
                   strokeWidth={1.5}
                   strokeDasharray="6 4"

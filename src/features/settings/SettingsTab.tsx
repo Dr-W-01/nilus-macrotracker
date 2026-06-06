@@ -22,6 +22,7 @@ import {
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
 import { DEFAULT_MEALS, normalizeMeals } from '@/lib/meals'
+import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import { parseWeightInput, weightFromKg } from '@/lib/weight'
 import type { GoalMode, GoalTemplate, WeightUnit } from '@/lib/types'
@@ -568,7 +569,7 @@ function GoalEditDialog({
               net calories (eaten − burned) to this signed target (e.g. −1000 deficit).
             </p>
           </div>
-          {(['protein', 'carbs', 'fat', 'fiber', 'sugars'] as const).map((key) => (
+          {MACRO_NUTRIENT_ORDER.map((key) => (
             <div key={key}>
               <Label className="text-xs capitalize">{key} (g)</Label>
               <Input
