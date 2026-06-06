@@ -1,5 +1,5 @@
 import { format, isValid, parseISO, subDays } from 'date-fns'
-import { datesInRange, todayString } from '@/lib/dates'
+import { datesInRange, shiftDate, todayString } from '@/lib/dates'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog } from '@/lib/types'
 import { weightFromKg } from '@/lib/weight'
@@ -29,6 +29,28 @@ export function getWeightLogDates(dailyLogs: Record<string, DailyLog>): string[]
     .filter(([, log]) => log.weightKg != null && log.weightKg > 0)
     .map(([date]) => date)
     .sort()
+}
+
+/** Pad chart range so edge weight points are not clipped at the plot boundary. */
+export function weightChartPaddingDays(spanDays: number): number {
+  if (spanDays <= 1) return 1
+  if (spanDays <= 14) return 1
+  if (spanDays <= 60) return 2
+  if (spanDays <= 180) return 4
+  if (spanDays <= 400) return 7
+  return Math.min(30, Math.max(7, Math.round(spanDays * 0.05)))
+}
+
+export function extendWeightChartRange(range: { start: string; end: string }): {
+  start: string
+  end: string
+} {
+  const spanDays = datesInRange(range.start, range.end).length
+  const pad = weightChartPaddingDays(spanDays)
+  return {
+    start: shiftDate(range.start, -pad),
+    end: shiftDate(range.end, pad),
+  }
 }
 
 export function getWeightChartRange(

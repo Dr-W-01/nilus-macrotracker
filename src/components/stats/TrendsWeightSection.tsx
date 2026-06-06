@@ -13,10 +13,10 @@ import {
 } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   buildWeightChartData,
   countWeightLogsInRange,
+  extendWeightChartRange,
   getWeightChartRange,
   weightChartAxisTick,
   WEIGHT_RANGE_OPTIONS,
@@ -33,6 +33,26 @@ interface TrendsWeightSectionProps {
   onDayClick: (date: string) => void
 }
 
+function WeightChartLegend({ accentColor }: { accentColor: string }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 pt-2 text-[11px] text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5">
+        <span
+          className="inline-block h-0.5 w-3 rounded-sm"
+          style={{ backgroundColor: accentColor }}
+        />
+        Weight
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span
+          className="inline-block h-0 w-3 border-t-2 border-dashed border-[#94a3b8]"
+        />
+        7-day avg
+      </span>
+    </div>
+  )
+}
+
 export function TrendsWeightSection({
   dailyLogs,
   settings,
@@ -41,18 +61,16 @@ export function TrendsWeightSection({
 }: TrendsWeightSectionProps) {
   const unit = settings.weightUnit ?? 'lbs'
   const [preset, setPreset] = useState<WeightRangePreset>('all')
-  const [showWeightLine, setShowWeightLine] = useState(true)
-  const [showTrend, setShowTrend] = useState(true)
 
   const range = useMemo(
     () => getWeightChartRange(preset, dailyLogs),
     [preset, dailyLogs],
   )
 
-  const chartData = useMemo(
-    () => buildWeightChartData(range, dailyLogs, unit, 7),
-    [range, dailyLogs, unit],
-  )
+  const chartData = useMemo(() => {
+    const paddedRange = extendWeightChartRange(range)
+    return buildWeightChartData(paddedRange, dailyLogs, unit, 7)
+  }, [range, dailyLogs, unit])
 
   const logCount = useMemo(
     () => countWeightLogsInRange(range, dailyLogs),
@@ -79,7 +97,7 @@ export function TrendsWeightSection({
           <p className="text-xs text-muted-foreground mt-0.5">
             {logCount === 0
               ? 'Log weight on the Daily tab to see your chart.'
-              : `${logCount} ${logCount === 1 ? 'entry' : 'entries'} in range · gaps where no weight was logged`}
+              : `${logCount} ${logCount === 1 ? 'entry' : 'entries'} in range · gaps where no weight was logged · 7-day average always shown`}
           </p>
         </div>
         <div className="flex gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none">
@@ -110,24 +128,7 @@ export function TrendsWeightSection({
           </p>
         )}
       </CardHeader>
-      <CardContent className="space-y-3 pb-3">
-        <div className="flex flex-wrap items-center gap-4 border-b border-border pb-3">
-          <label className="flex items-center gap-2 text-xs cursor-pointer min-h-9">
-            <Checkbox
-              checked={showWeightLine}
-              onChange={() => setShowWeightLine((v) => !v)}
-            />
-            Weight line
-          </label>
-          <label className="flex items-center gap-2 text-xs cursor-pointer min-h-9">
-            <Checkbox
-              checked={showTrend}
-              onChange={() => setShowTrend((v) => !v)}
-            />
-            7-day trend
-          </label>
-        </div>
-
+      <CardContent className="pb-3">
         <div className="h-56 sm:h-64 min-h-[14rem]">
           {logCount === 0 ? (
             <p className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -137,6 +138,7 @@ export function TrendsWeightSection({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}
+                margin={{ top: 8, right: 24, left: 4, bottom: 4 }}
                 onClick={(state) => {
                   const idx =
                     typeof state?.activeTooltipIndex === 'number'
@@ -152,8 +154,9 @@ export function TrendsWeightSection({
                   stroke="#888"
                   fontSize={10}
                   tickFormatter={(d) => weightChartAxisTick(String(d), spanDays)}
-                  interval={spanDays <= 14 ? 0 : 'preserveStartEnd'}
+                  interval={spanDays <= 16 ? 0 : 'preserveStartEnd'}
                   minTickGap={8}
+                  padding={{ left: 28, right: 28 }}
                 />
                 <YAxis
                   stroke="#888"
@@ -173,9 +176,7 @@ export function TrendsWeightSection({
                     return [`${value} ${weightUnitLabel(unit)}`, name]
                   }}
                 />
-                {(showWeightLine || showTrend) && (
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                )}
+                <Legend content={<WeightChartLegend accentColor={accentColor} />} />
                 {targetDisplay != null && (
                   <ReferenceLine
                     y={targetDisplay}
@@ -189,30 +190,28 @@ export function TrendsWeightSection({
                     }}
                   />
                 )}
-                {showWeightLine && (
-                  <Line
-                    type="monotone"
-                    dataKey="weight"
-                    name="Weight"
-                    stroke={accentColor}
-                    strokeWidth={2.5}
-                    dot={{ r: 4, cursor: 'pointer' }}
-                    connectNulls={false}
-                    activeDot={{ r: 6 }}
-                  />
-                )}
-                {showTrend && (
-                  <Line
-                    type="monotone"
-                    dataKey="trend"
-                    name="7-day avg"
-                    stroke="#94a3b8"
-                    strokeWidth={2}
-                    strokeDasharray="6 4"
-                    dot={false}
-                    connectNulls={false}
-                  />
-                )}
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  name="Weight"
+                  legendType="none"
+                  stroke={accentColor}
+                  strokeWidth={2.5}
+                  dot={{ r: 4, cursor: 'pointer' }}
+                  connectNulls={false}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="trend"
+                  name="7-day avg"
+                  legendType="none"
+                  stroke="#94a3b8"
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
+                  dot={false}
+                  connectNulls={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           )}
