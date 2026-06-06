@@ -17,12 +17,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   buildStatsDayRows,
   buildTrendMetricSeries,
+  computeTrendGoalLines,
   rollingAverageCalendarWindow,
   stableCalorieYDomain,
   stableMacroYDomain,
   type TrendMetricKey,
 } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
+import { MACRO_CHART_COLORS } from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 
@@ -39,14 +41,22 @@ const MACRO_METRICS: { key: TrendMetricKey; label: string }[] = [
   { key: 'sugars', label: 'Sugars' },
 ]
 
-const COLORS: Record<TrendMetricKey, string> = {
+const CALORIE_LINE_COLORS: Record<'net' | 'calories', string> = {
   net: 'var(--primary)',
   calories: '#f59e0b',
-  protein: '#22c55e',
-  carbs: '#3b82f6',
-  fat: '#a855f7',
-  fiber: '#14b8a6',
-  sugars: '#ec4899',
+}
+
+const GOAL_LINE_COLORS = {
+  intake: '#fbbf24',
+  net: '#94a3b8',
+} as const
+
+type GoalLine = { y: number; label: string; stroke: string }
+
+function lineColor(key: TrendMetricKey, accentColor: string): string {
+  if (key === 'net') return accentColor
+  if (key === 'calories') return CALORIE_LINE_COLORS.calories
+  return MACRO_CHART_COLORS[key]
 }
 
 const ROLL_KEY: Record<TrendMetricKey, string> = {
@@ -97,6 +107,7 @@ function TrendsLineChart({
   rollingWindow,
   showRolling,
   yDomain,
+  goalLines,
   compactDots = false,
   onDayClick,
 }: {
@@ -108,6 +119,7 @@ function TrendsLineChart({
   rollingWindow: 7 | 14
   showRolling: boolean
   yDomain?: [number, number]
+  goalLines?: GoalLine[]
   compactDots?: boolean
   onDayClick: (date: string) => void
 }) {
@@ -135,6 +147,21 @@ function TrendsLineChart({
             <XAxis dataKey="date" stroke="#888" fontSize={11} />
             <YAxis stroke="#888" fontSize={11} domain={yDomain ?? ['auto', 'auto']} />
             {yDomain && <ReferenceLine y={0} stroke="#666" strokeWidth={1} />}
+            {goalLines?.map((goal) => (
+              <ReferenceLine
+                key={goal.label}
+                y={goal.y}
+                stroke={goal.stroke}
+                strokeDasharray="8 4"
+                strokeWidth={1.5}
+                label={{
+                  value: goal.label,
+                  position: 'insideTopRight',
+                  fill: goal.stroke,
+                  fontSize: 10,
+                }}
+              />
+            ))}
             <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
             <Legend
               wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
@@ -146,7 +173,7 @@ function TrendsLineChart({
                 type="monotone"
                 dataKey={key}
                 name={label}
-                stroke={key === 'net' ? accentColor : COLORS[key]}
+                stroke={lineColor(key, accentColor)}
                 strokeWidth={key === 'net' ? 2.5 : 2}
                 dot={{ r: compactDots ? 2.5 : 3, cursor: 'pointer' }}
                 activeDot={{ r: compactDots ? 4 : 5 }}
@@ -159,7 +186,7 @@ function TrendsLineChart({
                   type="monotone"
                   dataKey={ROLL_KEY[key]}
                   name={`${label} (${rollingWindow}d avg)`}
-                  stroke={key === 'net' ? accentColor : COLORS[key]}
+                  stroke={lineColor(key, accentColor)}
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
                   strokeOpacity={0.85}
@@ -229,6 +256,27 @@ export function StatsTrendsPanel({
     })
   }, [dayRows, range, dailyLogs, foodLibrary, settings, rollingWindow])
 
+  const calorieGoalLines = useMemo(() => computeTrendGoalLines(dayRows), [dayRows])
+
+  const calorieChartGoalLines = useMemo((): GoalLine[] => {
+    if (!calorieGoalLines) return []
+    const lines: GoalLine[] = [
+      {
+        y: calorieGoalLines.intakeTarget,
+        label: calorieGoalLines.intakeLabel,
+        stroke: GOAL_LINE_COLORS.intake,
+      },
+    ]
+    if (calorieGoalLines.netTarget != null && calorieGoalLines.netLabel) {
+      lines.push({
+        y: calorieGoalLines.netTarget,
+        label: calorieGoalLines.netLabel,
+        stroke: GOAL_LINE_COLORS.net,
+      })
+    }
+    return lines
+  }, [calorieGoalLines])
+
   const calorieYDomain = useMemo(() => {
     const values: number[] = []
     chartData.forEach((row) => {
@@ -238,8 +286,12 @@ export function StatsTrendsPanel({
         if (row.rollCal != null) values.push(row.rollCal)
       }
     })
+    if (calorieGoalLines) {
+      values.push(calorieGoalLines.intakeTarget)
+      if (calorieGoalLines.netTarget != null) values.push(calorieGoalLines.netTarget)
+    }
     return stableCalorieYDomain(values)
-  }, [chartData, showRollingLines])
+  }, [chartData, showRollingLines, calorieGoalLines])
 
   const macroYDomain = useMemo(() => {
     const values: number[] = []
@@ -302,13 +354,14 @@ export function StatsTrendsPanel({
         <>
           <TrendsLineChart
             title="Calories"
-            description="Calories in and net calories (eaten − burned). Tap a point to open that day."
+            description="Calories in and net calories (eaten − burned). Dashed lines are your intake and net calorie goals. Tap a point to open that day."
             data={chartData}
             metrics={CALORIE_METRICS}
             accentColor={accentColor}
             rollingWindow={rollingWindow}
             showRolling={showRollingLines}
             yDomain={calorieYDomain}
+            goalLines={calorieChartGoalLines}
             onDayClick={onDayClick}
           />
           <TrendsLineChart

@@ -1,14 +1,7 @@
 import { roundMacro } from '@/lib/macros'
+import { MACRO_LABEL_TAILWIND } from '@/lib/macroColors'
 import type { MacroTotals } from '@/lib/types'
 import { cn } from '@/lib/utils'
-
-const MACRO_LABEL_CLASS = {
-  P: 'font-semibold text-emerald-400',
-  C: 'font-semibold text-amber-400',
-  F: 'font-semibold text-purple-400',
-  Fib: 'font-semibold text-lime-500',
-  S: 'font-semibold text-pink-400',
-} as const
 
 interface LoggedMacroPreviewProps {
   macros: MacroTotals
@@ -44,10 +37,10 @@ export function LoggedMacroPreview({
   )
 }
 
-function MacroPart({ label, value }: { label: keyof typeof MACRO_LABEL_CLASS; value: string }) {
+function MacroPart({ label, value }: { label: keyof typeof MACRO_LABEL_TAILWIND; value: string }) {
   return (
     <span>
-      <span className={MACRO_LABEL_CLASS[label]}>{label}</span>
+      <span className={MACRO_LABEL_TAILWIND[label]}>{label}</span>
       <span>: {value}</span>
     </span>
   )

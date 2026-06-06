@@ -24,6 +24,7 @@ import {
   macroCalorieDistribution,
 } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
+import { MACRO_CHART_COLORS } from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 
 type SortKey =
@@ -37,7 +38,11 @@ type SortKey =
   | 'net'
   | 'vsGoal'
 
-const PIE_COLORS = ['#22c55e', '#3b82f6', '#a855f7']
+const PIE_COLORS = [
+  MACRO_CHART_COLORS.protein,
+  MACRO_CHART_COLORS.carbs,
+  MACRO_CHART_COLORS.fat,
+]
 
 interface StatsBreakdownsPanelProps {
   range: { start: string; end: string }

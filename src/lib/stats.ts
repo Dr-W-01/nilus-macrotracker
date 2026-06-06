@@ -236,6 +236,52 @@ export function getTargetNetCalories(goal: GoalTemplate): number | null {
   return target
 }
 
+export type TrendGoalLines = {
+  intakeTarget: number
+  netTarget: number | null
+  intakeLabel: string
+  netLabel: string | null
+}
+
+/** Goal reference lines for the Trends calorie chart (handles mixed templates in a period). */
+export function computeTrendGoalLines(dayRows: StatsDayRow[]): TrendGoalLines | null {
+  if (dayRows.length === 0) return null
+
+  const intakeValues = dayRows.map((d) => d.goal.calories)
+  const uniqueIntake = new Set(intakeValues)
+  const intakeTarget =
+    uniqueIntake.size === 1
+      ? intakeValues[0]
+      : roundMacro(
+          intakeValues.reduce((sum, v) => sum + v, 0) / intakeValues.length,
+          0,
+        )
+  const intakeLabel =
+    uniqueIntake.size === 1
+      ? `Intake goal (${intakeTarget})`
+      : `Avg intake goal (${intakeTarget})`
+
+  const netTargets = dayRows
+    .map((d) => getTargetNetCalories(d.goal))
+    .filter((v): v is number => v != null)
+
+  if (netTargets.length === 0) {
+    return { intakeTarget, netTarget: null, intakeLabel, netLabel: null }
+  }
+
+  const uniqueNet = new Set(netTargets)
+  const netTarget =
+    uniqueNet.size === 1
+      ? netTargets[0]
+      : roundMacro(netTargets.reduce((sum, v) => sum + v, 0) / netTargets.length, 0)
+  const netLabel =
+    uniqueNet.size === 1
+      ? `Net goal (${netTarget >= 0 ? '+' : ''}${netTarget})`
+      : `Avg net goal (${netTarget >= 0 ? '+' : ''}${netTarget})`
+
+  return { intakeTarget, netTarget, intakeLabel, netLabel }
+}
+
 /** Actual net calories for the day (eaten − burned). */
 export function getActualNetCalories(row: StatsDayRow): number {
   return row.net
