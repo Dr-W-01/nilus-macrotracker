@@ -121,35 +121,15 @@ export function buildTrendMetricSeries(
   return { dates, displayStartIndex, metrics }
 }
 
-/** Y-axis domain for macro charts: always includes 0 with a minimum span for readability. */
+/** Y-axis domain for macro charts: always starts at 0, never shows negative values. */
 export function stableMacroYDomain(values: number[], minSpan = 80): [number, number] {
   if (values.length === 0) return [0, 200]
 
   const dataMax = Math.max(0, ...values)
-  const dataMin = Math.min(0, ...values)
-  let low = dataMin
-  let high = dataMax
-
-  const span = high - low
-  if (span < minSpan) {
-    if (low >= 0) {
-      high = Math.max(high, minSpan)
-    } else if (high <= 0) {
-      low = Math.min(low, -minSpan)
-    } else {
-      const extra = (minSpan - span) / 2
-      low -= extra
-      high += extra
-    }
-  }
-
-  const pad = Math.max(5, (high - low) * 0.08)
-  low = Math.floor((low - pad) / 10) * 10
+  let high = Math.max(dataMax, minSpan)
+  const pad = Math.max(5, high * 0.08)
   high = Math.ceil((high + pad) / 10) * 10
-  low = Math.min(0, low)
-  high = Math.max(0, high)
-  if (low === high) high = low + minSpan
-  return [low, high]
+  return [0, high]
 }
 
 /** Y-axis domain for calorie charts: always includes 0 with a minimum span to reduce zoom drama. */

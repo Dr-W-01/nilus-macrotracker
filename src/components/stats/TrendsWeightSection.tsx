@@ -18,6 +18,7 @@ import {
   buildWeightChartData,
   countWeightLogsInRange,
   getWeightChartRange,
+  weightChartAxisTick,
   WEIGHT_RANGE_OPTIONS,
   type WeightChartPoint,
   type WeightRangePreset,
@@ -67,6 +68,8 @@ export function TrendsWeightSection({
     const points = chartData.filter((p) => p.weight != null)
     return points.length > 0 ? points[points.length - 1] : null
   }, [chartData])
+
+  const spanDays = chartData.length
 
   return (
     <Card>
@@ -145,11 +148,12 @@ export function TrendsWeightSection({
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                 <XAxis
-                  dataKey="label"
+                  dataKey="date"
                   stroke="#888"
                   fontSize={10}
-                  interval="preserveStartEnd"
-                  minTickGap={28}
+                  tickFormatter={(d) => weightChartAxisTick(String(d), spanDays)}
+                  interval={spanDays <= 14 ? 0 : 'preserveStartEnd'}
+                  minTickGap={8}
                 />
                 <YAxis
                   stroke="#888"

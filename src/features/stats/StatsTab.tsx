@@ -91,6 +91,7 @@ export function StatsTab() {
       {activeView === 'trends' && (
         <StatsTrendsPanel
           range={range}
+          statsPeriod={statsPeriod}
           dailyLogs={dailyLogs}
           foodLibrary={foodLibrary}
           settings={settings}

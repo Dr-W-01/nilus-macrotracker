@@ -61,6 +61,7 @@ const ROLL_KEY: Record<TrendMetricKey, string> = {
 
 interface StatsTrendsPanelProps {
   range: { start: string; end: string }
+  statsPeriod: 'week' | 'month' | 'custom'
   dailyLogs: Record<string, DailyLog>
   foodLibrary: FoodItem[]
   settings: Settings
@@ -175,6 +176,7 @@ function TrendsLineChart({
 
 export function StatsTrendsPanel({
   range,
+  statsPeriod,
   dailyLogs,
   foodLibrary,
   settings,
@@ -183,6 +185,8 @@ export function StatsTrendsPanel({
 }: StatsTrendsPanelProps) {
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
   const [showRolling, setShowRolling] = useState(false)
+  const rollingAvailable = statsPeriod !== 'week'
+  const showRollingLines = rollingAvailable && showRolling
 
   const dayRows = useMemo(
     () => buildStatsDayRows(range, dailyLogs, foodLibrary, settings),
@@ -229,19 +233,19 @@ export function StatsTrendsPanel({
     const values: number[] = []
     chartData.forEach((row) => {
       values.push(row.net, row.calories)
-      if (showRolling) {
+      if (showRollingLines) {
         if (row.rollNet != null) values.push(row.rollNet)
         if (row.rollCal != null) values.push(row.rollCal)
       }
     })
     return stableCalorieYDomain(values)
-  }, [chartData, showRolling])
+  }, [chartData, showRollingLines])
 
   const macroYDomain = useMemo(() => {
     const values: number[] = []
     chartData.forEach((row) => {
       values.push(row.protein, row.carbs, row.fat, row.fiber, row.sugars)
-      if (showRolling) {
+      if (showRollingLines) {
         if (row.rollProt != null) values.push(row.rollProt)
         if (row.rollCarb != null) values.push(row.rollCarb)
         if (row.rollFat != null) values.push(row.rollFat)
@@ -250,47 +254,49 @@ export function StatsTrendsPanel({
       }
     })
     return stableMacroYDomain(values)
-  }, [chartData, showRolling])
+  }, [chartData, showRollingLines])
 
   const hasTrendData = dayRows.length > 0
 
   return (
     <div className="space-y-3">
-      <Card>
-        <CardHeader className="pb-2 pt-3">
-          <CardTitle className="text-sm">Rolling average</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            All metrics are always shown. Rolling averages use calendar days before
-            this period when needed (e.g. early in the week).
-          </p>
-        </CardHeader>
-        <CardContent className="pb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
-            <Button
-              size="sm"
-              variant={rollingWindow === 7 ? 'default' : 'outline'}
-              onClick={() => setRollingWindow(7)}
-            >
-              7d
-            </Button>
-            <Button
-              size="sm"
-              variant={rollingWindow === 14 ? 'default' : 'outline'}
-              onClick={() => setRollingWindow(14)}
-            >
-              14d
-            </Button>
-            <label className="flex items-center gap-2 text-xs ml-auto cursor-pointer">
-              <Checkbox
-                checked={showRolling}
-                onChange={() => setShowRolling((v) => !v)}
-              />
-              Show average line
-            </label>
-          </div>
-        </CardContent>
-      </Card>
+      {rollingAvailable && (
+        <Card>
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Rolling average</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Rolling averages use calendar days before this period when needed
+              (e.g. early in the month).
+            </p>
+          </CardHeader>
+          <CardContent className="pb-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
+              <Button
+                size="sm"
+                variant={rollingWindow === 7 ? 'default' : 'outline'}
+                onClick={() => setRollingWindow(7)}
+              >
+                7d
+              </Button>
+              <Button
+                size="sm"
+                variant={rollingWindow === 14 ? 'default' : 'outline'}
+                onClick={() => setRollingWindow(14)}
+              >
+                14d
+              </Button>
+              <label className="flex items-center gap-2 text-xs ml-auto cursor-pointer">
+                <Checkbox
+                  checked={showRolling}
+                  onChange={() => setShowRolling((v) => !v)}
+                />
+                Show average line
+              </label>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {hasTrendData ? (
         <>
@@ -301,7 +307,7 @@ export function StatsTrendsPanel({
             metrics={CALORIE_METRICS}
             accentColor={accentColor}
             rollingWindow={rollingWindow}
-            showRolling={showRolling}
+            showRolling={showRollingLines}
             yDomain={calorieYDomain}
             onDayClick={onDayClick}
           />
@@ -312,7 +318,7 @@ export function StatsTrendsPanel({
             metrics={MACRO_METRICS}
             accentColor={accentColor}
             rollingWindow={rollingWindow}
-            showRolling={showRolling}
+            showRolling={showRollingLines}
             yDomain={macroYDomain}
             compactDots
             onDayClick={onDayClick}
