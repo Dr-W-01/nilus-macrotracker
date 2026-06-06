@@ -31,7 +31,14 @@ export type StatsDayRow = {
 
 const ROLLING_LOOKBACK_MAX = 14
 
-export type TrendMetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
+export type TrendMetricKey =
+  | 'net'
+  | 'calories'
+  | 'protein'
+  | 'carbs'
+  | 'fat'
+  | 'fiber'
+  | 'sugars'
 
 function resolveDefaultGoal(settings: Settings): GoalTemplate {
   return (
@@ -107,9 +114,42 @@ export function buildTrendMetricSeries(
     protein: rows.map((r) => (r ? r.protein : null)),
     carbs: rows.map((r) => (r ? r.carbs : null)),
     fat: rows.map((r) => (r ? r.fat : null)),
+    fiber: rows.map((r) => (r ? r.fiber : null)),
+    sugars: rows.map((r) => (r ? r.sugars : null)),
   }
 
   return { dates, displayStartIndex, metrics }
+}
+
+/** Y-axis domain for macro charts: always includes 0 with a minimum span for readability. */
+export function stableMacroYDomain(values: number[], minSpan = 80): [number, number] {
+  if (values.length === 0) return [0, 200]
+
+  const dataMax = Math.max(0, ...values)
+  const dataMin = Math.min(0, ...values)
+  let low = dataMin
+  let high = dataMax
+
+  const span = high - low
+  if (span < minSpan) {
+    if (low >= 0) {
+      high = Math.max(high, minSpan)
+    } else if (high <= 0) {
+      low = Math.min(low, -minSpan)
+    } else {
+      const extra = (minSpan - span) / 2
+      low -= extra
+      high += extra
+    }
+  }
+
+  const pad = Math.max(5, (high - low) * 0.08)
+  low = Math.floor((low - pad) / 10) * 10
+  high = Math.ceil((high + pad) / 10) * 10
+  low = Math.min(0, low)
+  high = Math.max(0, high)
+  if (low === high) high = low + minSpan
+  return [low, high]
 }
 
 /** Y-axis domain for calorie charts: always includes 0 with a minimum span to reduce zoom drama. */

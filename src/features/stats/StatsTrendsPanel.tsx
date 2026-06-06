@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import {
   CartesianGrid,
@@ -14,31 +14,29 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { defaultTrendMetricsForMode } from '@/lib/goalMode'
 import {
   buildStatsDayRows,
   buildTrendMetricSeries,
   rollingAverageCalendarWindow,
   stableCalorieYDomain,
+  stableMacroYDomain,
   type TrendMetricKey,
 } from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
-import { cn } from '@/lib/utils'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 
-type CalorieMetricKey = 'net' | 'calories'
-type MacroMetricKey = 'protein' | 'carbs' | 'fat'
-
-const CALORIE_METRICS: { key: CalorieMetricKey; label: string; short: string }[] = [
-  { key: 'net', label: 'Net Calories', short: 'Net' },
-  { key: 'calories', label: 'Calories In', short: 'In' },
+const CALORIE_METRICS: { key: TrendMetricKey; label: string }[] = [
+  { key: 'net', label: 'Net Calories' },
+  { key: 'calories', label: 'Calories In' },
 ]
 
-const MACRO_METRICS: { key: MacroMetricKey; label: string; short: string }[] = [
-  { key: 'protein', label: 'Protein', short: 'Protein' },
-  { key: 'carbs', label: 'Carbs', short: 'Carbs' },
-  { key: 'fat', label: 'Fat', short: 'Fat' },
+const MACRO_METRICS: { key: TrendMetricKey; label: string }[] = [
+  { key: 'protein', label: 'Protein' },
+  { key: 'carbs', label: 'Carbs' },
+  { key: 'fat', label: 'Fat' },
+  { key: 'fiber', label: 'Fiber' },
+  { key: 'sugars', label: 'Sugars' },
 ]
 
 const COLORS: Record<TrendMetricKey, string> = {
@@ -47,6 +45,8 @@ const COLORS: Record<TrendMetricKey, string> = {
   protein: '#22c55e',
   carbs: '#3b82f6',
   fat: '#a855f7',
+  fiber: '#14b8a6',
+  sugars: '#ec4899',
 }
 
 const ROLL_KEY: Record<TrendMetricKey, string> = {
@@ -55,6 +55,8 @@ const ROLL_KEY: Record<TrendMetricKey, string> = {
   protein: 'rollProt',
   carbs: 'rollCarb',
   fat: 'rollFat',
+  fiber: 'rollFiber',
+  sugars: 'rollSugars',
 }
 
 interface StatsTrendsPanelProps {
@@ -74,48 +76,51 @@ type ChartRow = {
   protein: number
   carbs: number
   fat: number
+  fiber: number
+  sugars: number
   rollNet: number | null
   rollCal: number | null
   rollProt: number | null
   rollCarb: number | null
   rollFat: number | null
+  rollFiber: number | null
+  rollSugars: number | null
 }
 
 function TrendsLineChart({
   title,
   description,
   data,
-  enabledKeys,
-  metricOptions,
+  metrics,
   accentColor,
   rollingWindow,
   showRolling,
   yDomain,
+  compactDots = false,
   onDayClick,
 }: {
   title: string
   description: string
   data: ChartRow[]
-  enabledKeys: Set<TrendMetricKey>
-  metricOptions: { key: TrendMetricKey; label: string }[]
+  metrics: { key: TrendMetricKey; label: string }[]
   accentColor: string
   rollingWindow: 7 | 14
   showRolling: boolean
   yDomain?: [number, number]
+  compactDots?: boolean
   onDayClick: (date: string) => void
 }) {
-  const singleMetric = enabledKeys.size === 1
-
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm">{title}</CardTitle>
         <p className="text-xs text-muted-foreground">{description}</p>
       </CardHeader>
-      <CardContent className="h-72 sm:h-80">
+      <CardContent className={compactDots ? 'h-80 sm:h-96' : 'h-72 sm:h-80'}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
+            margin={{ top: 4, right: 8, left: 0, bottom: 4 }}
             onClick={(state) => {
               const idx =
                 typeof state?.activeTooltipIndex === 'number'
@@ -130,28 +135,33 @@ function TrendsLineChart({
             <YAxis stroke="#888" fontSize={11} domain={yDomain ?? ['auto', 'auto']} />
             {yDomain && <ReferenceLine y={0} stroke="#666" strokeWidth={1} />}
             <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
-            {!singleMetric && <Legend wrapperStyle={{ fontSize: 11 }} />}
-            {[...enabledKeys].map((key) => (
+            <Legend
+              wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
+              iconSize={8}
+            />
+            {metrics.map(({ key, label }) => (
               <Line
                 key={key}
                 type="monotone"
                 dataKey={key}
-                name={metricOptions.find((m) => m.key === key)?.label ?? key}
+                name={label}
                 stroke={key === 'net' ? accentColor : COLORS[key]}
                 strokeWidth={key === 'net' ? 2.5 : 2}
-                dot={{ r: 3, cursor: 'pointer' }}
+                dot={{ r: compactDots ? 2.5 : 3, cursor: 'pointer' }}
+                activeDot={{ r: compactDots ? 4 : 5 }}
               />
             ))}
             {showRolling &&
-              [...enabledKeys].map((key) => (
+              metrics.map(({ key, label }) => (
                 <Line
                   key={`roll-${key}`}
                   type="monotone"
                   dataKey={ROLL_KEY[key]}
-                  name={`${metricOptions.find((m) => m.key === key)?.label} (${rollingWindow}d avg)`}
+                  name={`${label} (${rollingWindow}d avg)`}
                   stroke={key === 'net' ? accentColor : COLORS[key]}
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
+                  strokeOpacity={0.85}
                   dot={false}
                   connectNulls={false}
                 />
@@ -171,23 +181,8 @@ export function StatsTrendsPanel({
   accentColor,
   onDayClick,
 }: StatsTrendsPanelProps) {
-  const goalMode = settings.goalMode ?? 'cut'
-
-  const [calorieEnabled, setCalorieEnabled] = useState<Set<CalorieMetricKey>>(
-    () => new Set<CalorieMetricKey>(['net', 'calories']),
-  )
-  const [macroEnabled, setMacroEnabled] = useState<Set<MacroMetricKey>>(
-    () => new Set<MacroMetricKey>(['protein', 'carbs', 'fat']),
-  )
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
   const [showRolling, setShowRolling] = useState(false)
-
-  useEffect(() => {
-    const primary = defaultTrendMetricsForMode(goalMode)[0]
-    if (primary === 'net' || primary === 'calories') {
-      setCalorieEnabled(new Set([primary, primary === 'net' ? 'calories' : 'net']))
-    }
-  }, [goalMode])
 
   const dayRows = useMemo(
     () => buildStatsDayRows(range, dailyLogs, foodLibrary, settings),
@@ -217,11 +212,15 @@ export function StatsTrendsPanel({
         protein: roundMacro(d.protein),
         carbs: roundMacro(d.carbs),
         fat: roundMacro(d.fat),
+        fiber: roundMacro(d.fiber),
+        sugars: roundMacro(d.sugars),
         rollNet: roll('net'),
         rollCal: roll('calories'),
         rollProt: roll('protein'),
         rollCarb: roll('carbs'),
         rollFat: roll('fat'),
+        rollFiber: roll('fiber'),
+        rollSugars: roll('sugars'),
       }
     })
   }, [dayRows, range, dailyLogs, foodLibrary, settings, rollingWindow])
@@ -229,39 +228,29 @@ export function StatsTrendsPanel({
   const calorieYDomain = useMemo(() => {
     const values: number[] = []
     chartData.forEach((row) => {
-      if (calorieEnabled.has('net')) values.push(row.net)
-      if (calorieEnabled.has('calories')) values.push(row.calories)
+      values.push(row.net, row.calories)
       if (showRolling) {
-        if (calorieEnabled.has('net') && row.rollNet != null) values.push(row.rollNet)
-        if (calorieEnabled.has('calories') && row.rollCal != null) values.push(row.rollCal)
+        if (row.rollNet != null) values.push(row.rollNet)
+        if (row.rollCal != null) values.push(row.rollCal)
       }
     })
     return stableCalorieYDomain(values)
-  }, [chartData, calorieEnabled, showRolling])
+  }, [chartData, showRolling])
 
-  const toggleCalorieMetric = (key: CalorieMetricKey) => {
-    setCalorieEnabled((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) {
-        if (next.size > 1) next.delete(key)
-      } else {
-        next.add(key)
+  const macroYDomain = useMemo(() => {
+    const values: number[] = []
+    chartData.forEach((row) => {
+      values.push(row.protein, row.carbs, row.fat, row.fiber, row.sugars)
+      if (showRolling) {
+        if (row.rollProt != null) values.push(row.rollProt)
+        if (row.rollCarb != null) values.push(row.rollCarb)
+        if (row.rollFat != null) values.push(row.rollFat)
+        if (row.rollFiber != null) values.push(row.rollFiber)
+        if (row.rollSugars != null) values.push(row.rollSugars)
       }
-      return next
     })
-  }
-
-  const toggleMacroMetric = (key: MacroMetricKey) => {
-    setMacroEnabled((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) {
-        if (next.size > 1) next.delete(key)
-      } else {
-        next.add(key)
-      }
-      return next
-    })
-  }
+    return stableMacroYDomain(values)
+  }, [chartData, showRolling])
 
   const hasTrendData = dayRows.length > 0
 
@@ -269,56 +258,14 @@ export function StatsTrendsPanel({
     <div className="space-y-3">
       <Card>
         <CardHeader className="pb-2 pt-3">
-          <CardTitle className="text-sm">Chart lines</CardTitle>
+          <CardTitle className="text-sm">Rolling average</CardTitle>
           <p className="text-xs text-muted-foreground">
-            Calories and macros are shown on separate charts. Rolling averages use
-            calendar days before this period when needed (e.g. early in the week).
+            All metrics are always shown. Rolling averages use calendar days before
+            this period when needed (e.g. early in the week).
           </p>
         </CardHeader>
-        <CardContent className="space-y-3 pb-3">
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Calories chart</p>
-            <div className="flex flex-wrap gap-2">
-              {CALORIE_METRICS.map(({ key, short, label }) => {
-                const on = calorieEnabled.has(key)
-                return (
-                  <Button
-                    key={key}
-                    type="button"
-                    size="sm"
-                    variant={on ? 'default' : 'outline'}
-                    className={cn('h-10 min-w-[4.5rem]', on && 'ring-1 ring-primary/40')}
-                    onClick={() => toggleCalorieMetric(key)}
-                  >
-                    {short}
-                    <span className="sr-only">{label}</span>
-                  </Button>
-                )
-              })}
-            </div>
-          </div>
-          <div className="space-y-2 border-t border-border pt-3">
-            <p className="text-xs font-medium text-muted-foreground">Macros chart</p>
-            <div className="flex flex-wrap gap-2">
-              {MACRO_METRICS.map(({ key, short, label }) => {
-                const on = macroEnabled.has(key)
-                return (
-                  <Button
-                    key={key}
-                    type="button"
-                    size="sm"
-                    variant={on ? 'default' : 'outline'}
-                    className={cn('h-9 text-xs', on && 'ring-1 ring-primary/40')}
-                    onClick={() => toggleMacroMetric(key)}
-                  >
-                    {short}
-                    <span className="sr-only">{label}</span>
-                  </Button>
-                )
-              })}
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <CardContent className="pb-3">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
             <Button
               size="sm"
@@ -351,8 +298,7 @@ export function StatsTrendsPanel({
             title="Calories"
             description="Calories in and net calories (eaten − burned). Tap a point to open that day."
             data={chartData}
-            enabledKeys={calorieEnabled}
-            metricOptions={CALORIE_METRICS}
+            metrics={CALORIE_METRICS}
             accentColor={accentColor}
             rollingWindow={rollingWindow}
             showRolling={showRolling}
@@ -361,13 +307,14 @@ export function StatsTrendsPanel({
           />
           <TrendsLineChart
             title="Macros"
-            description="Protein, carbs, and fat per logged day. Tap a point to open that day."
+            description="Protein, carbs, fat, fiber, and sugars per logged day. Tap a point to open that day."
             data={chartData}
-            enabledKeys={macroEnabled}
-            metricOptions={MACRO_METRICS}
+            metrics={MACRO_METRICS}
             accentColor={accentColor}
             rollingWindow={rollingWindow}
             showRolling={showRolling}
+            yDomain={macroYDomain}
+            compactDots
             onDayClick={onDayClick}
           />
         </>
