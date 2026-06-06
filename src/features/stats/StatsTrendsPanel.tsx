@@ -5,6 +5,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,28 +15,46 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { defaultTrendMetricsForMode } from '@/lib/goalMode'
-import { buildStatsDayRows, rollingAverage } from '@/lib/stats'
+import {
+  buildStatsDayRows,
+  buildTrendMetricSeries,
+  rollingAverageCalendarWindow,
+  stableCalorieYDomain,
+  type TrendMetricKey,
+} from '@/lib/stats'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 
-type MetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
+type CalorieMetricKey = 'net' | 'calories'
+type MacroMetricKey = 'protein' | 'carbs' | 'fat'
 
-const METRIC_OPTIONS: { key: MetricKey; label: string; short: string }[] = [
+const CALORIE_METRICS: { key: CalorieMetricKey; label: string; short: string }[] = [
   { key: 'net', label: 'Net Calories', short: 'Net' },
   { key: 'calories', label: 'Calories In', short: 'In' },
+]
+
+const MACRO_METRICS: { key: MacroMetricKey; label: string; short: string }[] = [
   { key: 'protein', label: 'Protein', short: 'Protein' },
   { key: 'carbs', label: 'Carbs', short: 'Carbs' },
   { key: 'fat', label: 'Fat', short: 'Fat' },
 ]
 
-const COLORS: Record<MetricKey, string> = {
+const COLORS: Record<TrendMetricKey, string> = {
   net: 'var(--primary)',
   calories: '#f59e0b',
   protein: '#22c55e',
   carbs: '#3b82f6',
   fat: '#a855f7',
+}
+
+const ROLL_KEY: Record<TrendMetricKey, string> = {
+  net: 'rollNet',
+  calories: 'rollCal',
+  protein: 'rollProt',
+  carbs: 'rollCarb',
+  fat: 'rollFat',
 }
 
 interface StatsTrendsPanelProps {
@@ -47,6 +66,103 @@ interface StatsTrendsPanelProps {
   onDayClick: (date: string) => void
 }
 
+type ChartRow = {
+  date: string
+  fullDate: string
+  net: number
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  rollNet: number | null
+  rollCal: number | null
+  rollProt: number | null
+  rollCarb: number | null
+  rollFat: number | null
+}
+
+function TrendsLineChart({
+  title,
+  description,
+  data,
+  enabledKeys,
+  metricOptions,
+  accentColor,
+  rollingWindow,
+  showRolling,
+  yDomain,
+  onDayClick,
+}: {
+  title: string
+  description: string
+  data: ChartRow[]
+  enabledKeys: Set<TrendMetricKey>
+  metricOptions: { key: TrendMetricKey; label: string }[]
+  accentColor: string
+  rollingWindow: 7 | 14
+  showRolling: boolean
+  yDomain?: [number, number]
+  onDayClick: (date: string) => void
+}) {
+  const singleMetric = enabledKeys.size === 1
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </CardHeader>
+      <CardContent className="h-72 sm:h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            onClick={(state) => {
+              const idx =
+                typeof state?.activeTooltipIndex === 'number'
+                  ? state.activeTooltipIndex
+                  : -1
+              const row = data[idx]
+              if (row) onDayClick(row.fullDate)
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+            <XAxis dataKey="date" stroke="#888" fontSize={11} />
+            <YAxis stroke="#888" fontSize={11} domain={yDomain ?? ['auto', 'auto']} />
+            {yDomain && <ReferenceLine y={0} stroke="#666" strokeWidth={1} />}
+            <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
+            {!singleMetric && <Legend wrapperStyle={{ fontSize: 11 }} />}
+            {[...enabledKeys].map((key) => (
+              <Line
+                key={key}
+                type="monotone"
+                dataKey={key}
+                name={metricOptions.find((m) => m.key === key)?.label ?? key}
+                stroke={key === 'net' ? accentColor : COLORS[key]}
+                strokeWidth={key === 'net' ? 2.5 : 2}
+                dot={{ r: 3, cursor: 'pointer' }}
+              />
+            ))}
+            {showRolling &&
+              [...enabledKeys].map((key) => (
+                <Line
+                  key={`roll-${key}`}
+                  type="monotone"
+                  dataKey={ROLL_KEY[key]}
+                  name={`${metricOptions.find((m) => m.key === key)?.label} (${rollingWindow}d avg)`}
+                  stroke={key === 'net' ? accentColor : COLORS[key]}
+                  strokeWidth={1.5}
+                  strokeDasharray="6 4"
+                  dot={false}
+                  connectNulls={false}
+                />
+              ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function StatsTrendsPanel({
   range,
   dailyLogs,
@@ -56,18 +172,21 @@ export function StatsTrendsPanel({
   onDayClick,
 }: StatsTrendsPanelProps) {
   const goalMode = settings.goalMode ?? 'cut'
-  const defaultMetrics = defaultTrendMetricsForMode(goalMode)
 
-  const [enabled, setEnabled] = useState<Set<MetricKey>>(
-    () => new Set<MetricKey>(defaultMetrics as MetricKey[]),
+  const [calorieEnabled, setCalorieEnabled] = useState<Set<CalorieMetricKey>>(
+    () => new Set<CalorieMetricKey>(['net', 'calories']),
   )
-  const [showMoreMetrics, setShowMoreMetrics] = useState(false)
+  const [macroEnabled, setMacroEnabled] = useState<Set<MacroMetricKey>>(
+    () => new Set<MacroMetricKey>(['protein', 'carbs', 'fat']),
+  )
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
   const [showRolling, setShowRolling] = useState(false)
 
   useEffect(() => {
-    setEnabled(new Set<MetricKey>(defaultTrendMetricsForMode(goalMode) as MetricKey[]))
-    setShowMoreMetrics(false)
+    const primary = defaultTrendMetricsForMode(goalMode)[0]
+    if (primary === 'net' || primary === 'calories') {
+      setCalorieEnabled(new Set([primary, primary === 'net' ? 'calories' : 'net']))
+    }
   }, [goalMode])
 
   const dayRows = useMemo(
@@ -76,35 +195,52 @@ export function StatsTrendsPanel({
   )
 
   const chartData = useMemo(() => {
-    const nets = dayRows.map((d) => d.net)
-    const cals = dayRows.map((d) => d.calories)
-    const prots = dayRows.map((d) => d.protein)
-    const carbs = dayRows.map((d) => d.carbs)
-    const fats = dayRows.map((d) => d.fat)
-    const rollNet = rollingAverage(nets, rollingWindow)
-    const rollCal = rollingAverage(cals, rollingWindow)
-    const rollProt = rollingAverage(prots, rollingWindow)
-    const rollCarb = rollingAverage(carbs, rollingWindow)
-    const rollFat = rollingAverage(fats, rollingWindow)
+    const { dates, metrics } = buildTrendMetricSeries(
+      range,
+      dailyLogs,
+      foodLibrary,
+      settings,
+    )
 
-    return dayRows.map((d, i) => ({
-      date: format(parseISO(d.date), 'MM/dd'),
-      fullDate: d.date,
-      net: roundMacro(d.net, 0),
-      calories: roundMacro(d.calories, 0),
-      protein: roundMacro(d.protein),
-      carbs: roundMacro(d.carbs),
-      fat: roundMacro(d.fat),
-      rollNet: rollNet[i],
-      rollCal: rollCal[i],
-      rollProt: rollProt[i],
-      rollCarb: rollCarb[i],
-      rollFat: rollFat[i],
-    }))
-  }, [dayRows, rollingWindow])
+    return dayRows.map((d) => {
+      const idx = dates.indexOf(d.date)
+      const roll = (key: TrendMetricKey) =>
+        idx >= 0
+          ? rollingAverageCalendarWindow(metrics[key], idx, rollingWindow)
+          : null
 
-  const toggleMetric = (key: MetricKey) => {
-    setEnabled((prev) => {
+      return {
+        date: format(parseISO(d.date), 'MM/dd'),
+        fullDate: d.date,
+        net: roundMacro(d.net, 0),
+        calories: roundMacro(d.calories, 0),
+        protein: roundMacro(d.protein),
+        carbs: roundMacro(d.carbs),
+        fat: roundMacro(d.fat),
+        rollNet: roll('net'),
+        rollCal: roll('calories'),
+        rollProt: roll('protein'),
+        rollCarb: roll('carbs'),
+        rollFat: roll('fat'),
+      }
+    })
+  }, [dayRows, range, dailyLogs, foodLibrary, settings, rollingWindow])
+
+  const calorieYDomain = useMemo(() => {
+    const values: number[] = []
+    chartData.forEach((row) => {
+      if (calorieEnabled.has('net')) values.push(row.net)
+      if (calorieEnabled.has('calories')) values.push(row.calories)
+      if (showRolling) {
+        if (calorieEnabled.has('net') && row.rollNet != null) values.push(row.rollNet)
+        if (calorieEnabled.has('calories') && row.rollCal != null) values.push(row.rollCal)
+      }
+    })
+    return stableCalorieYDomain(values)
+  }, [chartData, calorieEnabled, showRolling])
+
+  const toggleCalorieMetric = (key: CalorieMetricKey) => {
+    setCalorieEnabled((prev) => {
       const next = new Set(prev)
       if (next.has(key)) {
         if (next.size > 1) next.delete(key)
@@ -115,14 +251,19 @@ export function StatsTrendsPanel({
     })
   }
 
-  const singleMetric = enabled.size === 1
-  const hasMacroTrends = dayRows.length > 0
-  const primaryMetrics = METRIC_OPTIONS.filter((m) =>
-    (defaultMetrics as MetricKey[]).includes(m.key),
-  )
-  const secondaryMetrics = METRIC_OPTIONS.filter(
-    (m) => !(defaultMetrics as MetricKey[]).includes(m.key),
-  )
+  const toggleMacroMetric = (key: MacroMetricKey) => {
+    setMacroEnabled((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        if (next.size > 1) next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }
+
+  const hasTrendData = dayRows.length > 0
 
   return (
     <div className="space-y-3">
@@ -130,62 +271,53 @@ export function StatsTrendsPanel({
         <CardHeader className="pb-2 pt-3">
           <CardTitle className="text-sm">Chart lines</CardTitle>
           <p className="text-xs text-muted-foreground">
-            {goalMode === 'cut'
-              ? 'Net calories is the primary line in cut mode.'
-              : goalMode === 'bulk'
-                ? 'Net calories is the primary line in bulk mode.'
-                : 'Calories in is the primary line in maintain mode.'}
+            Calories and macros are shown on separate charts. Rolling averages use
+            calendar days before this period when needed (e.g. early in the week).
           </p>
         </CardHeader>
         <CardContent className="space-y-3 pb-3">
-          <div className="flex flex-wrap gap-2">
-            {primaryMetrics.map(({ key, short, label }) => {
-              const on = enabled.has(key)
-              return (
-                <Button
-                  key={key}
-                  type="button"
-                  size="sm"
-                  variant={on ? 'default' : 'outline'}
-                  className={cn('h-10 min-w-[4.5rem]', on && 'ring-1 ring-primary/40')}
-                  onClick={() => toggleMetric(key)}
-                >
-                  {short}
-                  <span className="sr-only">{label}</span>
-                </Button>
-              )
-            })}
-            {secondaryMetrics.length > 0 && (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-10 text-xs"
-                onClick={() => setShowMoreMetrics((v) => !v)}
-              >
-                {showMoreMetrics ? 'Fewer' : '+ More'}
-              </Button>
-            )}
-          </div>
-          {showMoreMetrics && secondaryMetrics.length > 0 && (
-            <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-              {secondaryMetrics.map(({ key, short }) => {
-                const on = enabled.has(key)
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Calories chart</p>
+            <div className="flex flex-wrap gap-2">
+              {CALORIE_METRICS.map(({ key, short, label }) => {
+                const on = calorieEnabled.has(key)
                 return (
                   <Button
                     key={key}
                     type="button"
                     size="sm"
                     variant={on ? 'default' : 'outline'}
-                    className="h-9 text-xs"
-                    onClick={() => toggleMetric(key)}
+                    className={cn('h-10 min-w-[4.5rem]', on && 'ring-1 ring-primary/40')}
+                    onClick={() => toggleCalorieMetric(key)}
                   >
                     {short}
+                    <span className="sr-only">{label}</span>
                   </Button>
                 )
               })}
             </div>
-          )}
+          </div>
+          <div className="space-y-2 border-t border-border pt-3">
+            <p className="text-xs font-medium text-muted-foreground">Macros chart</p>
+            <div className="flex flex-wrap gap-2">
+              {MACRO_METRICS.map(({ key, short, label }) => {
+                const on = macroEnabled.has(key)
+                return (
+                  <Button
+                    key={key}
+                    type="button"
+                    size="sm"
+                    variant={on ? 'default' : 'outline'}
+                    className={cn('h-9 text-xs', on && 'ring-1 ring-primary/40')}
+                    onClick={() => toggleMacroMetric(key)}
+                  >
+                    {short}
+                    <span className="sr-only">{label}</span>
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
             <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
             <Button
@@ -213,71 +345,32 @@ export function StatsTrendsPanel({
         </CardContent>
       </Card>
 
-      {hasMacroTrends ? (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Trends over time</CardTitle>
-            <p className="text-xs text-muted-foreground">Tap a point to open that day</p>
-          </CardHeader>
-          <CardContent className="h-72 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={chartData}
-                onClick={(state) => {
-                  const idx =
-                    typeof state?.activeTooltipIndex === 'number'
-                      ? state.activeTooltipIndex
-                      : -1
-                  const row = chartData[idx]
-                  if (row) onDayClick(row.fullDate)
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="date" stroke="#888" fontSize={11} />
-                <YAxis stroke="#888" fontSize={11} />
-                <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
-                {!singleMetric && <Legend wrapperStyle={{ fontSize: 11 }} />}
-                {[...enabled].map((key) => (
-                  <Line
-                    key={key}
-                    type="monotone"
-                    dataKey={key}
-                    name={METRIC_OPTIONS.find((m) => m.key === key)?.label ?? key}
-                    stroke={key === 'net' ? accentColor : COLORS[key]}
-                    strokeWidth={key === 'net' ? 2.5 : 2}
-                    dot={{ r: 3, cursor: 'pointer' }}
-                  />
-                ))}
-                {showRolling &&
-                  [...enabled].map((key) => {
-                    const rollKey =
-                      key === 'net'
-                        ? 'rollNet'
-                        : key === 'calories'
-                          ? 'rollCal'
-                          : key === 'protein'
-                            ? 'rollProt'
-                            : key === 'carbs'
-                              ? 'rollCarb'
-                              : 'rollFat'
-                    return (
-                      <Line
-                        key={`roll-${key}`}
-                        type="monotone"
-                        dataKey={rollKey}
-                        name={`${METRIC_OPTIONS.find((m) => m.key === key)?.label} (${rollingWindow}d avg)`}
-                        stroke={key === 'net' ? accentColor : COLORS[key]}
-                        strokeWidth={1.5}
-                        strokeDasharray="6 4"
-                        dot={false}
-                        connectNulls={false}
-                      />
-                    )
-                  })}
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      {hasTrendData ? (
+        <>
+          <TrendsLineChart
+            title="Calories"
+            description="Calories in and net calories (eaten − burned). Tap a point to open that day."
+            data={chartData}
+            enabledKeys={calorieEnabled}
+            metricOptions={CALORIE_METRICS}
+            accentColor={accentColor}
+            rollingWindow={rollingWindow}
+            showRolling={showRolling}
+            yDomain={calorieYDomain}
+            onDayClick={onDayClick}
+          />
+          <TrendsLineChart
+            title="Macros"
+            description="Protein, carbs, and fat per logged day. Tap a point to open that day."
+            data={chartData}
+            enabledKeys={macroEnabled}
+            metricOptions={MACRO_METRICS}
+            accentColor={accentColor}
+            rollingWindow={rollingWindow}
+            showRolling={showRolling}
+            onDayClick={onDayClick}
+          />
+        </>
       ) : (
         <Card>
           <CardContent className="py-8">

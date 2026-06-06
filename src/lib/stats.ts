@@ -1,5 +1,5 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns'
-import { clampStatsRange, datesInRange } from '@/lib/dates'
+import { clampStatsRange, datesInRange, shiftDate } from '@/lib/dates'
 import {
   computeDayMacros,
   getLoggedFoodMacros,
@@ -29,6 +29,34 @@ export type StatsDayRow = {
   goal: GoalTemplate
 }
 
+const ROLLING_LOOKBACK_MAX = 14
+
+export type TrendMetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
+
+function resolveDefaultGoal(settings: Settings): GoalTemplate {
+  return (
+    settings.goalTemplates.find((g) => g.id === settings.defaultTemplateId) ??
+    settings.goalTemplates[0]
+  )
+}
+
+export function getStatsDayRowForDate(
+  date: string,
+  dailyLogs: Record<string, DailyLog>,
+  foodLibrary: FoodItem[],
+  settings: Settings,
+): StatsDayRow | null {
+  const log = dailyLogs[date]
+  if (!log || log.foods.length === 0) return null
+  const defaultGoal = resolveDefaultGoal(settings)
+  const macros = computeDayMacros(foodLibrary, log.foods)
+  const net = macros.calories - log.burnedCalories
+  const goal =
+    settings.goalTemplates.find((g) => g.id === log.goalTemplateId) ?? defaultGoal
+  const vsGoal = net - goal.calories
+  return { date, ...macros, net, burned: log.burnedCalories, vsGoal, goal }
+}
+
 export function buildStatsDayRows(
   range: { start: string; end: string },
   dailyLogs: Record<string, DailyLog>,
@@ -36,23 +64,83 @@ export function buildStatsDayRows(
   settings: Settings,
 ): StatsDayRow[] {
   const statsRange = clampStatsRange(range)
-  const defaultGoal =
-    settings.goalTemplates.find((g) => g.id === settings.defaultTemplateId) ??
-    settings.goalTemplates[0]
-
   return datesInRange(statsRange.start, statsRange.end)
-    .map((date) => {
-      const log = dailyLogs[date]
-      if (!log || log.foods.length === 0) return null
-      const macros = computeDayMacros(foodLibrary, log.foods)
-      const net = macros.calories - log.burnedCalories
-      const goal =
-        settings.goalTemplates.find((g) => g.id === log.goalTemplateId) ??
-        defaultGoal
-      const vsGoal = net - goal.calories
-      return { date, ...macros, net, burned: log.burnedCalories, vsGoal, goal }
-    })
+    .map((date) => getStatsDayRowForDate(date, dailyLogs, foodLibrary, settings))
     .filter((row): row is StatsDayRow => row != null)
+}
+
+export function rollingAverageCalendarWindow(
+  values: (number | null)[],
+  index: number,
+  window: number,
+): number | null {
+  if (index < window - 1) return null
+  const slice = values.slice(index - window + 1, index + 1)
+  const logged = slice.filter((v): v is number => v != null)
+  if (logged.length === 0) return null
+  return roundMacro(logged.reduce((a, b) => a + b, 0) / logged.length, 1)
+}
+
+export function buildTrendMetricSeries(
+  range: { start: string; end: string },
+  dailyLogs: Record<string, DailyLog>,
+  foodLibrary: FoodItem[],
+  settings: Settings,
+  lookbackDays = ROLLING_LOOKBACK_MAX,
+): {
+  dates: string[]
+  displayStartIndex: number
+  metrics: Record<TrendMetricKey, (number | null)[]>
+} {
+  const statsRange = clampStatsRange(range)
+  const extendedStart = shiftDate(statsRange.start, -(lookbackDays - 1))
+  const dates = datesInRange(extendedStart, statsRange.end)
+  const displayStartIndex = dates.indexOf(statsRange.start)
+
+  const rows = dates.map((date) =>
+    getStatsDayRowForDate(date, dailyLogs, foodLibrary, settings),
+  )
+
+  const metrics: Record<TrendMetricKey, (number | null)[]> = {
+    net: rows.map((r) => (r ? r.net : null)),
+    calories: rows.map((r) => (r ? r.calories : null)),
+    protein: rows.map((r) => (r ? r.protein : null)),
+    carbs: rows.map((r) => (r ? r.carbs : null)),
+    fat: rows.map((r) => (r ? r.fat : null)),
+  }
+
+  return { dates, displayStartIndex, metrics }
+}
+
+/** Y-axis domain for calorie charts: always includes 0 with a minimum span to reduce zoom drama. */
+export function stableCalorieYDomain(values: number[], minSpan = 600): [number, number] {
+  if (values.length === 0) return [0, 2000]
+
+  const dataMax = Math.max(0, ...values)
+  const dataMin = Math.min(0, ...values)
+  let low = dataMin
+  let high = dataMax
+
+  const span = high - low
+  if (span < minSpan) {
+    if (low >= 0) {
+      high = Math.max(high, minSpan)
+    } else if (high <= 0) {
+      low = Math.min(low, -minSpan)
+    } else {
+      const extra = (minSpan - span) / 2
+      low -= extra
+      high += extra
+    }
+  }
+
+  const pad = Math.max(40, (high - low) * 0.06)
+  low = Math.floor((low - pad) / 50) * 50
+  high = Math.ceil((high + pad) / 50) * 50
+  low = Math.min(0, low)
+  high = Math.max(0, high)
+  if (low === high) high = low + minSpan
+  return [low, high]
 }
 
 export function getPreviousRange(range: { start: string; end: string }): {

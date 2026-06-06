@@ -94,9 +94,25 @@ export function LibraryTab() {
         ? 'recipes'
         : 'items'
 
+  const libraryModalOpen =
+    deleteConfirmOpen ||
+    bulkCategoryOpen ||
+    newFoodOpen ||
+    recipeOpen ||
+    addCategoryOpen ||
+    categoryManageOpen ||
+    categoryEditOpen ||
+    deleteCategoryOpen ||
+    editingFood != null
+
   useEffect(() => {
+    if (libraryModalOpen) {
+      setSearchFocused(false)
+      setLibrarySearchEngaged(false)
+      return
+    }
     setLibrarySearchEngaged(searchFocused || query.trim().length > 0)
-  }, [searchFocused, query, setLibrarySearchEngaged])
+  }, [libraryModalOpen, searchFocused, query, setLibrarySearchEngaged])
 
   useEffect(() => {
     return () => setLibrarySearchEngaged(false)

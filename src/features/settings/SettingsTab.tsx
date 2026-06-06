@@ -436,9 +436,10 @@ export function SettingsTab() {
       </Card>
 
       <section className="text-center text-sm text-muted-foreground pb-8">
-        <p className="font-semibold text-foreground">NullTracker</p>
-        <p className="mt-2">Private, local-first macro tracking PWA.</p>
-        <p className="mt-1">Built with React, Vite, and ❤️</p>
+        <p>
+          <span className="font-semibold text-foreground">NullTracker.</span> Private,
+          local-first macro tracking PWA. Built with React, Vite, and ☦️
+        </p>
       </section>
 
       <Dialog open={backupConfirmOpen} onOpenChange={setBackupConfirmOpen}>
