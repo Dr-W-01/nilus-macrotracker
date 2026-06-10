@@ -29,7 +29,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: [
         'favicon.svg',
         'icons.svg',
@@ -52,6 +53,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallback: '/nilus-macrotracker/index.html',
+        navigateFallbackDenylist: [/^\/_/],
+        cleanupOutdatedCaches: true,
+        skipWaiting: false,
+        clientsClaim: true,
       },
     }),
   ],
