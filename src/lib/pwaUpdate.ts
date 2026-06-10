@@ -6,7 +6,7 @@ export type AppUpdateStatus = 'update-ready' | 'up-to-date' | 'unsupported'
 
 let updateServiceWorker: UpdateServiceWorker | null = null
 
-const PROBE_TIMEOUT_MS = 6000
+const PROBE_TIMEOUT_MS = 8000
 
 export function registerPwaUpdateHandler(handler: UpdateServiceWorker) {
   updateServiceWorker = handler
@@ -90,6 +90,25 @@ export async function probeForAppUpdate(): Promise<AppUpdateStatus> {
   return 'up-to-date'
 }
 
+function waitForControllerChange(timeoutMs = 4000): Promise<void> {
+  return new Promise((resolve) => {
+    if (!navigator.serviceWorker.controller) {
+      resolve()
+      return
+    }
+
+    const timer = window.setTimeout(resolve, timeoutMs)
+    navigator.serviceWorker.addEventListener(
+      'controllerchange',
+      () => {
+        window.clearTimeout(timer)
+        resolve()
+      },
+      { once: true },
+    )
+  })
+}
+
 export async function applyAppUpdate(): Promise<void> {
   if (updateServiceWorker) {
     await updateServiceWorker(true)
@@ -98,20 +117,21 @@ export async function applyAppUpdate(): Promise<void> {
 
   const registration = await navigator.serviceWorker.getRegistration()
   if (registration?.waiting) {
+    const activated = waitForControllerChange()
     registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+    await activated
   }
 
   window.location.reload()
 }
 
-/** Used by pull-to-refresh: check for updates and apply or confirm up to date. */
+/** Used by pull-to-refresh: check for updates and apply when available. */
 export async function runPullToRefreshUpdate(): Promise<void> {
   const status = await probeForAppUpdate()
 
   if (status === 'update-ready') {
-    showUpdateAvailableToast(() => {
-      void applyAppUpdate()
-    })
+    toast.loading('Update found — reloading…')
+    await applyAppUpdate()
     return
   }
 
@@ -123,23 +143,23 @@ export async function runPullToRefreshUpdate(): Promise<void> {
   window.location.reload()
 }
 
-/** Used by Settings "Check for updates" button. */
+/** Used by Settings "Check for updates" button — auto-applies and reloads. */
 export async function runManualUpdateCheck(): Promise<void> {
   const toastId = toast.loading('Checking for updates…')
 
   try {
     const status = await probeForAppUpdate()
-    toast.dismiss(toastId)
 
     if (status === 'update-ready') {
-      showUpdateAvailableToast(() => {
-        void applyAppUpdate()
-      })
+      toast.loading('Update found — reloading…', { id: toastId })
+      await applyAppUpdate()
       return
     }
 
+    toast.dismiss(toastId)
+
     if (status === 'up-to-date') {
-      toast.success('You have the latest version')
+      toast.success('You\'re up to date')
       return
     }
 
@@ -149,21 +169,4 @@ export async function runManualUpdateCheck(): Promise<void> {
     toast.dismiss(toastId)
     toast.error('Could not check for updates. Try again in a moment.')
   }
-}
-
-/** @deprecated Use probeForAppUpdate / applyAppUpdate / runPullToRefreshUpdate */
-export async function checkForAppUpdate(
-  reloadPage = true,
-): Promise<'updated' | 'reloaded' | 'unchanged'> {
-  const status = await probeForAppUpdate()
-  if (status === 'update-ready') {
-    if (reloadPage) await applyAppUpdate()
-    return 'updated'
-  }
-  if (reloadPage && status === 'unsupported') {
-    window.location.reload()
-    return 'reloaded'
-  }
-  if (reloadPage) window.location.reload()
-  return reloadPage ? 'reloaded' : 'unchanged'
 }

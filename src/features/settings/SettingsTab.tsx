@@ -433,34 +433,35 @@ export function SettingsTab() {
             Import restores a JSON file from Export (library, daily logs, settings,
             and categories).
           </p>
-          <div className="space-y-4 border-t border-border pt-4">
-            <Button
-              type="button"
-              className="h-11 w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600"
-              disabled={checkingUpdate}
-              onClick={handleCheckForUpdates}
-            >
-              <RefreshCw className={cn('h-5 w-5', checkingUpdate && 'animate-spin')} />
-              Check for updates
-            </Button>
-            <Button
-              className="w-full gap-2"
-              variant="destructive"
-              onClick={handleFactoryReset}
-            >
-              <Trash2 className="h-4 w-4" />
-              {resetStep === 0
-                ? 'Factory Reset'
-                : 'Confirm: Erase ALL data permanently'}
-            </Button>
-            {resetStep === 1 && (
-              <p className="mt-2 text-xs text-destructive text-center">
-                Warning: This cannot be undone. Tap again to confirm.
-              </p>
-            )}
-          </div>
         </CardContent>
       </Card>
+
+      <section className="space-y-4">
+        <Button
+          type="button"
+          className="h-12 w-full gap-2 bg-emerald-600 text-base text-white hover:bg-emerald-700 focus-visible:ring-emerald-600"
+          disabled={checkingUpdate}
+          onClick={handleCheckForUpdates}
+        >
+          <RefreshCw className={cn('h-5 w-5', checkingUpdate && 'animate-spin')} />
+          {checkingUpdate ? 'Checking…' : 'Check for updates'}
+        </Button>
+        <Button
+          className="h-11 w-full gap-2"
+          variant="destructive"
+          onClick={handleFactoryReset}
+        >
+          <Trash2 className="h-4 w-4" />
+          {resetStep === 0
+            ? 'Factory Reset'
+            : 'Confirm: Erase ALL data permanently'}
+        </Button>
+        {resetStep === 1 && (
+          <p className="text-xs text-destructive text-center">
+            Warning: This cannot be undone. Tap again to confirm.
+          </p>
+        )}
+      </section>
 
       <section className="text-center text-sm text-muted-foreground pb-8">
         <p>
