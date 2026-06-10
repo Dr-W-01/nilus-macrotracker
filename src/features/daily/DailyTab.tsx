@@ -7,8 +7,10 @@ import {
   ChevronDown,
   ChevronUp,
   Flame,
+  Copy,
   Plus,
   Scale,
+  UtensilsCrossed,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AddFoodSheet } from '@/components/daily/AddFoodSheet'
@@ -49,6 +51,7 @@ import {
   servingsFromAmountEaten,
 } from '@/lib/scale'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
+import { EmptyState } from '@/components/ui/EmptyState'
 import {
   computeDayMacros,
   formatMealGroupTotals,
@@ -96,7 +99,7 @@ export function DailyTab() {
     (s) => s.mealCollapseByDate[s.currentDate] ?? NO_COLLAPSED_MEALS,
   )
   const updateDailyLog = useMacroStore((s) => s.updateDailyLog)
-
+  const duplicatePreviousDayLog = useMacroStore((s) => s.duplicatePreviousDayLog)
 
   const log = getDailyLog(currentDate)
   const templates = settings?.goalTemplates ?? []
@@ -243,10 +246,22 @@ export function DailyTab() {
     resetFoodFlow()
   }
 
+  const handleDuplicateYesterday = () => {
+    const copied = duplicatePreviousDayLog(currentDate)
+    if (copied == null) {
+      toast.error('Yesterday has no logged foods to copy')
+      return
+    }
+    if (!editDayMode) setEditDayMode(true)
+    toast.success(
+      `Copied ${copied} ${copied === 1 ? 'item' : 'items'} from yesterday — review and edit as needed`,
+    )
+  }
+
   return (
     <div className="daily-tab flex flex-col pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <Button
             variant={editDayMode ? 'default' : 'outline'}
             size="sm"
@@ -258,6 +273,18 @@ export function DailyTab() {
             {editDayMode ? 'Editing enabled' : 'Read-only'}
           </span>
         </div>
+
+        {editDayMode && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleDuplicateYesterday}
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Yesterday&apos;s Log
+          </Button>
+        )}
 
         {editDayMode && templates.length > 0 && (
           <div className="space-y-1.5">
@@ -474,12 +501,17 @@ export function DailyTab() {
           )}
 
           {log.foods.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-8 text-center">
-              <p className="text-muted-foreground mb-4">No foods logged yet</p>
-              {editDayMode && (
-                <Button onClick={() => setPickerOpen(true)}>Add your first food</Button>
-              )}
-            </div>
+            <EmptyState
+              icon={UtensilsCrossed}
+              title="No foods logged yet"
+              description={
+                editDayMode
+                  ? 'Add your first food, copy yesterday\'s log, or pick a favorite from your library for quick logging.'
+                  : 'Switch to Edit Day to start logging meals for this date.'
+              }
+              actionLabel={editDayMode ? 'Add your first food' : undefined}
+              onAction={editDayMode ? () => setPickerOpen(true) : undefined}
+            />
           ) : (
             <div className="space-y-4">
               {unassignedFoods.length > 0 && (

@@ -11,7 +11,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -418,14 +420,11 @@ export function StatsTrendsPanel({
           />
         </>
       ) : (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-center text-sm text-muted-foreground">
-              No logged days in this period for macro trends. Use the period selector above
-              or log food on the Daily tab.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={TrendingUp}
+          title="No trends yet"
+          description="Log food on the Daily tab to see calorie and macro charts for this period. Try a wider date range if you recently started tracking."
+        />
       )}
 
       <TrendsWeightSection

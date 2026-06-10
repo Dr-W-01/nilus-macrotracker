@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { SEED_LIBRARY } from '@/data/seedLibrary'
-import { getWeekRange, todayString } from '@/lib/dates'
+import { getWeekRange, shiftDate, todayString } from '@/lib/dates'
 import { computeComponentMacros } from '@/lib/macros'
 import {
   addCategoryToItem,
@@ -80,7 +80,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 7
+const PERSIST_VERSION = 8
 
 const EMPTY_COLLAPSED_MEALS: string[] = []
 
@@ -100,6 +100,7 @@ type PersistedSlice = {
   statsRangeEnd?: string
   statsView?: 'overview' | 'trends' | 'breakdowns' | 'weight' | 'table' | 'charts'
   statsAnchorDate?: string
+  favoriteFoodIds?: string[]
 }
 
 function normalizeMealCollapseByDate(
@@ -212,6 +213,8 @@ interface MacroStore {
   statsAnchorDate: string
   /** Hide bottom nav while Library search is active (focused or filtering) */
   librarySearchEngaged: boolean
+  /** Food library item IDs marked as favorites for quick add */
+  favoriteFoodIds: string[]
 
   setHasHydrated: (v: boolean) => void
   setCurrentTab: (tab: AppTab) => void
@@ -234,6 +237,8 @@ interface MacroStore {
   setDailyWeight: (weightKg: number | undefined, date?: string) => void
   setDailyNote: (note: string, date?: string) => void
   toggleMealCollapsed: (meal: string, date?: string) => void
+  duplicatePreviousDayLog: (date?: string) => number | null
+  toggleFavoriteFood: (foodId: string) => void
 
   loadSeedLibrary: () => void
   mergeFoodLibrary: (items: FoodItem[], replace?: boolean) => void
@@ -285,6 +290,7 @@ export const useMacroStore = create<MacroStore>()(
       statsView: 'overview',
       statsAnchorDate: todayString(),
       librarySearchEngaged: false,
+      favoriteFoodIds: [],
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
       setCurrentTab: (tab) =>
@@ -360,6 +366,38 @@ export const useMacroStore = create<MacroStore>()(
             idSet.has(f.id) ? { ...f, meal: tag } : f,
           ),
         })
+      },
+
+      duplicatePreviousDayLog: (date) => {
+        const d = date ?? get().currentDate
+        const prevDate = shiftDate(d, -1)
+        const prevLog = get().dailyLogs[prevDate]
+        if (!prevLog || prevLog.foods.length === 0) return null
+
+        const log = get().getDailyLog(d)
+        const meals = normalizeMeals(get().settings.meals)
+        const copied = prevLog.foods.map((entry) => {
+          get().touchFoodUsage(entry.foodId)
+          return {
+            ...entry,
+            id: generateId(),
+            meal: resolveLoggedMeal(entry.meal, meals),
+          }
+        })
+
+        get().updateDailyLog(d, {
+          foods: [...log.foods, ...copied],
+          note: log.note.trim() ? log.note : prevLog.note,
+        })
+        return copied.length
+      },
+
+      toggleFavoriteFood: (foodId) => {
+        const current = get().favoriteFoodIds
+        const next = current.includes(foodId)
+          ? current.filter((id) => id !== foodId)
+          : [...current, foodId]
+        set({ favoriteFoodIds: next })
       },
 
       removeLoggedFood: (loggedId, date) => {
@@ -639,6 +677,7 @@ export const useMacroStore = create<MacroStore>()(
           customCategories: [],
           dailyLogs: {},
           mealCollapseByDate: {},
+          favoriteFoodIds: [],
           currentDate: todayString(),
           currentTab: 'daily',
           editDayMode: false,
@@ -670,9 +709,15 @@ export const useMacroStore = create<MacroStore>()(
         statsRangeEnd: state.statsRangeEnd,
         statsView: state.statsView,
         statsAnchorDate: state.statsAnchorDate,
+        favoriteFoodIds: state.favoriteFoodIds,
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 8) {
+          raw.favoriteFoodIds = Array.isArray(raw.favoriteFoodIds)
+            ? raw.favoriteFoodIds.filter((id): id is string => typeof id === 'string')
+            : []
+        }
         if (version < 6 && raw.settings) {
           const tw = raw.settings.targetWeightKg
           raw.settings = {

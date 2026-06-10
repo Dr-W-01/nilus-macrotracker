@@ -41,6 +41,8 @@ import { BulkAssignCategoryDialog } from '@/components/library/BulkAssignCategor
 import { CategoryEditSheet } from '@/components/library/CategoryEditSheet'
 import { CategoryManageSheet } from '@/components/library/CategoryManageSheet'
 import { DeleteCategoryDialog } from '@/components/library/DeleteCategoryDialog'
+import { FavoriteFoodButton } from '@/components/library/FavoriteFoodButton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type BulkDeleteKind = 'items' | 'categories' | 'recipes'
 
@@ -233,24 +235,19 @@ export function LibraryTab() {
 
   if (foodLibrary.length === 0) {
     return (
-      <div className="p-6 pb-below-nav text-center space-y-6">
-        <BookOpen className="h-16 w-16 mx-auto text-primary opacity-80" />
-        <h2 className="text-xl font-semibold">Your food library is empty</h2>
-        <p className="text-muted-foreground">
-          Load the built-in library or import your own foods.
-        </p>
-        <Button
-          size="lg"
-          className="w-full max-w-sm mx-auto"
-          onClick={() => {
+      <div className="p-6 pb-below-nav">
+        <EmptyState
+          icon={BookOpen}
+          title="Your food library is empty"
+          description="Load the built-in demo library to get started quickly, or add your own foods and mark favorites for one-tap logging on the Daily tab."
+          actionLabel={`Load demo library (${SEED_LIBRARY_COUNT} items)`}
+          onAction={() => {
             loadSeedLibrary()
             toast.success(`Loaded ${SEED_LIBRARY_COUNT} foods`)
           }}
-        >
-          Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          Or import from Settings → Data
+        />
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          You can also import a backup from Settings → Data
         </p>
       </div>
     )
@@ -428,6 +425,7 @@ export function LibraryTab() {
                   selected={selected}
                   onToggle={toggleSelect}
                   onOpenItem={(food) => setEditingFood(food)}
+                  showFavorite={librarySegment === 'items'}
                 />
               </section>
             ))
@@ -592,12 +590,14 @@ function FoodList({
   selected,
   onToggle,
   onOpenItem,
+  showFavorite = false,
 }: {
   items: FoodItem[]
   editMode: boolean
   selected: Set<string>
   onToggle: (id: string) => void
   onOpenItem: (food: FoodItem) => void
+  showFavorite?: boolean
 }) {
   return (
     <ul className="space-y-1 mb-4">
@@ -609,16 +609,21 @@ function FoodList({
                 checked={selected.has(food.id)}
                 onChange={() => onToggle(food.id)}
               />
-              <FoodRowContent food={food} />
+              <FoodRowContent food={food} showFavorite={showFavorite} />
             </label>
           ) : (
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left active:bg-secondary/50"
-              onClick={() => onOpenItem(food)}
-            >
-              <FoodRowContent food={food} />
-            </button>
+            <div className="flex items-stretch gap-1 rounded-lg border border-border">
+              <button
+                type="button"
+                className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3 text-left active:bg-secondary/50"
+                onClick={() => onOpenItem(food)}
+              >
+                <FoodRowContent food={food} showFavorite={false} />
+              </button>
+              {showFavorite && !food.isRecipe && (
+                <FavoriteFoodButton foodId={food.id} className="self-center mr-1" />
+              )}
+            </div>
           )}
         </li>
       ))}
@@ -626,7 +631,13 @@ function FoodList({
   )
 }
 
-function FoodRowContent({ food }: { food: FoodItem }) {
+function FoodRowContent({
+  food,
+  showFavorite: _showFavorite,
+}: {
+  food: FoodItem
+  showFavorite?: boolean
+}) {
   return (
     <>
       <div className="flex-1 min-w-0">

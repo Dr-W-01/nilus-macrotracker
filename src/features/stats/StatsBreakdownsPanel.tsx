@@ -8,7 +8,9 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
+import { PieChart as PieChartIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/EmptyState'
 import {
   Table,
   TableBody,
@@ -121,9 +123,11 @@ export function StatsBreakdownsPanel({
 
   if (dayRows.length === 0) {
     return (
-      <p className="py-8 text-center text-muted-foreground">
-        No logged days in this period for breakdowns.
-      </p>
+      <EmptyState
+        icon={PieChartIcon}
+        title="No breakdown data"
+        description="Log meals on the Daily tab to see macro distribution, top foods, and a day-by-day table for this period."
+      />
     )
   }
 
