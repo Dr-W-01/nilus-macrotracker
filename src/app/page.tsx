@@ -1,12 +1,10 @@
 import { BottomNav } from '@/components/BottomNav'
 import { InputFocusTracker } from '@/components/InputFocusTracker'
-import { PullToRefresh } from '@/components/PullToRefresh'
 import { PwaUpdateManager } from '@/components/PwaUpdateManager'
 import { DailyTab } from '@/features/daily/DailyTab'
 import { LibraryTab } from '@/features/library/LibraryTab'
 import { StatsTab } from '@/features/stats/StatsTab'
 import { SettingsTab } from '@/features/settings/SettingsTab'
-import { runPullToRefreshUpdate } from '@/lib/pwaUpdate'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export default function AppPage() {
@@ -16,15 +14,12 @@ export default function AppPage() {
     <div className="app-viewport">
       <PwaUpdateManager />
       <InputFocusTracker />
-      <PullToRefresh
-        className="app-main"
-        onRefresh={runPullToRefreshUpdate}
-      >
+      <main className="app-main">
         {currentTab === 'daily' && <DailyTab />}
         {currentTab === 'library' && <LibraryTab />}
         {currentTab === 'stats' && <StatsTab />}
         {currentTab === 'settings' && <SettingsTab />}
-      </PullToRefresh>
+      </main>
       <BottomNav />
     </div>
   )

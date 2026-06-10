@@ -6,7 +6,8 @@ export type AppUpdateStatus = 'update-ready' | 'up-to-date' | 'unsupported'
 
 let updateServiceWorker: UpdateServiceWorker | null = null
 
-const PROBE_TIMEOUT_MS = 8000
+/** iOS can be slow to download and install a waiting worker. */
+const PROBE_TIMEOUT_MS = 10000
 
 export function registerPwaUpdateHandler(handler: UpdateServiceWorker) {
   updateServiceWorker = handler
@@ -25,14 +26,42 @@ export function showUpdateAvailableToast(onRefresh: () => void) {
   })
 }
 
+function serviceWorkerScriptUrl(): string {
+  const base = import.meta.env.BASE_URL
+  return new URL('sw.js', `${window.location.origin}${base}`).href
+}
+
+/** Bypass HTTP caches so iOS Safari fetches the latest sw.js byte string. */
+async function bustServiceWorkerCache(): Promise<void> {
+  try {
+    await fetch(serviceWorkerScriptUrl(), {
+      cache: 'no-store',
+      credentials: 'same-origin',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
+  } catch {
+    // Network errors are handled by registration.update()
+  }
+}
+
+function hasPendingUpdate(registration: ServiceWorkerRegistration): boolean {
+  return (
+    !!registration.waiting &&
+    !!navigator.serviceWorker.controller
+  )
+}
+
 function waitForWaitingWorker(
   registration: ServiceWorkerRegistration,
   timeoutMs: number,
 ): Promise<boolean> {
-  if (registration.waiting) return Promise.resolve(true)
+  if (hasPendingUpdate(registration)) return Promise.resolve(true)
 
   return new Promise((resolve) => {
-    const timer = window.setTimeout(() => resolve(!!registration.waiting), timeoutMs)
+    const timer = window.setTimeout(
+      () => resolve(hasPendingUpdate(registration)),
+      timeoutMs,
+    )
 
     const cleanup = () => {
       window.clearTimeout(timer)
@@ -43,23 +72,20 @@ function waitForWaitingWorker(
       const worker = registration.installing
       if (!worker) {
         cleanup()
-        resolve(!!registration.waiting)
+        resolve(hasPendingUpdate(registration))
         return
       }
 
       const onStateChange = () => {
-        if (worker.state === 'installed') {
-          worker.removeEventListener('statechange', onStateChange)
-          cleanup()
-          resolve(!!registration.waiting)
-        }
+        if (worker.state !== 'installed') return
+        worker.removeEventListener('statechange', onStateChange)
+        cleanup()
+        resolve(hasPendingUpdate(registration))
       }
 
       worker.addEventListener('statechange', onStateChange)
       if (worker.state === 'installed') {
-        worker.removeEventListener('statechange', onStateChange)
-        cleanup()
-        resolve(!!registration.waiting)
+        onStateChange()
       }
     }
 
@@ -67,16 +93,33 @@ function waitForWaitingWorker(
   })
 }
 
+async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (!('serviceWorker' in navigator)) return null
+
+  let registration = await navigator.serviceWorker.getRegistration()
+  if (registration) return registration
+
+  const base = import.meta.env.BASE_URL
+  try {
+    registration = await navigator.serviceWorker.register(`${base}sw.js`, {
+      scope: base,
+    })
+    return registration
+  } catch {
+    return null
+  }
+}
+
 /** Check the server for a newer service worker without reloading. */
 export async function probeForAppUpdate(): Promise<AppUpdateStatus> {
-  if (!('serviceWorker' in navigator)) return 'unsupported'
-
-  const registration = await navigator.serviceWorker.getRegistration()
+  const registration = await getServiceWorkerRegistration()
   if (!registration) return 'unsupported'
 
-  if (registration.waiting) return 'update-ready'
+  if (hasPendingUpdate(registration)) return 'update-ready'
 
   const waitPromise = waitForWaitingWorker(registration, PROBE_TIMEOUT_MS)
+
+  await bustServiceWorkerCache()
 
   try {
     await registration.update()
@@ -85,12 +128,12 @@ export async function probeForAppUpdate(): Promise<AppUpdateStatus> {
   }
 
   const found = await waitPromise
-  if (found || registration.waiting) return 'update-ready'
+  if (found || hasPendingUpdate(registration)) return 'update-ready'
 
   return 'up-to-date'
 }
 
-function waitForControllerChange(timeoutMs = 4000): Promise<void> {
+function waitForControllerChange(timeoutMs = 5000): Promise<void> {
   return new Promise((resolve) => {
     if (!navigator.serviceWorker.controller) {
       resolve()
@@ -109,38 +152,30 @@ function waitForControllerChange(timeoutMs = 4000): Promise<void> {
   })
 }
 
-export async function applyAppUpdate(): Promise<void> {
-  if (updateServiceWorker) {
-    await updateServiceWorker(true)
-    return
-  }
-
-  const registration = await navigator.serviceWorker.getRegistration()
-  if (registration?.waiting) {
-    const activated = waitForControllerChange()
-    registration.waiting.postMessage({ type: 'SKIP_WAITING' })
-    await activated
-  }
-
+function hardReload(): void {
   window.location.reload()
 }
 
-/** Used by pull-to-refresh: check for updates and apply when available. */
-export async function runPullToRefreshUpdate(): Promise<void> {
-  const status = await probeForAppUpdate()
-
-  if (status === 'update-ready') {
-    toast.loading('Update found — reloading…')
-    await applyAppUpdate()
-    return
+export async function applyAppUpdate(): Promise<void> {
+  if (updateServiceWorker) {
+    try {
+      await updateServiceWorker(true)
+      return
+    } catch {
+      // Fall through to manual activation below.
+    }
   }
 
-  if (status === 'up-to-date') {
-    toast.success('You have the latest version')
-    return
+  const registration = await getServiceWorkerRegistration()
+  const waiting = registration?.waiting
+
+  if (waiting) {
+    const activated = waitForControllerChange()
+    waiting.postMessage({ type: 'SKIP_WAITING' })
+    await activated
   }
 
-  window.location.reload()
+  hardReload()
 }
 
 /** Used by Settings "Check for updates" button — auto-applies and reloads. */
@@ -164,7 +199,7 @@ export async function runManualUpdateCheck(): Promise<void> {
     }
 
     toast.message('Reloading to check for updates…')
-    window.location.reload()
+    hardReload()
   } catch {
     toast.dismiss(toastId)
     toast.error('Could not check for updates. Try again in a moment.')
