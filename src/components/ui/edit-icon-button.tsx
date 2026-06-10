@@ -27,7 +27,14 @@ export function EditIconButton({
       title={label}
       {...props}
     >
-      <Pencil className={cn('h-4 w-4', iconClassName)} />
+      <Pencil
+        className={cn(
+          'h-4 w-4',
+          variant === 'default' ? 'text-primary-foreground' : 'text-foreground',
+          iconClassName,
+        )}
+        strokeWidth={2}
+      />
       <span className="sr-only">{label}</span>
     </Button>
   )

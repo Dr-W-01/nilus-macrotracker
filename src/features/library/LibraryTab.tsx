@@ -323,7 +323,8 @@ export function LibraryTab() {
               {showBulkEdit && (
                 <EditIconButton
                   variant="outline"
-                  className="h-9 w-9 shrink-0"
+                  className="h-11 w-11 shrink-0"
+                  iconClassName="h-5 w-5"
                   label="Edit library"
                   onClick={enterEditMode}
                 />
@@ -339,7 +340,8 @@ export function LibraryTab() {
               {showBulkEdit && (
                 <EditIconButton
                   variant="outline"
-                  className="h-9 w-9 shrink-0"
+                  className="h-11 w-11 shrink-0"
+                  iconClassName="h-5 w-5"
                   label="Edit categories"
                   onClick={enterEditMode}
                 />
@@ -355,7 +357,8 @@ export function LibraryTab() {
               {showBulkEdit && (
                 <EditIconButton
                   variant="outline"
-                  className="h-9 w-9 shrink-0"
+                  className="h-11 w-11 shrink-0"
+                  iconClassName="h-5 w-5"
                   label="Edit recipes"
                   onClick={enterEditMode}
                 />

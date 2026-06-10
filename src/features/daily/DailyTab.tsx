@@ -263,58 +263,56 @@ export function DailyTab() {
   return (
     <div className="daily-tab flex flex-col pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-2.5">
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center justify-center gap-2 sm:gap-3">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="h-9 w-9 shrink-0"
+            className="h-11 w-11 shrink-0"
             onClick={() => setCurrentDate(shiftDate(currentDate, -1))}
             aria-label="Previous day"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-6 w-6" />
           </Button>
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
-            <p className="truncate font-semibold text-[15px] sm:text-base">
-              {formatDisplayDate(currentDate)}
-            </p>
-            <EditIconButton
-              variant={editDayMode ? 'default' : 'outline'}
-              size="icon"
-              className="h-11 w-11 shrink-0"
-              iconClassName="h-5 w-5"
-              label={editDayMode ? 'Exit edit mode' : 'Edit day'}
-              onClick={() => setEditDayMode(!editDayMode)}
-            />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-11 w-11 shrink-0"
-                  aria-label="Open calendar"
-                  title="Open calendar"
-                >
-                  <CalendarIcon className="h-5 w-5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={parseISO(currentDate)}
-                  onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <Button
-            variant="ghost"
+          <p className="min-w-0 truncate font-semibold text-[15px] sm:text-base px-1">
+            {formatDisplayDate(currentDate)}
+          </p>
+          <EditIconButton
+            variant={editDayMode ? 'default' : 'outline'}
             size="icon"
-            className="h-9 w-9 shrink-0"
+            className="h-11 w-11 shrink-0"
+            iconClassName="h-5 w-5"
+            label={editDayMode ? 'Exit edit mode' : 'Edit day'}
+            onClick={() => setEditDayMode(!editDayMode)}
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-11 w-11 shrink-0"
             onClick={() => setCurrentDate(shiftDate(currentDate, 1))}
             aria-label="Next day"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-6 w-6" />
           </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0"
+                aria-label="Open calendar"
+                title="Open calendar"
+              >
+                <CalendarIcon className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={parseISO(currentDate)}
+                onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         {editDayMode && (

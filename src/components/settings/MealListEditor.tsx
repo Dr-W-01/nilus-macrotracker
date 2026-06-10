@@ -21,6 +21,7 @@ export function MealListEditor() {
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const dragIndexRef = useRef<number | null>(null)
   const overIndexRef = useRef<number | null>(null)
 
   const handleAdd = () => {
@@ -49,42 +50,60 @@ export function MealListEditor() {
     }
   }
 
-  const finishDrag = (toIndex: number | null) => {
-    if (dragIndex != null && toIndex != null && dragIndex !== toIndex) {
-      reorderMeals(dragIndex, toIndex)
-    }
+  const resetDrag = () => {
+    dragIndexRef.current = null
+    overIndexRef.current = null
     setDragIndex(null)
     setOverIndex(null)
   }
 
+  const finishDrag = () => {
+    const from = dragIndexRef.current
+    const to = overIndexRef.current
+    if (from != null && to != null && from !== to) {
+      reorderMeals(from, to)
+    }
+    resetDrag()
+  }
+
+  const resolveOverIndex = (clientY: number, fallback: number) => {
+    if (!listRef.current) return fallback
+    const rows = [...listRef.current.querySelectorAll<HTMLElement>('[data-meal-row]')]
+    let nextOver = fallback
+    for (let i = 0; i < rows.length; i++) {
+      const rect = rows[i].getBoundingClientRect()
+      const mid = rect.top + rect.height / 2
+      if (clientY >= mid) nextOver = i
+    }
+    return nextOver
+  }
+
   const handleGripPointerDown = (index: number, e: ReactPointerEvent<HTMLButtonElement>) => {
     e.preventDefault()
+    e.stopPropagation()
+    dragIndexRef.current = index
+    overIndexRef.current = index
     setDragIndex(index)
     setOverIndex(index)
-    overIndexRef.current = index
+
     const target = e.currentTarget
     target.setPointerCapture(e.pointerId)
 
     const onMove = (ev: globalThis.PointerEvent) => {
-      if (!listRef.current) return
-      const rows = [...listRef.current.querySelectorAll<HTMLElement>('[data-meal-row]')]
-      const y = ev.clientY
-      let nextOver = index
-      for (let i = 0; i < rows.length; i++) {
-        const rect = rows[i].getBoundingClientRect()
-        const mid = rect.top + rect.height / 2
-        if (y >= mid) nextOver = i
-      }
+      ev.preventDefault()
+      const nextOver = resolveOverIndex(ev.clientY, index)
       overIndexRef.current = nextOver
       setOverIndex(nextOver)
     }
 
     const onUp = (ev: globalThis.PointerEvent) => {
-      target.releasePointerCapture(ev.pointerId)
+      if (target.hasPointerCapture(ev.pointerId)) {
+        target.releasePointerCapture(ev.pointerId)
+      }
       target.removeEventListener('pointermove', onMove)
       target.removeEventListener('pointerup', onUp)
       target.removeEventListener('pointercancel', onUp)
-      finishDrag(overIndexRef.current ?? index)
+      finishDrag()
     }
 
     target.addEventListener('pointermove', onMove)
@@ -92,63 +111,80 @@ export function MealListEditor() {
     target.addEventListener('pointercancel', onUp)
   }
 
+  const displayMeals = (() => {
+    if (dragIndex == null || overIndex == null || dragIndex === overIndex) return meals
+    const next = [...meals]
+    const [moved] = next.splice(dragIndex, 1)
+    next.splice(overIndex, 0, moved)
+    return next
+  })()
+
   return (
     <div className="space-y-2.5">
       <p className="text-xs text-muted-foreground">
-        Drag to reorder. Rename or add meals used on the Daily tab.
+        Drag the handle to reorder. Rename or add meals used on the Daily tab.
       </p>
 
-      <ul ref={listRef} className="space-y-1">
-        {meals.map((meal, index) => (
-          <li
-            key={meal}
-            data-meal-row
-            className={cn(
-              'flex items-center gap-1 rounded-md border border-border bg-card px-1 py-0.5 transition-colors',
-              dragIndex === index && 'opacity-60',
-              overIndex === index && dragIndex != null && dragIndex !== index && 'border-primary/50 bg-primary/5',
-            )}
-          >
-            <button
-              type="button"
-              className="flex h-7 w-6 shrink-0 cursor-grab touch-none items-center justify-center text-muted-foreground/60 active:cursor-grabbing"
-              aria-label={`Reorder ${meal}`}
-              onPointerDown={(e) => handleGripPointerDown(index, e)}
+      <ul ref={listRef} className="space-y-1 touch-none">
+        {displayMeals.map((meal) => {
+          const sourceIndex = meals.indexOf(meal)
+          const isDragging = dragIndex === sourceIndex
+          const isDropTarget =
+            overIndex === sourceIndex &&
+            dragIndex != null &&
+            dragIndex !== sourceIndex
+
+          return (
+            <li
+              key={meal}
+              data-meal-row
+              className={cn(
+                'flex items-center gap-1 rounded-md border border-border bg-card px-1 py-0.5 transition-all duration-150',
+                isDragging && 'scale-[0.98] opacity-70 shadow-sm',
+                isDropTarget && 'border-primary bg-primary/10',
+              )}
             >
-              <GripVertical className="h-3.5 w-3.5" />
-            </button>
-            <Input
-              value={editing[meal] ?? meal}
-              onChange={(e) =>
-                setEditing((prev) => ({ ...prev, [meal]: e.target.value }))
-              }
-              onBlur={() => commitRename(meal)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.currentTarget.blur()
+              <button
+                type="button"
+                className="flex h-8 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground active:cursor-grabbing active:text-foreground"
+                aria-label={`Reorder ${meal}`}
+                onPointerDown={(e) => handleGripPointerDown(sourceIndex, e)}
+              >
+                <GripVertical className="h-4 w-4" />
+              </button>
+              <Input
+                value={editing[meal] ?? meal}
+                onChange={(e) =>
+                  setEditing((prev) => ({ ...prev, [meal]: e.target.value }))
                 }
-              }}
-              className="h-7 min-h-0 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-0"
-              aria-label={`Meal name: ${meal}`}
-              {...mobilePlainTextInputProps}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-              disabled={meals.length <= 1}
-              onClick={() => {
-                if (meals.length <= 1) return
-                removeMeal(meal)
-                toast.success(`Removed "${meal}"`)
-              }}
-              aria-label={`Remove ${meal}`}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </li>
-        ))}
+                onBlur={() => commitRename(meal)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur()
+                  }
+                }}
+                className="h-7 min-h-0 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-0"
+                aria-label={`Meal name: ${meal}`}
+                {...mobilePlainTextInputProps}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                disabled={meals.length <= 1}
+                onClick={() => {
+                  if (meals.length <= 1) return
+                  removeMeal(meal)
+                  toast.success(`Removed "${meal}"`)
+                }}
+                aria-label={`Remove ${meal}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </li>
+          )
+        })}
       </ul>
 
       <div className="flex gap-1.5">

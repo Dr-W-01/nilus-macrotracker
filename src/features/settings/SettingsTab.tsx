@@ -126,48 +126,58 @@ export function SettingsTab() {
       <section>
         <h2 className="font-semibold mb-3">Goals & Templates</h2>
         <ul className="space-y-2 mb-3">
-          {settings.goalTemplates.map((g) => (
-            <li
-              key={g.id}
-              className="rounded-lg border border-border p-3 flex justify-between items-center"
-            >
-              <div>
-                <p className="font-medium">{g.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {g.calories} cal intake
-                  {formatTargetDeficitShort(g.targetDeficit)
-                    ? ` · ${formatTargetDeficitShort(g.targetDeficit)}`
-                    : ''}
-                  {' · '}P{g.protein} C{g.carbs} F{g.fat}
-                  {g.id === settings.defaultTemplateId && ' · Default'}
-                </p>
-              </div>
-              <div className="flex gap-1">
-                <EditIconButton
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8"
-                  label={`Edit ${g.name}`}
-                  onClick={() => setEditingGoal(g)}
-                />
-                {settings.goalTemplates.length > 1 && (
-                  <Button
+          {settings.goalTemplates.map((g) => {
+            const isDefault = g.id === settings.defaultTemplateId
+            const deficitLabel = formatTargetDeficitShort(g.targetDeficit)
+
+            return (
+              <li
+                key={g.id}
+                className="flex items-start gap-2 rounded-lg border border-border p-3"
+              >
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="font-medium leading-snug">
+                    {g.name}
+                    {isDefault && (
+                      <span className="font-normal text-muted-foreground"> (Default)</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    {g.calories} cal intake
+                    {deficitLabel ? ` · ${deficitLabel}` : ''}
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    P{g.protein} C{g.carbs} F{g.fat}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <EditIconButton
                     size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    aria-label={`Delete ${g.name}`}
-                    title={`Delete ${g.name}`}
-                    onClick={() => {
-                      deleteGoalTemplate(g.id)
-                      toast.success('Template deleted')
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </li>
-          ))}
+                    variant="outline"
+                    className="h-10 w-10"
+                    iconClassName="h-5 w-5"
+                    label={`Edit ${g.name}`}
+                    onClick={() => setEditingGoal(g)}
+                  />
+                  {settings.goalTemplates.length > 1 && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-10 w-10 text-muted-foreground hover:text-destructive"
+                      aria-label={`Delete ${g.name}`}
+                      title={`Delete ${g.name}`}
+                      onClick={() => {
+                        deleteGoalTemplate(g.id)
+                        toast.success('Template deleted')
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </li>
+            )
+          })}
         </ul>
         <Button
           variant="outline"
