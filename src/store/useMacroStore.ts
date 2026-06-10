@@ -21,7 +21,7 @@ import type {
   LoggedFood,
   Settings,
 } from '@/lib/types'
-import { DEFAULT_GOAL_MODE, normalizeGoalMode } from '@/lib/goalMode'
+
 import { pushRecentSearch } from '@/lib/foodSearch'
 import {
   DEFAULT_MEALS,
@@ -51,7 +51,6 @@ const defaultGoal: GoalTemplate = {
 const defaultSettings: Settings = {
   goalTemplates: [defaultGoal],
   defaultTemplateId: 'default',
-  goalMode: DEFAULT_GOAL_MODE,
   weightUnit: DEFAULT_WEIGHT_UNIT,
   meals: [...DEFAULT_MEALS],
   defaultMeal: DEFAULT_MEALS[0],
@@ -144,11 +143,15 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
     meals,
   )
 
+  const { goalMode: _removedGoalMode, ...persistedSettings } = {
+    ...(persisted.settings ?? {}),
+  } as Settings & { goalMode?: string }
+
   return {
     ...persisted,
     settings: {
       ...defaultSettings,
-      ...persisted.settings,
+      ...persistedSettings,
       goalTemplates:
         persisted.settings?.goalTemplates?.length
           ? persisted.settings.goalTemplates.map((g) => ({
@@ -165,7 +168,6 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
       accentColor: persisted.settings?.accentColor ?? defaultSettings.accentColor,
       secondaryTextColor:
         persisted.settings?.secondaryTextColor ?? defaultSettings.secondaryTextColor,
-      goalMode: normalizeGoalMode(persisted.settings?.goalMode),
       weightUnit: normalizeWeightUnit(persisted.settings?.weightUnit),
       meals,
       defaultMeal: normalizeMealName(persisted.settings?.defaultMeal, meals),
@@ -912,7 +914,6 @@ export const useMacroStore = create<MacroStore>()(
         if (version < 4 && raw.settings) {
           raw.settings = {
             ...raw.settings,
-            goalMode: normalizeGoalMode(raw.settings.goalMode),
             weightUnit: normalizeWeightUnit(raw.settings.weightUnit),
           }
         }

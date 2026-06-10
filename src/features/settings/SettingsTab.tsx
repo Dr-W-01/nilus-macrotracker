@@ -21,13 +21,12 @@ import {
   DEFAULT_SECONDARY_TEXT_COLOR,
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
-import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { MealListEditor } from '@/components/settings/MealListEditor'
 import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import { parseWeightInput, weightFromKg } from '@/lib/weight'
-import type { GoalMode, GoalTemplate, WeightUnit } from '@/lib/types'
+import type { GoalTemplate, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
 import { runManualUpdateCheck } from '@/lib/pwaUpdate'
@@ -116,30 +115,6 @@ export function SettingsTab() {
       </header>
 
       <div className="space-y-6 p-4">
-      <section className="space-y-3">
-        <div>
-          <h2 className="font-semibold">Current Goal Mode</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Shapes Stats messaging and defaults. Does not change which goal template you use on
-            Daily.
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-1 rounded-lg border border-border bg-secondary/50 p-1">
-          {GOAL_MODE_OPTIONS.map(({ value, label }) => (
-            <Button
-              key={value}
-              type="button"
-              size="sm"
-              variant={(settings.goalMode ?? 'cut') === value ? 'default' : 'ghost'}
-              className="h-10"
-              onClick={() => updateSettings({ goalMode: value as GoalMode })}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
-      </section>
-
       <section>
         <h2 className="font-semibold mb-3">Goals & Templates</h2>
         <ul className="space-y-2 mb-3">

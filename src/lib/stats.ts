@@ -12,7 +12,7 @@ import {
   getLoggedServingMultiplier,
   roundAmount,
 } from '@/lib/scale'
-import { normalizeGoalMode, type GoalMode } from '@/lib/goalMode'
+import type { GoalMode } from '@/lib/goalMode'
 import type { DailyLog, FoodItem, GoalTemplate, LoggedFood, Settings } from '@/lib/types'
 
 export type StatsDayRow = {
@@ -369,11 +369,11 @@ export function generateInsights(
   rows: StatsDayRow[],
   period: 'week' | 'month' | 'custom',
   range: { start: string; end: string },
-  goalMode: GoalMode = 'cut',
+  goalMode: GoalMode = 'maintain',
 ): string[] {
   if (rows.length === 0) return ['Log foods on the Daily tab to unlock insights for this period.']
 
-  const mode = normalizeGoalMode(goalMode)
+  const mode = goalMode
   const insights: string[] = []
   const periodLabel = period === 'month' ? 'month' : 'period'
   const n = rows.length

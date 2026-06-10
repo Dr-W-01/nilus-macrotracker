@@ -16,6 +16,7 @@ import {
   previousPeriodLabel,
   sumDayRows,
 } from '@/lib/stats'
+import { inferGoalModeFromDayRows, inferGoalModeFromTemplate } from '@/lib/goalMode'
 import { roundMacro } from '@/lib/macros'
 import type { FoodItem, Settings } from '@/lib/types'
 import type { DailyLog } from '@/lib/types'
@@ -51,8 +52,12 @@ export function StatsOverviewPanel({
   accentColor,
   onStartLogging,
 }: StatsOverviewPanelProps) {
-  const goalMode = settings.goalMode ?? 'cut'
   const dayRows = buildStatsDayRows(range, dailyLogs, foodLibrary, settings)
+  const goalMode = useMemo(() => {
+    if (dayRows.length > 0) return inferGoalModeFromDayRows(dayRows)
+    const template = settings.goalTemplates.find((t) => t.id === settings.defaultTemplateId)
+    return inferGoalModeFromTemplate(template)
+  }, [dayRows, settings.goalTemplates, settings.defaultTemplateId])
   const prevRange = getPreviousRange(range)
   const prevRows = buildStatsDayRows(prevRange, dailyLogs, foodLibrary, settings)
 

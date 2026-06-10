@@ -66,8 +66,6 @@ export type WeightUnit = 'lbs' | 'kg'
 export interface Settings {
   goalTemplates: GoalTemplate[]
   defaultTemplateId: string
-  /** Presentation focus for Stats (does not change active templates). */
-  goalMode: GoalMode
   /** Display unit for body weight logging. */
   weightUnit: WeightUnit
   /** Meal names for grouping foods on the Daily tab. */

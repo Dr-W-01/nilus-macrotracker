@@ -1,39 +1,33 @@
-import type { GoalMode } from '@/lib/types'
+import type { GoalMode, GoalTemplate } from '@/lib/types'
 
 export type { GoalMode }
 
-export const GOAL_MODE_OPTIONS: { value: GoalMode; label: string }[] = [
-  { value: 'cut', label: 'Cut' },
-  { value: 'maintain', label: 'Maintain' },
-  { value: 'bulk', label: 'Bulk' },
-]
+type GoalRowLike = { goal: { targetDeficit?: number } }
 
-export const DEFAULT_GOAL_MODE: GoalMode = 'cut'
-
-export function normalizeGoalMode(value: unknown): GoalMode {
-  if (value === 'cut' || value === 'maintain' || value === 'bulk') return value
-  return DEFAULT_GOAL_MODE
+export function inferGoalModeFromTargetDeficit(targetDeficit?: number): GoalMode {
+  if (targetDeficit == null || targetDeficit === 0) return 'maintain'
+  if (targetDeficit < 0) return 'cut'
+  return 'bulk'
 }
 
-export function goalModeOverviewTitle(mode: GoalMode): string {
-  if (mode === 'cut') return 'Cut — deficit focus'
-  if (mode === 'bulk') return 'Bulk — surplus focus'
-  return 'Maintain — consistency focus'
+export function inferGoalModeFromTemplate(template: GoalTemplate | undefined): GoalMode {
+  return inferGoalModeFromTargetDeficit(template?.targetDeficit)
 }
 
-export function goalModeOverviewDescription(mode: GoalMode): string {
-  if (mode === 'cut') {
-    return 'Overview highlights net calories and how closely you hit your deficit goal. Templates are unchanged — pick any goal profile on Daily.'
+/** Infer cut / bulk / maintain from goals used on logged days in the stats period. */
+export function inferGoalModeFromDayRows(rows: GoalRowLike[]): GoalMode {
+  if (rows.length === 0) return 'maintain'
+
+  let hasDeficit = false
+  let hasSurplus = false
+
+  for (const row of rows) {
+    const target = row.goal.targetDeficit ?? 0
+    if (target < 0) hasDeficit = true
+    if (target > 0) hasSurplus = true
   }
-  if (mode === 'bulk') {
-    return 'Overview highlights net calories and surplus performance toward your bulk goal. Templates are unchanged — pick any goal profile on Daily.'
-  }
-  return 'Overview highlights intake and net calorie consistency. Templates are unchanged — pick any goal profile on Daily.'
-}
 
-export type TrendsMetricKey = 'net' | 'calories' | 'protein' | 'carbs' | 'fat'
-
-export function defaultTrendMetricsForMode(mode: GoalMode): TrendsMetricKey[] {
-  if (mode === 'cut' || mode === 'bulk') return ['net']
-  return ['calories']
+  if (hasDeficit && !hasSurplus) return 'cut'
+  if (hasSurplus && !hasDeficit) return 'bulk'
+  return 'maintain'
 }

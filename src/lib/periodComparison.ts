@@ -1,5 +1,5 @@
 import { roundMacro } from '@/lib/macros'
-import { normalizeGoalMode, type GoalMode } from '@/lib/goalMode'
+import type { GoalMode } from '@/lib/goalMode'
 import {
   buildStatsDayRows,
   computeAdherenceBreakdown,
@@ -181,7 +181,7 @@ export function isComparisonDeltaImproving(
 ): boolean | null {
   if (delta == null || delta === 0) return null
 
-  const mode = normalizeGoalMode(goalMode)
+  const mode = goalMode
 
   switch (label) {
     case 'Protein':
