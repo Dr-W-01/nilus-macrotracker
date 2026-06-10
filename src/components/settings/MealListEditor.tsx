@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
 import { useMacroStore } from '@/store/useMacroStore'
 
-const actionBtnClass = 'h-9 w-9 shrink-0'
+const actionBtnClass = 'h-11 w-11 shrink-0'
+const actionIconClass = 'h-5 w-5'
 
 export function MealListEditor() {
   const meals = useMacroStore((s) => s.settings.meals)
@@ -72,14 +73,14 @@ export function MealListEditor() {
         Reorder meals for the Daily tab. Deleting a meal uncategorizes its logged foods.
       </p>
 
-      <ul className="space-y-1">
+      <ul className="space-y-1.5">
         {meals.map((meal, index) => {
           const isEditing = editingMeal === meal
 
           return (
             <li
               key={meal}
-              className="flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-1"
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1.5"
             >
               {isEditing ? (
                 <Input
@@ -91,12 +92,12 @@ export function MealListEditor() {
                     if (e.key === 'Enter') e.currentTarget.blur()
                     if (e.key === 'Escape') cancelEditing()
                   }}
-                  className="h-8 min-h-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-1"
+                  className="h-9 min-h-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-1"
                   aria-label={`Edit meal name: ${meal}`}
                   {...mobilePlainTextInputProps}
                 />
               ) : (
-                <span className="min-w-0 flex-1 truncate px-1 text-sm font-medium">
+                <span className="min-w-0 flex-1 truncate px-0.5 text-sm font-medium">
                   {meal}
                 </span>
               )}
@@ -110,7 +111,7 @@ export function MealListEditor() {
                 aria-label={`Move ${meal} up`}
                 onClick={() => moveMeal(index, 'up')}
               >
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className={actionIconClass} />
               </Button>
               <Button
                 type="button"
@@ -121,12 +122,12 @@ export function MealListEditor() {
                 aria-label={`Move ${meal} down`}
                 onClick={() => moveMeal(index, 'down')}
               >
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className={actionIconClass} />
               </Button>
               <EditIconButton
                 variant="outline"
                 className={actionBtnClass}
-                iconClassName="h-4 w-4"
+                iconClassName={actionIconClass}
                 label={`Edit ${meal}`}
                 onClick={() => startEditing(meal)}
               />
@@ -139,14 +140,14 @@ export function MealListEditor() {
                 aria-label={`Delete ${meal}`}
                 onClick={() => handleRemove(meal)}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className={actionIconClass} />
               </Button>
             </li>
           )
         })}
       </ul>
 
-      <div className="flex gap-1.5">
+      <div className="flex gap-2">
         <Input
           value={newMeal}
           onChange={(e) => setNewMeal(e.target.value)}
@@ -154,11 +155,11 @@ export function MealListEditor() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleAdd()
           }}
-          className="h-9 text-sm"
+          className="h-10 text-sm"
           {...mobilePlainTextInputProps}
         />
-        <Button type="button" variant="outline" size="sm" className="h-9 shrink-0 gap-1 px-2.5" onClick={handleAdd}>
-          <Plus className="h-4 w-4" />
+        <Button type="button" variant="outline" size="sm" className="h-10 shrink-0 gap-1.5 px-3" onClick={handleAdd}>
+          <Plus className="h-5 w-5" />
           Add
         </Button>
       </div>

@@ -122,7 +122,7 @@ export function DailyMealSections({
   if (displayMeals.length === 0) return null
 
   return (
-    <div className={cn('space-y-1.5', editDayMode && 'space-y-1')}>
+    <div className={cn('space-y-2', editDayMode && 'space-y-1.5')}>
       {displayMeals.map((meal, index) => {
         const section = sectionByMeal.get(meal.toLowerCase())
         const entries = section?.entries ?? []
@@ -146,11 +146,11 @@ export function DailyMealSections({
             onDragOver={onDragOver(index)}
             onDrop={onDrop(index)}
           >
-            <div className="flex min-h-8 items-center gap-0.5 px-0.5 py-0.5">
+            <div className="flex min-h-9 items-center gap-1 px-0.5 py-0.5">
               {editDayMode && (
                 <button
                   type="button"
-                  className="flex h-8 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground active:cursor-grabbing"
+                  className="flex h-9 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground active:cursor-grabbing"
                   aria-label={`Drag to reorder ${meal}`}
                   draggable
                   onDragStart={onDragStart(index)}
@@ -158,42 +158,45 @@ export function DailyMealSections({
                   onPointerDown={onGripPointerDown(index)}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <GripVertical className="h-3.5 w-3.5" aria-hidden />
+                  <GripVertical className="h-4 w-4" aria-hidden />
                 </button>
               )}
               <button
                 type="button"
-                className="flex min-w-0 flex-1 items-center gap-1 rounded px-1 py-0.5 text-left transition-colors active:bg-secondary/50"
+                className="mb-0 flex min-h-9 w-full min-w-0 flex-1 items-start gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50"
                 onClick={() => toggleMealCollapsed(meal, currentDate)}
                 aria-expanded={mealExpanded}
                 aria-controls={`meal-foods-${meal.replace(/\s+/g, '-')}`}
               >
-                <span className="shrink-0 text-primary">
+                <span className="mt-0.5 shrink-0 text-primary">
                   {mealExpanded ? (
-                    <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+                    <ChevronUp className="h-4 w-4" aria-hidden />
                   ) : (
-                    <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                    <ChevronDown className="h-4 w-4" aria-hidden />
                   )}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[11px] font-semibold uppercase tracking-wide text-primary leading-tight">
+                <span className="min-w-0 flex-1 space-y-0.5">
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-primary">
                     {meal}
+                    <span className="sr-only">
+                      {mealExpanded ? ', expanded' : ', collapsed'}
+                    </span>
                   </span>
                   {totals && entries.length > 0 && (
-                    <span className="block truncate text-[9px] text-muted-foreground tabular-nums leading-tight">
+                    <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
                       {formatMealGroupTotals(totals)}
                     </span>
                   )}
                 </span>
-                <span className="shrink-0 text-[9px] text-muted-foreground tabular-nums">
-                  {entries.length}
+                <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground tabular-nums">
+                  {entries.length} {entries.length === 1 ? 'item' : 'items'}
                 </span>
               </button>
             </div>
             {mealExpanded && entries.length > 0 && (
               <ul
                 id={`meal-foods-${meal.replace(/\s+/g, '-')}`}
-                className="space-y-1 border-t border-border/50 px-1 pb-1 pt-0.5"
+                className="space-y-1.5 border-t border-border/50 px-1 pb-1 pt-0.5"
               >
                 {entries.map((entry) => {
                   const food = foodLibrary.find((f) => f.id === entry.foodId)
@@ -216,7 +219,7 @@ export function DailyMealSections({
               </ul>
             )}
             {mealExpanded && entries.length === 0 && editDayMode && (
-              <p className="border-t border-border/50 px-2 py-1 text-[10px] text-muted-foreground">
+              <p className="border-t border-border/50 px-2 py-1 text-xs text-muted-foreground">
                 No items
               </p>
             )}

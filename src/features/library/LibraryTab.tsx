@@ -242,7 +242,7 @@ export function LibraryTab() {
 
   if (foodLibrary.length === 0) {
     return (
-      <div className="p-6 pb-below-nav">
+      <div className="library-tab p-6 pb-below-nav">
         <EmptyState
           icon={BookOpen}
           title="Your food library is empty"
@@ -262,7 +262,7 @@ export function LibraryTab() {
 
   return (
     <div
-      className={`flex flex-col ${librarySearchEngaged ? 'pb-below-nav-search' : 'pb-below-nav'}`}
+      className={`library-tab ${librarySearchEngaged ? 'pb-below-nav-search' : 'pb-below-nav'}`}
     >
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <header className="border-b border-border p-4 space-y-3">

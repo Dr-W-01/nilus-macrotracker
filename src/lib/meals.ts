@@ -1,3 +1,5 @@
+import type { DailyLog } from '@/lib/types'
+
 export const DEFAULT_MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'] as const
 
 export function normalizeMeals(meals?: string[]): string[] {
@@ -70,6 +72,30 @@ export function resolveLoggedMeal(
 /** @deprecated Use resolveLoggedMeal; kept for settings default meal resolution */
 export function normalizeMealName(meal: string | undefined, meals: string[]): string {
   return resolveLoggedMeal(meal, meals) ?? meals[0] ?? DEFAULT_MEALS[0]
+}
+
+/** Clear meal assignments that no longer match configured meals (e.g. after category deletion). */
+export function sanitizeOrphanedMealAssignments(
+  dailyLogs: Record<string, DailyLog>,
+  meals: string[],
+): Record<string, DailyLog> {
+  const configured = new Set(meals.map((m) => m.toLowerCase()))
+  let changed = false
+
+  const next = Object.fromEntries(
+    Object.entries(dailyLogs).map(([date, log]) => {
+      const foods = log.foods.map((entry) => {
+        if (!entry.meal?.trim()) return entry
+        const key = entry.meal.trim().toLowerCase()
+        if (configured.has(key)) return entry
+        changed = true
+        return { ...entry, meal: undefined }
+      })
+      return [date, foods === log.foods ? log : { ...log, foods }]
+    }),
+  )
+
+  return changed ? next : dailyLogs
 }
 
 export function mealSortIndex(meal: string, meals: string[]): number {

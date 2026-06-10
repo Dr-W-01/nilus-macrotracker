@@ -262,18 +262,18 @@ export function DailyTab() {
   }
 
   return (
-    <div className="daily-tab flex flex-col pb-below-nav">
+    <div className="daily-tab pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-2.5">
-        <div className="flex items-center justify-center gap-2">
-          <EditIconButton
-            variant={editDayMode ? 'default' : 'outline'}
-            size="icon"
-            className="h-12 w-12 shrink-0"
-            iconClassName="h-6 w-6"
-            label={editDayMode ? 'Exit edit mode' : 'Edit day'}
-            onClick={() => setEditDayMode(!editDayMode)}
-          />
-          <div className="flex min-w-0 items-center gap-0.5">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+          <div className="flex items-center gap-1.5 justify-self-start">
+            <EditIconButton
+              variant={editDayMode ? 'default' : 'outline'}
+              size="icon"
+              className="h-12 w-12 shrink-0"
+              iconClassName="h-6 w-6"
+              label={editDayMode ? 'Exit edit mode' : 'Edit day'}
+              onClick={() => setEditDayMode(!editDayMode)}
+            />
             <Button
               variant="outline"
               size="icon"
@@ -283,9 +283,13 @@ export function DailyTab() {
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
-            <p className="min-w-0 max-w-[9.5rem] truncate px-0.5 text-center font-semibold text-[15px] sm:max-w-none sm:text-base">
-              {formatDisplayDate(currentDate)}
-            </p>
+          </div>
+
+          <p className="px-3 text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
+            {formatDisplayDate(currentDate)}
+          </p>
+
+          <div className="flex items-center gap-1.5 justify-self-end">
             <Button
               variant="outline"
               size="icon"
@@ -295,27 +299,27 @@ export function DailyTab() {
             >
               <ChevronRight className="h-6 w-6" />
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-12 w-12 shrink-0"
+                  aria-label="Open calendar"
+                  title="Open calendar"
+                >
+                  <CalendarIcon className="h-6 w-6" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={parseISO(currentDate)}
+                  onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-12 w-12 shrink-0"
-                aria-label="Open calendar"
-                title="Open calendar"
-              >
-                <CalendarIcon className="h-6 w-6" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={parseISO(currentDate)}
-                onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
-              />
-            </PopoverContent>
-          </Popover>
         </div>
 
         {editDayMode && (
@@ -356,7 +360,7 @@ export function DailyTab() {
 
       <div
         className={cn(
-          'flex-1 p-4 space-y-4 transition-colors duration-200',
+          'p-4 space-y-4 transition-colors duration-200',
           editDayMode && 'bg-daily-edit-surface',
         )}
       >
@@ -567,7 +571,11 @@ export function DailyTab() {
           ) : (
             <div className="space-y-4">
               {unassignedFoods.length > 0 && (
-                <ul className="space-y-2">
+                <section>
+                  <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Uncategorized
+                  </h4>
+                  <ul className="space-y-2">
                   {unassignedFoods.map((entry) => {
                     const food = foodLibrary.find((f) => f.id === entry.foodId)
                     return (
@@ -591,7 +599,8 @@ export function DailyTab() {
                       />
                     )
                   })}
-                </ul>
+                  </ul>
+                </section>
               )}
               <DailyMealSections
                 sections={foodsByMeal}

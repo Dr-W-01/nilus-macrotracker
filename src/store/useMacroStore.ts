@@ -30,6 +30,7 @@ import {
   remapCollapsedMeals,
   remapMealReferences,
   resolveLoggedMeal,
+  sanitizeOrphanedMealAssignments,
 } from '@/lib/meals'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
 import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
@@ -83,7 +84,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 9
+const PERSIST_VERSION = 10
 
 const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
@@ -125,6 +126,23 @@ function normalizeMealCollapseByDate(
 
 function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
   const week = getWeekRange()
+  const meals = normalizeMeals(persisted.settings?.meals)
+  const dailyLogs = sanitizeOrphanedMealAssignments(
+    Object.fromEntries(
+      Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
+        date,
+        {
+          ...log,
+          weightKg:
+            log.weightKg != null && Number.isFinite(log.weightKg) && log.weightKg > 0
+              ? log.weightKg
+              : undefined,
+        },
+      ]),
+    ),
+    meals,
+  )
+
   return {
     ...persisted,
     settings: {
@@ -148,11 +166,8 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
         persisted.settings?.secondaryTextColor ?? defaultSettings.secondaryTextColor,
       goalMode: normalizeGoalMode(persisted.settings?.goalMode),
       weightUnit: normalizeWeightUnit(persisted.settings?.weightUnit),
-      meals: normalizeMeals(persisted.settings?.meals),
-      defaultMeal: normalizeMealName(
-        persisted.settings?.defaultMeal,
-        normalizeMeals(persisted.settings?.meals),
-      ),
+      meals,
+      defaultMeal: normalizeMealName(persisted.settings?.defaultMeal, meals),
       targetWeightKg:
         persisted.settings?.targetWeightKg != null &&
         Number.isFinite(persisted.settings.targetWeightKg) &&
@@ -160,18 +175,7 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
           ? persisted.settings.targetWeightKg
           : undefined,
     },
-    dailyLogs: Object.fromEntries(
-      Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
-        date,
-        {
-          ...log,
-          weightKg:
-            log.weightKg != null && Number.isFinite(log.weightKg) && log.weightKg > 0
-              ? log.weightKg
-              : undefined,
-        },
-      ]),
-    ),
+    dailyLogs,
     customCategories: Array.isArray(persisted.customCategories)
       ? persisted.customCategories
       : [],
@@ -870,6 +874,10 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 10) {
+          const meals = normalizeMeals(raw.settings?.meals)
+          raw.dailyLogs = sanitizeOrphanedMealAssignments(raw.dailyLogs ?? {}, meals)
+        }
         if (version < 9) {
           raw.recentFoodSearches = {
             library: Array.isArray(raw.recentFoodSearches?.library)

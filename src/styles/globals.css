@@ -119,8 +119,15 @@ body {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
   padding-top: var(--safe-top);
+}
+
+/* Daily/Library: natural content height — no flex stretch past the last item */
+.daily-tab,
+.library-tab {
+  display: block;
 }
 
 .safe-top {
