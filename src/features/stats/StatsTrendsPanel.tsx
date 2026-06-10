@@ -28,6 +28,7 @@ import {
 import { roundMacro } from '@/lib/macros'
 import { MACRO_CHART_COLORS, macroMetricOptions } from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
+import { LoggingConsistencyCard } from '@/components/stats/LoggingConsistencyCard'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 
 const CALORIE_METRICS: { key: TrendMetricKey; label: string }[] = [
@@ -354,6 +355,8 @@ export function StatsTrendsPanel({
 
   return (
     <div className="space-y-3">
+      <LoggingConsistencyCard dailyLogs={dailyLogs} />
+
       {rollingAvailable && (
         <Card>
           <CardHeader className="pb-2 pt-3">

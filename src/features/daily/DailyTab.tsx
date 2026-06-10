@@ -261,30 +261,27 @@ export function DailyTab() {
   return (
     <div className="daily-tab flex flex-col pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
           <Button
             variant={editDayMode ? 'default' : 'outline'}
             size="sm"
+            className="shrink-0"
             onClick={() => setEditDayMode(!editDayMode)}
           >
             {editDayMode ? 'View Mode' : 'Edit Day'}
           </Button>
-          <span className="text-xs text-muted-foreground">
-            {editDayMode ? 'Editing enabled' : 'Read-only'}
-          </span>
+          {editDayMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-w-0 flex-1 gap-1.5 px-2.5"
+              onClick={handleDuplicateYesterday}
+            >
+              <Copy className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="truncate">Copy Yesterday</span>
+            </Button>
+          )}
         </div>
-
-        {editDayMode && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={handleDuplicateYesterday}
-          >
-            <Copy className="h-4 w-4 mr-2" />
-            Copy Yesterday&apos;s Log
-          </Button>
-        )}
 
         {editDayMode && templates.length > 0 && (
           <div className="space-y-1.5">

@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns'
 import { BarChart3 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { DailyEnergyBalanceChart } from '@/components/stats/DailyEnergyBalanceChart'
-import { LoggingConsistencyCard } from '@/components/stats/LoggingConsistencyCard'
+
 import { PeriodComparisonCard } from '@/components/stats/PeriodComparisonCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import {
@@ -109,7 +109,6 @@ export function StatsOverviewPanel({
   if (loggedDays === 0) {
     return (
       <div className="space-y-4">
-        <LoggingConsistencyCard dailyLogs={dailyLogs} />
         <EmptyState
           icon={BarChart3}
           title="No data for this period"
@@ -121,8 +120,6 @@ export function StatsOverviewPanel({
 
   return (
     <div className="space-y-4">
-      <LoggingConsistencyCard dailyLogs={dailyLogs} />
-
       <Card className="border-primary/25 bg-primary/5">
         <CardContent className="pt-3 pb-3">
           <p className="text-sm font-semibold">{goalModeOverviewTitle(goalMode)}</p>

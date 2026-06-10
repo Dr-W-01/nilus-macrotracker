@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,7 +58,6 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const favoriteFoodIds = useMacroStore((s) => s.favoriteFoodIds)
   const [query, setQuery] = useState('')
-  const searchRef = useRef<HTMLInputElement>(null)
 
   const { favorites, others, total } = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -75,17 +74,16 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
   }, [foodLibrary, favoriteFoodIds, query])
 
   useEffect(() => {
-    if (open) {
-      const t = window.setTimeout(() => searchRef.current?.focus(), 100)
-      return () => window.clearTimeout(t)
-    }
-    setQuery('')
+    if (!open) setQuery('')
   }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <ModalViewport active={open} />
-      <DialogContent className={scrollDialogContentClass}>
+      <DialogContent
+        className={scrollDialogContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <ScrollDialogHeader>
           <DialogTitle>Add Food</DialogTitle>
         </ScrollDialogHeader>
@@ -94,7 +92,6 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              ref={searchRef}
               placeholder="Search foods..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
