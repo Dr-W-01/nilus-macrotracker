@@ -1,28 +1,9 @@
-import { format, isValid, parseISO, subDays } from 'date-fns'
-import { datesInRange, shiftDate, todayString } from '@/lib/dates'
+import { format, isValid, parseISO } from 'date-fns'
+import { datesInRange, todayString } from '@/lib/dates'
 import { roundMacro } from '@/lib/macros'
 import type { DailyLog } from '@/lib/types'
 import { weightFromKg } from '@/lib/weight'
 import type { WeightUnit } from '@/lib/weight'
-
-export type WeightRangePreset = '1w' | '1m' | '3m' | '6m' | '1y' | 'all'
-
-export const WEIGHT_RANGE_OPTIONS: { value: WeightRangePreset; label: string }[] = [
-  { value: '1w', label: '1W' },
-  { value: '1m', label: '1M' },
-  { value: '3m', label: '3M' },
-  { value: '6m', label: '6M' },
-  { value: '1y', label: '1Y' },
-  { value: 'all', label: 'All' },
-]
-
-const PRESET_DAYS: Record<Exclude<WeightRangePreset, 'all'>, number> = {
-  '1w': 7,
-  '1m': 30,
-  '3m': 90,
-  '6m': 180,
-  '1y': 365,
-}
 
 export function getWeightLogDates(dailyLogs: Record<string, DailyLog>): string[] {
   return Object.entries(dailyLogs)
@@ -31,51 +12,23 @@ export function getWeightLogDates(dailyLogs: Record<string, DailyLog>): string[]
     .sort()
 }
 
-/** Pad chart range so edge weight points are not clipped at the plot boundary. */
-export function weightChartPaddingDays(spanDays: number): number {
-  if (spanDays <= 1) return 1
-  if (spanDays <= 14) return 1
-  if (spanDays <= 60) return 2
-  if (spanDays <= 180) return 4
-  if (spanDays <= 400) return 7
-  return Math.min(30, Math.max(7, Math.round(spanDays * 0.05)))
-}
-
-export function extendWeightChartRange(range: { start: string; end: string }): {
+export function getAllTimeWeightRange(dailyLogs: Record<string, DailyLog>): {
   start: string
   end: string
 } {
-  const spanDays = datesInRange(range.start, range.end).length
-  const pad = weightChartPaddingDays(spanDays)
-  return {
-    start: shiftDate(range.start, -pad),
-    end: shiftDate(range.end, pad),
-  }
-}
-
-export function getWeightChartRange(
-  preset: WeightRangePreset,
-  dailyLogs: Record<string, DailyLog>,
-): { start: string; end: string } {
+  const logged = getWeightLogDates(dailyLogs)
   const end = todayString()
-  if (preset === 'all') {
-    const logged = getWeightLogDates(dailyLogs)
-    if (logged.length === 0) {
-      return { start: end, end }
-    }
-    return { start: logged[0], end }
+  if (logged.length === 0) {
+    return { start: end, end }
   }
-  const days = PRESET_DAYS[preset]
-  const start = format(subDays(parseISO(end), days - 1), 'yyyy-MM-dd')
-  return { start, end }
+  return { start: logged[0], end }
 }
 
-/** Format weight chart x-axis ticks; uses unique ISO dates as categories. */
-export function weightChartAxisTick(dateStr: string, spanDays: number): string {
+/** Format weight chart x-axis labels for logged-date ticks. */
+export function weightChartAxisTick(dateStr: string, pointCount: number): string {
   const d = parseISO(dateStr)
   if (!isValid(d)) return dateStr
-  if (spanDays > 400) return format(d, 'MMM yy')
-  if (spanDays > 90) return format(d, 'M/d')
+  if (pointCount > 24) return format(d, 'M/d')
   return format(d, 'MM/dd')
 }
 
@@ -101,34 +54,35 @@ export function weightTrendLine(
   })
 }
 
-export function buildWeightChartData(
-  range: { start: string; end: string },
+/** Chart rows for logged weight dates only (no empty x-axis gaps). */
+export function buildLoggedWeightChartData(
   dailyLogs: Record<string, DailyLog>,
   unit: WeightUnit,
   trendWindow = 7,
 ): WeightChartPoint[] {
-  const dates = datesInRange(range.start, range.end)
-  const weights = dates.map((date) => {
+  const loggedDates = getWeightLogDates(dailyLogs)
+  if (loggedDates.length === 0) return []
+
+  const range = { start: loggedDates[0], end: loggedDates[loggedDates.length - 1] }
+  const calendarDates = datesInRange(range.start, range.end)
+  const weights = calendarDates.map((date) => {
     const kg = dailyLogs[date]?.weightKg
     if (kg == null || !Number.isFinite(kg) || kg <= 0) return null
     return roundMacro(weightFromKg(kg, unit), 2)
   })
   const trends = weightTrendLine(weights, trendWindow)
 
-  return dates.map((date, i) => ({
-    date,
-    label: format(parseISO(date), 'MM/dd'),
-    weight: weights[i],
-    trend: trends[i],
-  }))
+  return loggedDates.map((date) => {
+    const idx = calendarDates.indexOf(date)
+    return {
+      date,
+      label: weightChartAxisTick(date, loggedDates.length),
+      weight: weights[idx],
+      trend: idx >= 0 ? trends[idx] : null,
+    }
+  })
 }
 
-export function countWeightLogsInRange(
-  range: { start: string; end: string },
-  dailyLogs: Record<string, DailyLog>,
-): number {
-  return datesInRange(range.start, range.end).filter((date) => {
-    const kg = dailyLogs[date]?.weightKg
-    return kg != null && kg > 0
-  }).length
+export function countLoggedWeights(dailyLogs: Record<string, DailyLog>): number {
+  return getWeightLogDates(dailyLogs).length
 }

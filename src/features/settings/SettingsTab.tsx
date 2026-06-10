@@ -202,14 +202,9 @@ export function SettingsTab() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-semibold">Daily meals</h2>
-        <MealListEditor />
-      </section>
-
-      <section className="space-y-3">
         <div>
           <h2 className="font-semibold">Units</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Weight logged on the Daily tab uses this unit.
           </p>
         </div>
@@ -228,6 +223,15 @@ export function SettingsTab() {
           >
             Kilograms (kg)
           </Button>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-semibold">Target weight</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Optional goal line on the weight chart in Stats → Trends.
+          </p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="target-weight">Target weight (optional)</Label>
@@ -262,10 +266,12 @@ export function SettingsTab() {
               }
             }}
           />
-          <p className="text-xs text-muted-foreground">
-            Shown as a goal line on Stats → Weight.
-          </p>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold">Daily meals</h2>
+        <MealListEditor />
       </section>
 
       <section className="space-y-4">

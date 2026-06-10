@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import {
   CartesianGrid,
@@ -12,10 +12,8 @@ import {
   YAxis,
 } from 'recharts'
 import { TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   buildStatsDayRows,
   buildTrendMetricSeries,
@@ -263,10 +261,8 @@ export function StatsTrendsPanel({
   onDayClick,
   onStartLogging,
 }: StatsTrendsPanelProps) {
-  const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
-  const [showRolling, setShowRolling] = useState(false)
-  const rollingAvailable = statsPeriod !== 'week'
-  const showRollingLines = rollingAvailable && showRolling
+  const rollingWindow = 7 as const
+  const showRollingLines = statsPeriod !== 'week'
 
   const dayRows = useMemo(
     () => buildStatsDayRows(range, dailyLogs, foodLibrary, settings),
@@ -367,49 +363,15 @@ export function StatsTrendsPanel({
     <div className="space-y-3">
       <LoggingConsistencyCard dailyLogs={dailyLogs} />
 
-      {rollingAvailable && (
-        <Card>
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Rolling average</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Rolling averages use calendar days before this period when needed
-              (e.g. early in the month).
-            </p>
-          </CardHeader>
-          <CardContent className="pb-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground w-full sm:w-auto">Rolling avg</span>
-              <Button
-                size="sm"
-                variant={rollingWindow === 7 ? 'default' : 'outline'}
-                onClick={() => setRollingWindow(7)}
-              >
-                7d
-              </Button>
-              <Button
-                size="sm"
-                variant={rollingWindow === 14 ? 'default' : 'outline'}
-                onClick={() => setRollingWindow(14)}
-              >
-                14d
-              </Button>
-              <label className="flex items-center gap-2 text-xs ml-auto cursor-pointer">
-                <Checkbox
-                  checked={showRolling}
-                  onChange={() => setShowRolling((v) => !v)}
-                />
-                Show average line
-              </label>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {hasTrendData ? (
         <>
           <TrendsLineChart
             title="Calories"
-            description="Calories in and net calories (eaten − burned). Dashed lines are your intake and net calorie goals. Tap a point to open that day."
+            description={
+              showRollingLines
+                ? 'Calories in and net calories (eaten − burned). Dashed lines are goals and 7-day averages. Tap a point to open that day.'
+                : 'Calories in and net calories (eaten − burned). Dashed lines are your intake and net calorie goals. Tap a point to open that day.'
+            }
             data={chartData}
             metrics={CALORIE_METRICS}
             accentColor={accentColor}
@@ -421,7 +383,11 @@ export function StatsTrendsPanel({
           />
           <TrendsLineChart
             title="Macros"
-            description="Protein, carbs, fat, fiber, and sugars per logged day. Tap a point to open that day."
+            description={
+              showRollingLines
+                ? 'Protein, carbs, fat, fiber, and sugars per logged day. Dashed lines are 7-day averages. Tap a point to open that day.'
+                : 'Protein, carbs, fat, fiber, and sugars per logged day. Tap a point to open that day.'
+            }
             data={chartData}
             metrics={MACRO_METRICS}
             accentColor={accentColor}
