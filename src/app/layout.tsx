@@ -53,7 +53,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <>
-      <div className="mx-auto min-h-dvh max-w-lg bg-background">{children}</div>
+      <div className="mx-auto flex h-dvh max-w-lg flex-col overflow-hidden bg-background">
+        {children}
+      </div>
       <Toaster position="top-center" richColors closeButton />
     </>
   )

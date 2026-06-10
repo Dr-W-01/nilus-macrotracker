@@ -11,7 +11,7 @@ export default function AppPage() {
   const currentTab = useMacroStore((s) => s.currentTab)
 
   return (
-    <div className="app-viewport">
+    <div className="app-viewport flex min-h-0 flex-1 flex-col">
       <PwaUpdateManager />
       <InputFocusTracker />
       <main className="app-main">

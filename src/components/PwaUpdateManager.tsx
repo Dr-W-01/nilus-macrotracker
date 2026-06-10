@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
-import { registerPwaUpdateHandler, showUpdateAvailableToast } from '@/lib/pwaUpdate'
+import {
+  applyAppUpdate,
+  performHardReload,
+  registerPwaUpdateHandler,
+  showUpdateAvailableToast,
+} from '@/lib/pwaUpdate'
 
 const UPDATE_CHECK_MS = 60 * 60 * 1000
 
@@ -12,6 +17,9 @@ export function PwaUpdateManager() {
     updateServiceWorker,
   } = useRegisterSW({
     immediate: true,
+    onNeedReload() {
+      performHardReload()
+    },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return
 
@@ -40,9 +48,9 @@ export function PwaUpdateManager() {
 
     showUpdateAvailableToast(() => {
       updateToastId.current = undefined
-      void updateServiceWorker(true)
+      void applyAppUpdate()
     })
-  }, [needRefresh, updateServiceWorker])
+  }, [needRefresh])
 
   return null
 }

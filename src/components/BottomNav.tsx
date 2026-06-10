@@ -23,7 +23,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="z-50 shrink-0 border-t border-border bg-card safe-bottom"
+      className="bottom-nav z-50 shrink-0 border-t border-border bg-card safe-bottom"
       style={{ paddingLeft: 'var(--safe-left)', paddingRight: 'var(--safe-right)' }}
     >
       <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2 pb-1">
