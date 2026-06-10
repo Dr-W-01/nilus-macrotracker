@@ -110,10 +110,12 @@ export function FoodSearchField({
         </div>
       )}
 
-      <p className="text-[11px] text-muted-foreground/80">
-        Tip: use <span className="font-mono">category:protein</span> or{' '}
-        <span className="font-mono">#snacks</span> to filter by tag
-      </p>
+      {scope !== 'library' && (
+        <p className="text-[11px] text-muted-foreground/80">
+          Tip: use <span className="font-mono">category:protein</span> or{' '}
+          <span className="font-mono">#snacks</span> to filter by tag
+        </p>
+      )}
     </div>
   )
 }

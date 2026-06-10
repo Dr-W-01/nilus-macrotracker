@@ -4,10 +4,21 @@ export const mobileFriendlyInputProps = {
   autoCorrect: 'off',
   autoCapitalize: 'off',
   spellCheck: false,
+  enterKeyHint: 'done' as const,
   'data-lpignore': 'true',
   'data-1p-ignore': 'true',
   'data-bwignore': 'true',
   'data-form-type': 'other',
+  'data-autofill': 'off',
+} as const
+
+/** Lean props for short label/name fields (e.g. meal names in Settings). */
+export const mobilePlainTextInputProps = {
+  ...mobileFriendlyInputProps,
+  type: 'text' as const,
+  inputMode: 'text' as const,
+  autoCapitalize: 'words' as const,
+  name: 'plain-text-field',
 } as const
 
 export const mobileSearchInputProps = {

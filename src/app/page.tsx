@@ -1,4 +1,5 @@
 import { BottomNav } from '@/components/BottomNav'
+import { InputFocusTracker } from '@/components/InputFocusTracker'
 import { DailyTab } from '@/features/daily/DailyTab'
 import { LibraryTab } from '@/features/library/LibraryTab'
 import { StatsTab } from '@/features/stats/StatsTab'
@@ -10,6 +11,7 @@ export default function AppPage() {
 
   return (
     <div className="app-viewport">
+      <InputFocusTracker />
       <main className="app-main">
         {currentTab === 'daily' && <DailyTab />}
         {currentTab === 'library' && <LibraryTab />}

@@ -274,24 +274,6 @@ export function LibraryTab() {
                 label="Manage category"
                 onClick={() => setCategoryManageOpen(true)}
               />
-            ) : showBulkEdit ? (
-              editMode ? (
-                <Button
-                  variant="default"
-                  size="icon"
-                  aria-label="Done editing"
-                  title="Done"
-                  onClick={exitEditMode}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              ) : (
-                <EditIconButton
-                  variant="outline"
-                  label="Edit library"
-                  onClick={enterEditMode}
-                />
-              )
             ) : null}
           </div>
           <Tabs
@@ -333,21 +315,62 @@ export function LibraryTab() {
             onSearchBlur={() => setSearchFocused(false)}
           />
           {!editMode && librarySegment === 'items' && (
-            <Button className="w-full" size="sm" onClick={() => setNewFoodOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              New Food
-            </Button>
+            <div className="flex gap-2">
+              <Button className="min-w-0 flex-1" size="sm" onClick={() => setNewFoodOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                New Food
+              </Button>
+              {showBulkEdit && (
+                <EditIconButton
+                  variant="outline"
+                  className="h-9 w-9 shrink-0"
+                  label="Edit library"
+                  onClick={enterEditMode}
+                />
+              )}
+            </div>
           )}
           {!editMode && librarySegment === 'categories' && !activeCategory && (
-            <Button className="w-full" size="sm" onClick={() => setAddCategoryOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              New Category
-            </Button>
+            <div className="flex gap-2">
+              <Button className="min-w-0 flex-1" size="sm" onClick={() => setAddCategoryOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                New Category
+              </Button>
+              {showBulkEdit && (
+                <EditIconButton
+                  variant="outline"
+                  className="h-9 w-9 shrink-0"
+                  label="Edit categories"
+                  onClick={enterEditMode}
+                />
+              )}
+            </div>
           )}
           {!editMode && librarySegment === 'recipes' && (
-            <Button className="w-full" size="sm" onClick={() => setRecipeOpen(true)}>
-              <ChefHat className="h-4 w-4 mr-1" />
-              Create Recipe
+            <div className="flex gap-2">
+              <Button className="min-w-0 flex-1" size="sm" onClick={() => setRecipeOpen(true)}>
+                <ChefHat className="h-4 w-4 mr-1" />
+                Create Recipe
+              </Button>
+              {showBulkEdit && (
+                <EditIconButton
+                  variant="outline"
+                  className="h-9 w-9 shrink-0"
+                  label="Edit recipes"
+                  onClick={enterEditMode}
+                />
+              )}
+            </div>
+          )}
+          {editMode && showBulkEdit && (
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full gap-1.5"
+              onClick={exitEditMode}
+            >
+              <Check className="h-4 w-4" />
+              Done editing
             </Button>
           )}
         </header>

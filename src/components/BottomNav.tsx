@@ -13,17 +13,17 @@ const TABS: { id: AppTab; label: string; icon: typeof CalendarDays }[] = [
 
 export function BottomNav() {
   const currentTab = useMacroStore((s) => s.currentTab)
-  const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
+  const inputFocusEngaged = useMacroStore((s) => s.inputFocusEngaged)
   const setCurrentTab = useMacroStore((s) => s.setCurrentTab)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
 
-  if (currentTab === 'library' && librarySearchEngaged) {
+  if (inputFocusEngaged) {
     return null
   }
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 safe-bottom"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 safe-bottom"
       style={{ paddingLeft: 'var(--safe-left)', paddingRight: 'var(--safe-right)' }}
     >
       <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2 pb-1">

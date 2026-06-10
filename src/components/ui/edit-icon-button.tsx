@@ -5,12 +5,14 @@ import { cn } from '@/lib/utils'
 
 interface EditIconButtonProps extends Omit<ComponentProps<typeof Button>, 'children'> {
   label?: string
+  iconClassName?: string
 }
 
 /** Consistent pencil edit action used across the app. */
 export function EditIconButton({
   label = 'Edit',
   className,
+  iconClassName,
   size = 'icon',
   variant = 'outline',
   ...props
@@ -25,7 +27,7 @@ export function EditIconButton({
       title={label}
       {...props}
     >
-      <Pencil className="h-4 w-4" />
+      <Pencil className={cn('h-4 w-4', iconClassName)} />
       <span className="sr-only">{label}</span>
     </Button>
   )

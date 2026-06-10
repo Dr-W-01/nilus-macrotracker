@@ -107,14 +107,19 @@ body {
 }
 
 .app-viewport {
+  height: 100dvh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .app-main {
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   padding-top: var(--safe-top);
 }
 
@@ -135,6 +140,11 @@ body {
   padding-bottom: max(1rem, var(--safe-bottom));
 }
 
+/* Extra scroll room when keyboard is open and bottom nav is hidden */
+.settings-tab:has(input:focus, textarea:focus, select:focus) {
+  padding-bottom: max(1rem, var(--safe-bottom));
+}
+
 .accent-text {
   color: var(--accent);
 }
@@ -152,7 +162,14 @@ body {
   color: var(--daily-muted, var(--muted-foreground));
 }
 
-/* Library search: lean mobile keyboard, fewer browser decorations */
+/* Lean mobile keyboard: fewer browser decorations and accessory affordances */
+input,
+textarea,
+select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 input[type='search'].library-search-input,
 #library-filter-input {
   -webkit-appearance: none;

@@ -66,6 +66,7 @@ import {
 } from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
 import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
+import { mobileFriendlyInputProps } from '@/lib/mobileInput'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -261,29 +262,81 @@ export function DailyTab() {
 
   return (
     <div className="daily-tab flex flex-col pb-below-nav">
-      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-3">
-        <div className="flex items-center gap-2">
-          {editDayMode && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="min-w-0 flex-1 gap-1.5 px-2.5"
-              onClick={handleDuplicateYesterday}
-            >
-              <Copy className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="truncate">Copy Yesterday</span>
-            </Button>
-          )}
+      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-2.5">
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={() => setCurrentDate(shiftDate(currentDate, -1))}
+            aria-label="Previous day"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+            <p className="truncate font-semibold text-[15px] sm:text-base">
+              {formatDisplayDate(currentDate)}
+            </p>
+            <EditIconButton
+              variant={editDayMode ? 'default' : 'outline'}
+              size="icon"
+              className="h-11 w-11 shrink-0"
+              iconClassName="h-5 w-5"
+              label={editDayMode ? 'Exit edit mode' : 'Edit day'}
+              onClick={() => setEditDayMode(!editDayMode)}
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 shrink-0"
+                  aria-label="Open calendar"
+                  title="Open calendar"
+                >
+                  <CalendarIcon className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={parseISO(currentDate)}
+                  onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={() => setCurrentDate(shiftDate(currentDate, 1))}
+            aria-label="Next day"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
         </div>
 
+        {editDayMode && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5"
+            onClick={handleDuplicateYesterday}
+          >
+            <Copy className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="truncate">Copy Yesterday</span>
+          </Button>
+        )}
+
         {editDayMode && templates.length > 0 && (
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
               Goal template for this day
             </Label>
             <select
               id="daily-goal-template"
-              className="flex h-11 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={activeTemplateId}
               onChange={(e) =>
                 updateDailyLog(currentDate, { goalTemplateId: e.target.value })
@@ -297,39 +350,6 @@ export function DailyTab() {
             </select>
           </div>
         )}
-
-        <div className="flex items-center justify-between gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(shiftDate(currentDate, -1))}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <div className="text-center flex-1">
-            <p className="font-semibold">{formatDisplayDate(currentDate)}</p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(shiftDate(currentDate, 1))}>
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-          <EditIconButton
-            variant={editDayMode ? 'default' : 'outline'}
-            size="icon"
-            className="h-9 w-9"
-            label={editDayMode ? 'Exit edit mode' : 'Edit day'}
-            onClick={() => setEditDayMode(!editDayMode)}
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                <CalendarIcon className="h-5 w-5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={parseISO(currentDate)}
-                onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
       </header>
 
       <div
@@ -473,6 +493,7 @@ export function DailyTab() {
                   value={log.note}
                   onChange={(e) => setDailyNote(e.target.value)}
                   placeholder="Notes for this day..."
+                  {...mobileFriendlyInputProps}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">

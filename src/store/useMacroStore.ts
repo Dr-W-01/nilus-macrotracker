@@ -219,6 +219,8 @@ interface MacroStore {
   statsAnchorDate: string
   /** Hide bottom nav while Library search is active (focused or filtering) */
   librarySearchEngaged: boolean
+  /** Hide bottom nav while any text input is focused (keyboard open) */
+  inputFocusEngaged: boolean
   /** Food library item IDs marked as favorites for quick add */
   favoriteFoodIds: string[]
   /** Recent search queries for Library and Food Picker */
@@ -227,6 +229,7 @@ interface MacroStore {
   setHasHydrated: (v: boolean) => void
   setCurrentTab: (tab: AppTab) => void
   setLibrarySearchEngaged: (v: boolean) => void
+  setInputFocusEngaged: (v: boolean) => void
   setCurrentDate: (date: string) => void
   setEditDayMode: (v: boolean) => void
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
@@ -270,6 +273,7 @@ interface MacroStore {
   addMeal: (name: string) => boolean
   renameMeal: (from: string, to: string) => boolean
   removeMeal: (name: string) => void
+  reorderMeals: (fromIndex: number, toIndex: number) => void
   restoreDefaultMeals: () => void
   recordFoodSearch: (scope: 'library' | 'picker', query: string) => void
   clearRecentFoodSearches: (scope: 'library' | 'picker') => void
@@ -304,6 +308,7 @@ export const useMacroStore = create<MacroStore>()(
       statsView: 'overview',
       statsAnchorDate: todayString(),
       librarySearchEngaged: false,
+      inputFocusEngaged: false,
       favoriteFoodIds: [],
       recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
 
@@ -315,6 +320,7 @@ export const useMacroStore = create<MacroStore>()(
             tab === 'library' ? get().librarySearchEngaged : false,
         }),
       setLibrarySearchEngaged: (v) => set({ librarySearchEngaged: v }),
+      setInputFocusEngaged: (v) => set({ inputFocusEngaged: v }),
       setCurrentDate: (date) => set({ currentDate: date }),
       setEditDayMode: (v) => set({ editDayMode: v }),
       setLibrarySegment: (s) => set({ librarySegment: s }),
@@ -688,6 +694,31 @@ export const useMacroStore = create<MacroStore>()(
           mealCollapseByDate,
         })
         return true
+      },
+
+      reorderMeals: (fromIndex, toIndex) => {
+        const meals = normalizeMeals(get().settings.meals)
+        if (
+          fromIndex < 0 ||
+          toIndex < 0 ||
+          fromIndex >= meals.length ||
+          toIndex >= meals.length ||
+          fromIndex === toIndex
+        ) {
+          return
+        }
+        const next = [...meals]
+        const [moved] = next.splice(fromIndex, 1)
+        next.splice(toIndex, 0, moved)
+        set({
+          settings: {
+            ...get().settings,
+            meals: next,
+            defaultMeal: next.includes(get().settings.defaultMeal)
+              ? get().settings.defaultMeal
+              : next[0],
+          },
+        })
       },
 
       removeMeal: (name) => {
