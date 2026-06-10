@@ -1,9 +1,11 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { DeleteMealDialog } from '@/components/settings/DeleteMealDialog'
 import { Button } from '@/components/ui/button'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Input } from '@/components/ui/input'
+import { countLoggedFoodsForMeal } from '@/lib/meals'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -12,6 +14,7 @@ const actionIconClass = 'h-5 w-5'
 
 export function MealListEditor() {
   const meals = useMacroStore((s) => s.settings.meals)
+  const dailyLogs = useMacroStore((s) => s.dailyLogs)
   const addMeal = useMacroStore((s) => s.addMeal)
   const renameMeal = useMacroStore((s) => s.renameMeal)
   const removeMeal = useMacroStore((s) => s.removeMeal)
@@ -20,7 +23,13 @@ export function MealListEditor() {
   const [newMeal, setNewMeal] = useState('')
   const [editingMeal, setEditingMeal] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [mealToDelete, setMealToDelete] = useState<string | null>(null)
   const editRef = useRef<HTMLInputElement>(null)
+
+  const assignedFoodCount = useMemo(
+    () => (mealToDelete ? countLoggedFoodsForMeal(dailyLogs, mealToDelete) : 0),
+    [dailyLogs, mealToDelete],
+  )
 
   const handleAdd = () => {
     const name = newMeal.trim()
@@ -61,16 +70,28 @@ export function MealListEditor() {
     reorderMeals(index, target)
   }
 
-  const handleRemove = (meal: string) => {
+  const requestDelete = (meal: string) => {
     if (meals.length <= 1) return
-    removeMeal(meal)
-    toast.success(`Removed "${meal}" — logged foods moved to uncategorized`)
+    setMealToDelete(meal)
+  }
+
+  const confirmDelete = () => {
+    if (!mealToDelete) return
+    const meal = mealToDelete
+    const ok = removeMeal(meal)
+    setMealToDelete(null)
+    if (ok) {
+      toast.success(`Removed "${meal}" — logged foods moved to Uncategorized`)
+    } else {
+      toast.error('Could not delete meal. Your logged food data was not changed.')
+    }
   }
 
   return (
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">
-        Reorder meals for the Daily tab. Deleting a meal uncategorizes its logged foods.
+        Reorder meals for the Daily tab. Deleting a meal moves its logged foods to Uncategorized
+        — nothing is permanently removed.
       </p>
 
       <ul className="space-y-1.5">
@@ -138,7 +159,7 @@ export function MealListEditor() {
                 className={`${actionBtnClass} text-muted-foreground hover:border-destructive/50 hover:text-destructive`}
                 disabled={meals.length <= 1}
                 aria-label={`Delete ${meal}`}
-                onClick={() => handleRemove(meal)}
+                onClick={() => requestDelete(meal)}
               >
                 <Trash2 className={actionIconClass} />
               </Button>
@@ -163,6 +184,16 @@ export function MealListEditor() {
           Add
         </Button>
       </div>
+
+      <DeleteMealDialog
+        open={mealToDelete !== null}
+        meal={mealToDelete}
+        assignedFoodCount={assignedFoodCount}
+        onOpenChange={(open) => {
+          if (!open) setMealToDelete(null)
+        }}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }

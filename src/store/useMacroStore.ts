@@ -31,6 +31,7 @@ import {
   remapMealReferences,
   resolveLoggedMeal,
   sanitizeOrphanedMealAssignments,
+  uncategorizeMealFromDailyLogs,
 } from '@/lib/meals'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
 import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
@@ -276,7 +277,7 @@ interface MacroStore {
   updateSettings: (patch: Partial<Settings>) => void
   addMeal: (name: string) => boolean
   renameMeal: (from: string, to: string) => boolean
-  removeMeal: (name: string) => void
+  removeMeal: (name: string) => boolean
   reorderMeals: (fromIndex: number, toIndex: number) => void
   recordFoodSearch: (scope: 'library' | 'picker', query: string) => void
   clearRecentFoodSearches: (scope: 'library' | 'picker') => void
@@ -726,25 +727,19 @@ export const useMacroStore = create<MacroStore>()(
 
       removeMeal: (name) => {
         const meals = normalizeMeals(get().settings.meals)
-        if (meals.length <= 1) return
-        const key = name.toLowerCase()
+        if (meals.length <= 1) return false
+        const key = name.trim().toLowerCase()
+        if (!key) return false
         const nextMeals = meals.filter((m) => m.toLowerCase() !== key)
-        if (nextMeals.length === meals.length) return
+        if (nextMeals.length === meals.length) return false
 
         const removedKeys = new Set([key])
+        const dailyLogs = uncategorizeMealFromDailyLogs(get().dailyLogs, name)
+        if (!dailyLogs) return false
+
         const defaultMeal = nextMeals.includes(get().settings.defaultMeal)
           ? get().settings.defaultMeal
           : nextMeals[0]
-
-        const dailyLogs = Object.fromEntries(
-          Object.entries(get().dailyLogs).map(([date, log]) => [
-            date,
-            {
-              ...log,
-              foods: remapMealReferences(log.foods, new Map(), removedKeys),
-            },
-          ]),
-        )
 
         const mealCollapseByDate = Object.fromEntries(
           Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
@@ -758,6 +753,7 @@ export const useMacroStore = create<MacroStore>()(
           dailyLogs,
           mealCollapseByDate,
         })
+        return true
       },
 
       recordFoodSearch: (scope, query) => {

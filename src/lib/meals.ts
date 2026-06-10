@@ -98,6 +98,41 @@ export function sanitizeOrphanedMealAssignments(
   return changed ? next : dailyLogs
 }
 
+/** Count logged food entries assigned to a meal across all daily logs. */
+export function countLoggedFoodsForMeal(
+  dailyLogs: Record<string, DailyLog>,
+  mealName: string,
+): number {
+  const key = mealName.trim().toLowerCase()
+  let count = 0
+  for (const log of Object.values(dailyLogs)) {
+    for (const entry of log.foods) {
+      if (entry.meal?.trim().toLowerCase() === key) count++
+    }
+  }
+  return count
+}
+
+/**
+ * Remove a meal category from all logs by clearing meal assignments only.
+ * Food entries are never removed — returns null if the safety invariant is violated.
+ */
+export function uncategorizeMealFromDailyLogs(
+  dailyLogs: Record<string, DailyLog>,
+  mealName: string,
+): Record<string, DailyLog> | null {
+  const removedKeys = new Set([mealName.trim().toLowerCase()])
+  const next: Record<string, DailyLog> = {}
+
+  for (const [date, log] of Object.entries(dailyLogs)) {
+    const foods = remapMealReferences(log.foods, new Map(), removedKeys)
+    if (foods.length !== log.foods.length) return null
+    next[date] = { ...log, foods }
+  }
+
+  return next
+}
+
 export function mealSortIndex(meal: string, meals: string[]): number {
   const key = meal.toLowerCase()
   const idx = meals.findIndex((m) => m.toLowerCase() === key)
