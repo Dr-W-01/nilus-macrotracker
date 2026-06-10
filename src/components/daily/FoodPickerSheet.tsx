@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Star } from 'lucide-react'
+import { Clock, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
@@ -10,8 +10,10 @@ import {
   ScrollDialogHeader,
   scrollDialogContentClass,
 } from '@/components/ui/scroll-modal'
-import { Input } from '@/components/ui/input'
+import { FoodSearchField } from '@/components/library/FoodSearchField'
 import { FavoriteFoodButton } from '@/components/library/FavoriteFoodButton'
+import { foodCategories } from '@/lib/categories'
+import { getRecentFoods, searchFoodItems } from '@/lib/foodSearch'
 import { useMacroStore } from '@/store/useMacroStore'
 import type { FoodItem } from '@/lib/types'
 
@@ -24,10 +26,14 @@ interface FoodPickerSheetProps {
 function FoodPickerRow({
   food,
   onSelect,
+  showCategories = false,
 }: {
   food: FoodItem
   onSelect: (food: FoodItem) => void
+  showCategories?: boolean
 }) {
+  const categories = foodCategories(food)
+
   return (
     <li>
       <div className="flex items-stretch gap-1 rounded-lg border border-border bg-secondary/40">
@@ -38,7 +44,11 @@ function FoodPickerRow({
         >
           <div className="min-w-0 pr-2">
             <span className="font-medium">{food.name}</span>
-            <p className="truncate text-xs text-muted-foreground">{food.servingDesc}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {showCategories && categories.length > 0
+                ? categories.join(' · ')
+                : food.servingDesc}
+            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {food.isRecipe && <Badge variant="secondary">🍱</Badge>}
@@ -59,17 +69,37 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
   const favoriteFoodIds = useMacroStore((s) => s.favoriteFoodIds)
   const [query, setQuery] = useState('')
 
-  const { favorites, others, total } = useMemo(() => {
-    const q = query.trim().toLowerCase()
+  const { favorites, recent, others, total, isSearching } = useMemo(() => {
     const favSet = new Set(favoriteFoodIds)
-    const filtered = [...foodLibrary]
-      .filter((f) => !q || f.name.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name))
+    const trimmed = query.trim()
+    const { results } = searchFoodItems(foodLibrary, query)
+
+    if (!trimmed) {
+      const recentFoods = getRecentFoods(foodLibrary, 8).filter((f) => !favSet.has(f.id))
+      const othersList = foodLibrary
+        .filter((f) => !favSet.has(f.id) && !recentFoods.some((r) => r.id === f.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+
+      const favList = foodLibrary.filter((f) => favSet.has(f.id))
+
+      return {
+        favorites: favList,
+        recent: recentFoods,
+        others: othersList,
+        total: foodLibrary.length,
+        isSearching: false,
+      }
+    }
+
+    const favMatches = results.filter((f) => favSet.has(f.id))
+    const otherMatches = results.filter((f) => !favSet.has(f.id))
 
     return {
-      favorites: filtered.filter((f) => favSet.has(f.id)),
-      others: filtered.filter((f) => !favSet.has(f.id)),
-      total: filtered.length,
+      favorites: favMatches,
+      recent: [] as FoodItem[],
+      others: otherMatches,
+      total: results.length,
+      isSearching: true,
     }
   }, [foodLibrary, favoriteFoodIds, query])
 
@@ -89,19 +119,16 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
         </ScrollDialogHeader>
 
         <div className="shrink-0 border-b border-border bg-card px-4 py-3 sm:px-6">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search foods..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-9"
-              autoComplete="off"
-              enterKeyHint="search"
-            />
-          </div>
+          <FoodSearchField
+            scope="picker"
+            value={query}
+            onChange={setQuery}
+            placeholder="Search foods by name or category…"
+          />
           <p className="mt-2 text-xs text-muted-foreground">
-            {total} {total === 1 ? 'item' : 'items'}
+            {isSearching
+              ? `${total} ${total === 1 ? 'match' : 'matches'}`
+              : `${total} ${total === 1 ? 'item' : 'items'}`}
             {favorites.length > 0 && ` · ${favorites.length} favorite${favorites.length === 1 ? '' : 's'}`}
           </p>
         </div>
@@ -112,7 +139,7 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
               <Star className="mx-auto h-8 w-8 text-muted-foreground/50" />
               <p className="text-muted-foreground">No foods found.</p>
               <p className="text-xs text-muted-foreground">
-                Add items in Library or load the demo food library from Settings.
+                Add items in Library or load the demo library from the Library tab.
               </p>
             </div>
           ) : (
@@ -125,6 +152,24 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
                   </h3>
                   <ul className="space-y-1">
                     {favorites.map((food) => (
+                      <FoodPickerRow
+                        key={food.id}
+                        food={food}
+                        onSelect={onSelectFood}
+                        showCategories={isSearching}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )}
+              {!isSearching && recent.length > 0 && (
+                <section>
+                  <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    Recent
+                  </h3>
+                  <ul className="space-y-1">
+                    {recent.map((food) => (
                       <FoodPickerRow key={food.id} food={food} onSelect={onSelectFood} />
                     ))}
                   </ul>
@@ -132,14 +177,19 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
               )}
               {others.length > 0 && (
                 <section>
-                  {favorites.length > 0 && (
+                  {(favorites.length > 0 || recent.length > 0) && (
                     <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {query.trim() ? 'Other matches' : 'All foods'}
+                      {isSearching ? 'Other matches' : 'All foods'}
                     </h3>
                   )}
                   <ul className="space-y-1">
                     {others.map((food) => (
-                      <FoodPickerRow key={food.id} food={food} onSelect={onSelectFood} />
+                      <FoodPickerRow
+                        key={food.id}
+                        food={food}
+                        onSelect={onSelectFood}
+                        showCategories={isSearching}
+                      />
                     ))}
                   </ul>
                 </section>

@@ -4,10 +4,9 @@ import {
   ChefHat,
   ChevronLeft,
   ChevronRight,
+  Check,
   FolderInput,
-  Pencil,
   Plus,
-  Search,
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -25,7 +24,9 @@ import {
   ScrollDialogHeader,
   scrollDialogContentClass,
 } from '@/components/ui/scroll-modal'
-import { LibrarySearchInput } from '@/components/library/LibrarySearchInput'
+import { FoodSearchField } from '@/components/library/FoodSearchField'
+import { EditIconButton } from '@/components/ui/edit-icon-button'
+import { fuzzyScore, parseFoodSearchQuery, searchFoodItems } from '@/lib/foodSearch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
 import { collectAllCategories, itemsInCategory } from '@/lib/categories'
@@ -139,17 +140,27 @@ export function LibraryTab() {
   const categoryGroups = useMemo(() => {
     if (librarySegment !== 'categories') return null
 
-    const q = query.trim().toLowerCase()
+    const parsed = parseFoodSearchQuery(query)
+    const q = query.trim()
     const allNames = collectAllCategories(foodLibrary, customCategories)
 
     const entries = allNames
       .map((cat) => {
+        if (
+          parsed.categoryFilter &&
+          fuzzyScore(cat, parsed.categoryFilter) <= 0
+        ) {
+          return null
+        }
+
         const items = itemsInCategory(foodLibrary, cat)
         if (!q) return [cat, items] as const
-        const catMatches = cat.toLowerCase().includes(q)
-        const matched = items.filter((f) => f.name.toLowerCase().includes(q))
+
+        const catMatches =
+          fuzzyScore(cat, parsed.text || parsed.categoryFilter || q) > 0
+        const { results } = searchFoodItems(items, parsed.text || q)
         if (catMatches) return [cat, items] as const
-        if (matched.length > 0) return [cat, matched] as const
+        if (results.length > 0) return [cat, results] as const
         return null
       })
       .filter((entry): entry is readonly [string, FoodItem[]] => entry != null)
@@ -158,16 +169,14 @@ export function LibraryTab() {
   }, [foodLibrary, customCategories, librarySegment, query])
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
     let list = [...foodLibrary]
     if (librarySegment === 'items') list = list.filter((f) => !f.isRecipe)
     else if (librarySegment === 'recipes') list = list.filter((f) => f.isRecipe)
     else return { type: 'categories' as const }
 
-    if (q) list = list.filter((f) => f.name.toLowerCase().includes(q))
-    list.sort((a, b) => a.name.localeCompare(b.name))
+    const { results } = searchFoodItems(list, query)
     const groups = new Map<string, FoodItem[]>()
-    list.forEach((f) => {
+    results.forEach((f) => {
       const letter = getLetterGroup(f.name)
       const arr = groups.get(letter) ?? []
       arr.push(f)
@@ -178,10 +187,8 @@ export function LibraryTab() {
 
   const activeCategoryItems = useMemo(() => {
     if (!activeCategory) return []
-    return itemsInCategory(foodLibrary, activeCategory).filter((f) => {
-      const q = query.trim().toLowerCase()
-      return !q || f.name.toLowerCase().includes(q)
-    })
+    const items = itemsInCategory(foodLibrary, activeCategory)
+    return searchFoodItems(items, query).results
   }, [activeCategory, foodLibrary, query])
 
   const toggleSelect = (id: string) => {
@@ -262,22 +269,29 @@ export function LibraryTab() {
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-xl font-bold">Library</h1>
             {librarySegment === 'categories' && activeCategory ? (
-              <Button
+              <EditIconButton
                 variant="outline"
-                size="sm"
+                label="Manage category"
                 onClick={() => setCategoryManageOpen(true)}
-              >
-                <Pencil className="h-4 w-4 mr-1" />
-                Manage
-              </Button>
+              />
             ) : showBulkEdit ? (
-              <Button
-                variant={editMode ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => (editMode ? exitEditMode() : enterEditMode())}
-              >
-                {editMode ? 'Done' : 'Edit'}
-              </Button>
+              editMode ? (
+                <Button
+                  variant="default"
+                  size="icon"
+                  aria-label="Done editing"
+                  title="Done"
+                  onClick={exitEditMode}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              ) : (
+                <EditIconButton
+                  variant="outline"
+                  label="Edit library"
+                  onClick={enterEditMode}
+                />
+              )
             ) : null}
           </div>
           <Tabs
@@ -304,23 +318,20 @@ export function LibraryTab() {
               All categories
             </Button>
           )}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <LibrarySearchInput
-              placeholder={
-                librarySegment === 'categories' && !activeCategory
-                  ? 'Search categories...'
-                  : librarySegment === 'categories' && activeCategory
-                    ? `Search in ${activeCategory}...`
-                    : `Search ${librarySegment}...`
-              }
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-9 [&::-webkit-search-cancel-button]:appearance-none"
-              onSearchFocus={() => setSearchFocused(true)}
-              onSearchBlur={() => setSearchFocused(false)}
-            />
-          </div>
+          <FoodSearchField
+            scope="library"
+            placeholder={
+              librarySegment === 'categories' && !activeCategory
+                ? 'Search categories or items…'
+                : librarySegment === 'categories' && activeCategory
+                  ? `Search in ${activeCategory}…`
+                  : `Search ${librarySegment} by name or tag…`
+            }
+            value={query}
+            onChange={setQuery}
+            onSearchFocus={() => setSearchFocused(true)}
+            onSearchBlur={() => setSearchFocused(false)}
+          />
           {!editMode && librarySegment === 'items' && (
             <Button className="w-full" size="sm" onClick={() => setNewFoodOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
@@ -381,7 +392,7 @@ export function LibraryTab() {
               <h2 className="py-2 text-sm font-bold text-primary">{activeCategory}</h2>
               {activeCategoryItems.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
-                  No items in this category yet. Tap Edit Category to add items.
+                  No items in this category yet. Tap the edit icon to manage items.
                 </p>
               ) : (
                 <FoodList
@@ -621,8 +632,15 @@ function FoodList({
                 <FoodRowContent food={food} showFavorite={false} />
               </button>
               {showFavorite && !food.isRecipe && (
-                <FavoriteFoodButton foodId={food.id} className="self-center mr-1" />
+                <FavoriteFoodButton foodId={food.id} className="self-center" />
               )}
+              <EditIconButton
+                variant="ghost"
+                size="icon"
+                className="mr-1 self-center h-8 w-8"
+                label={`Edit ${food.name}`}
+                onClick={() => onOpenItem(food)}
+              />
             </div>
           )}
         </li>

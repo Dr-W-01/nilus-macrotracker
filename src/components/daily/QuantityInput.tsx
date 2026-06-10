@@ -27,6 +27,8 @@ interface QuantityInputProps {
   onAmountEatenChange?: (amount: number) => void
   showNote?: boolean
   showInlineMacroPreview?: boolean
+  /** Compact layout for recipe ingredient editing */
+  compact?: boolean
 }
 
 export function QuantityInput({
@@ -40,6 +42,7 @@ export function QuantityInput({
   onAmountEatenChange,
   showNote = true,
   showInlineMacroPreview = true,
+  compact = false,
 }: QuantityInputProps) {
   const isCount = food.scaleType === 'count'
   const intQty = Math.max(1, Math.round(countQuantity) || 1)
@@ -64,31 +67,59 @@ export function QuantityInput({
 
   if (isCount) {
     return (
-      <div className="space-y-4">
-        <p className="text-center text-sm text-muted-foreground">{food.servingDesc}</p>
-        <div className="flex items-center justify-center gap-6">
+      <div className={compact ? 'space-y-2' : 'space-y-4'}>
+        <p
+          className={
+            compact
+              ? 'text-xs text-muted-foreground'
+              : 'text-center text-sm text-muted-foreground'
+          }
+        >
+          {food.servingDesc}
+        </p>
+        <div
+          className={
+            compact
+              ? 'flex items-center justify-center gap-3'
+              : 'flex items-center justify-center gap-6'
+          }
+        >
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-14 w-14 rounded-full text-2xl"
+            className={
+              compact
+                ? 'h-9 w-9 rounded-full'
+                : 'h-14 w-14 rounded-full text-2xl'
+            }
             disabled={disabled || intQty <= 1}
             onClick={() => onCountQuantityChange?.(Math.max(1, intQty - 1))}
           >
-            <Minus className="h-6 w-6" />
+            <Minus className={compact ? 'h-4 w-4' : 'h-6 w-6'} />
           </Button>
-          <span className="min-w-[4rem] text-center text-5xl font-bold tabular-nums">
+          <span
+            className={
+              compact
+                ? 'min-w-[2.5rem] text-center text-2xl font-bold tabular-nums'
+                : 'min-w-[4rem] text-center text-5xl font-bold tabular-nums'
+            }
+          >
             {intQty}
           </span>
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-14 w-14 rounded-full text-2xl"
+            className={
+              compact
+                ? 'h-9 w-9 rounded-full'
+                : 'h-14 w-14 rounded-full text-2xl'
+            }
             disabled={disabled}
             onClick={() => onCountQuantityChange?.(intQty + 1)}
           >
-            <Plus className="h-6 w-6" />
+            <Plus className={compact ? 'h-4 w-4' : 'h-6 w-6'} />
           </Button>
         </div>
         {showInlineMacroPreview && (
@@ -104,19 +135,23 @@ export function QuantityInput({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg bg-secondary/50 px-4 py-3 text-center">
-        <p className="text-sm text-muted-foreground">
-          Base serving:{' '}
-          <span className="font-semibold text-primary">{formatBaseServing(food)}</span>
-        </p>
-      </div>
+    <div className={compact ? 'space-y-2' : 'space-y-4'}>
+      {!compact && (
+        <div className="rounded-lg bg-secondary/50 px-4 py-3 text-center">
+          <p className="text-sm text-muted-foreground">
+            Base serving:{' '}
+            <span className="font-semibold text-primary">{formatBaseServing(food)}</span>
+          </p>
+        </div>
+      )}
 
       <div>
-        <Label htmlFor="amount-eaten" className="text-sm font-medium">
-          Amount eaten
-        </Label>
-        <div className="mt-2 flex items-center justify-center gap-3">
+        {!compact && (
+          <Label htmlFor="amount-eaten" className="text-sm font-medium">
+            Amount eaten
+          </Label>
+        )}
+        <div className={compact ? 'flex items-center gap-2' : 'mt-2 flex items-center justify-center gap-3'}>
           <Input
             id="amount-eaten"
             type="number"
@@ -142,13 +177,30 @@ export function QuantityInput({
                 setAmountText(String(roundAmount(v)))
               }
             }}
-            className="h-14 max-w-[160px] text-center text-2xl font-bold"
+            className={
+              compact
+                ? 'h-9 max-w-[100px] text-center text-base font-semibold'
+                : 'h-14 max-w-[160px] text-center text-2xl font-bold'
+            }
           />
-          <span className="text-xl font-semibold text-primary">{unit}</span>
+          <span className={compact ? 'text-sm font-medium text-primary' : 'text-xl font-semibold text-primary'}>
+            {unit}
+          </span>
+          {compact && (
+            <span className="text-xs text-muted-foreground">
+              · {formatBaseServing(food)}
+            </span>
+          )}
         </div>
       </div>
 
-      <p className="text-center text-sm font-medium text-foreground">
+      <p
+        className={
+          compact
+            ? 'text-xs text-muted-foreground'
+            : 'text-center text-sm font-medium text-foreground'
+        }
+      >
         {formatScaleEatenSummary(food, eaten)}
       </p>
 

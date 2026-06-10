@@ -22,10 +22,13 @@ import type {
   Settings,
 } from '@/lib/types'
 import { DEFAULT_GOAL_MODE, normalizeGoalMode } from '@/lib/goalMode'
+import { pushRecentSearch } from '@/lib/foodSearch'
 import {
   DEFAULT_MEALS,
   normalizeMealName,
   normalizeMeals,
+  remapCollapsedMeals,
+  remapMealReferences,
   resolveLoggedMeal,
 } from '@/lib/meals'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
@@ -80,7 +83,9 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 8
+const PERSIST_VERSION = 9
+
+const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
 const EMPTY_COLLAPSED_MEALS: string[] = []
 
@@ -101,6 +106,7 @@ type PersistedSlice = {
   statsView?: 'overview' | 'trends' | 'breakdowns' | 'weight' | 'table' | 'charts'
   statsAnchorDate?: string
   favoriteFoodIds?: string[]
+  recentFoodSearches?: { library?: string[]; picker?: string[] }
 }
 
 function normalizeMealCollapseByDate(
@@ -215,6 +221,8 @@ interface MacroStore {
   librarySearchEngaged: boolean
   /** Food library item IDs marked as favorites for quick add */
   favoriteFoodIds: string[]
+  /** Recent search queries for Library and Food Picker */
+  recentFoodSearches: { library: string[]; picker: string[] }
 
   setHasHydrated: (v: boolean) => void
   setCurrentTab: (tab: AppTab) => void
@@ -259,6 +267,12 @@ interface MacroStore {
   getAllLibraryCategories: () => string[]
 
   updateSettings: (patch: Partial<Settings>) => void
+  addMeal: (name: string) => boolean
+  renameMeal: (from: string, to: string) => boolean
+  removeMeal: (name: string) => void
+  restoreDefaultMeals: () => void
+  recordFoodSearch: (scope: 'library' | 'picker', query: string) => void
+  clearRecentFoodSearches: (scope: 'library' | 'picker') => void
   addGoalTemplate: (t: Omit<GoalTemplate, 'id'>) => string
   updateGoalTemplate: (id: string, patch: Partial<GoalTemplate>) => void
   deleteGoalTemplate: (id: string) => void
@@ -291,6 +305,7 @@ export const useMacroStore = create<MacroStore>()(
       statsAnchorDate: todayString(),
       librarySearchEngaged: false,
       favoriteFoodIds: [],
+      recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
       setCurrentTab: (tab) =>
@@ -620,6 +635,154 @@ export const useMacroStore = create<MacroStore>()(
 
       updateSettings: (patch) => set({ settings: { ...get().settings, ...patch } }),
 
+      addMeal: (name) => {
+        const trimmed = name.trim()
+        if (!trimmed) return false
+        const meals = normalizeMeals(get().settings.meals)
+        if (meals.some((m) => m.toLowerCase() === trimmed.toLowerCase())) return false
+        set({
+          settings: {
+            ...get().settings,
+            meals: [...meals, trimmed],
+          },
+        })
+        return true
+      },
+
+      renameMeal: (from, to) => {
+        const trimmed = to.trim()
+        if (!trimmed || from.toLowerCase() === trimmed.toLowerCase()) return false
+        const meals = normalizeMeals(get().settings.meals)
+        if (!meals.some((m) => m.toLowerCase() === from.toLowerCase())) return false
+        if (meals.some((m) => m.toLowerCase() === trimmed.toLowerCase())) return false
+
+        const renameMap = new Map([[from.toLowerCase(), trimmed]])
+        const nextMeals = meals.map((m) =>
+          m.toLowerCase() === from.toLowerCase() ? trimmed : m,
+        )
+        const defaultMeal =
+          get().settings.defaultMeal.toLowerCase() === from.toLowerCase()
+            ? trimmed
+            : get().settings.defaultMeal
+
+        const dailyLogs = Object.fromEntries(
+          Object.entries(get().dailyLogs).map(([date, log]) => [
+            date,
+            {
+              ...log,
+              foods: remapMealReferences(log.foods, renameMap, new Set()),
+            },
+          ]),
+        )
+
+        const mealCollapseByDate = Object.fromEntries(
+          Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
+            date,
+            remapCollapsedMeals(collapsed, renameMap, new Set()),
+          ]),
+        )
+
+        set({
+          settings: { ...get().settings, meals: nextMeals, defaultMeal },
+          dailyLogs,
+          mealCollapseByDate,
+        })
+        return true
+      },
+
+      removeMeal: (name) => {
+        const meals = normalizeMeals(get().settings.meals)
+        if (meals.length <= 1) return
+        const key = name.toLowerCase()
+        const nextMeals = meals.filter((m) => m.toLowerCase() !== key)
+        if (nextMeals.length === meals.length) return
+
+        const removedKeys = new Set([key])
+        const defaultMeal = nextMeals.includes(get().settings.defaultMeal)
+          ? get().settings.defaultMeal
+          : nextMeals[0]
+
+        const dailyLogs = Object.fromEntries(
+          Object.entries(get().dailyLogs).map(([date, log]) => [
+            date,
+            {
+              ...log,
+              foods: remapMealReferences(log.foods, new Map(), removedKeys),
+            },
+          ]),
+        )
+
+        const mealCollapseByDate = Object.fromEntries(
+          Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
+            date,
+            remapCollapsedMeals(collapsed, new Map(), removedKeys),
+          ]),
+        )
+
+        set({
+          settings: { ...get().settings, meals: nextMeals, defaultMeal },
+          dailyLogs,
+          mealCollapseByDate,
+        })
+      },
+
+      restoreDefaultMeals: () => {
+        const current = normalizeMeals(get().settings.meals)
+        const defaults = [...DEFAULT_MEALS]
+        const renameMap = new Map<string, string>()
+        current.forEach((meal, idx) => {
+          if (defaults[idx] && meal.toLowerCase() !== defaults[idx].toLowerCase()) {
+            renameMap.set(meal.toLowerCase(), defaults[idx])
+          }
+        })
+
+        const dailyLogs = Object.fromEntries(
+          Object.entries(get().dailyLogs).map(([date, log]) => [
+            date,
+            {
+              ...log,
+              foods: remapMealReferences(log.foods, renameMap, new Set()),
+            },
+          ]),
+        )
+
+        const mealCollapseByDate = Object.fromEntries(
+          Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
+            date,
+            remapCollapsedMeals(collapsed, renameMap, new Set()),
+          ]),
+        )
+
+        set({
+          settings: {
+            ...get().settings,
+            meals: defaults,
+            defaultMeal: DEFAULT_MEALS[0],
+          },
+          dailyLogs,
+          mealCollapseByDate,
+        })
+      },
+
+      recordFoodSearch: (scope, query) => {
+        const current = get().recentFoodSearches
+        set({
+          recentFoodSearches: {
+            ...current,
+            [scope]: pushRecentSearch(current[scope], query),
+          },
+        })
+      },
+
+      clearRecentFoodSearches: (scope) => {
+        set({
+          recentFoodSearches: {
+            ...get().recentFoodSearches,
+            [scope]: [],
+          },
+        })
+      },
+
       addGoalTemplate: (t) => {
         const id = generateId()
         set({
@@ -678,6 +841,7 @@ export const useMacroStore = create<MacroStore>()(
           dailyLogs: {},
           mealCollapseByDate: {},
           favoriteFoodIds: [],
+          recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
           currentDate: todayString(),
           currentTab: 'daily',
           editDayMode: false,
@@ -710,9 +874,24 @@ export const useMacroStore = create<MacroStore>()(
         statsView: state.statsView,
         statsAnchorDate: state.statsAnchorDate,
         favoriteFoodIds: state.favoriteFoodIds,
+        recentFoodSearches: state.recentFoodSearches,
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 9) {
+          raw.recentFoodSearches = {
+            library: Array.isArray(raw.recentFoodSearches?.library)
+              ? raw.recentFoodSearches.library.filter(
+                  (s): s is string => typeof s === 'string',
+                )
+              : [],
+            picker: Array.isArray(raw.recentFoodSearches?.picker)
+              ? raw.recentFoodSearches.picker.filter(
+                  (s): s is string => typeof s === 'string',
+                )
+              : [],
+          }
+        }
         if (version < 8) {
           raw.favoriteFoodIds = Array.isArray(raw.favoriteFoodIds)
             ? raw.favoriteFoodIds.filter((id): id is string => typeof id === 'string')

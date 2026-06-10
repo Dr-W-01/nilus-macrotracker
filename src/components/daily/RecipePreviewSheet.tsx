@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
+import { Pencil } from 'lucide-react'
 import { MealPicker } from '@/components/daily/MealPicker'
 import { Button } from '@/components/ui/button'
 import {
@@ -105,8 +106,9 @@ export function RecipePreviewSheet({
           <Button size="lg" className="w-full" onClick={() => onAdd(meal || undefined)}>
             Add
           </Button>
-          <Button size="lg" variant="outline" className="w-full" onClick={onEdit}>
-            Edit
+          <Button size="lg" variant="outline" className="w-full gap-2" onClick={onEdit}>
+            <Pencil className="h-4 w-4" />
+            Customize for today
           </Button>
           <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
             Cancel

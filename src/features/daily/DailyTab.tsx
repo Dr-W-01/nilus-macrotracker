@@ -24,6 +24,7 @@ import { RecipeCustomizeSheet } from '@/components/daily/RecipeCustomizeSheet'
 import { RecipePreviewSheet } from '@/components/daily/RecipePreviewSheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { Button } from '@/components/ui/button'
+import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -262,14 +263,6 @@ export function DailyTab() {
     <div className="daily-tab flex flex-col pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center gap-2">
-          <Button
-            variant={editDayMode ? 'default' : 'outline'}
-            size="sm"
-            className="shrink-0"
-            onClick={() => setEditDayMode(!editDayMode)}
-          >
-            {editDayMode ? 'View Mode' : 'Edit Day'}
-          </Button>
           {editDayMode && (
             <Button
               variant="outline"
@@ -315,9 +308,16 @@ export function DailyTab() {
           <Button variant="ghost" size="icon" onClick={() => setCurrentDate(shiftDate(currentDate, 1))}>
             <ChevronRight className="h-5 w-5" />
           </Button>
+          <EditIconButton
+            variant={editDayMode ? 'default' : 'outline'}
+            size="icon"
+            className="h-9 w-9"
+            label={editDayMode ? 'Exit edit mode' : 'Edit day'}
+            onClick={() => setEditDayMode(!editDayMode)}
+          />
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                 <CalendarIcon className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
@@ -382,47 +382,79 @@ export function DailyTab() {
           </CardContent>
         </Card>
 
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-lg border border-border px-4 py-3"
-          disabled={!editDayMode}
-          onClick={() => {
-            if (!editDayMode) return
-            setBurnInput(String(log.burnedCalories))
-            setBurnEditOpen(true)
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-primary" />
-            Burned calories
-          </span>
-          <span className="font-semibold">{log.burnedCalories} cal</span>
-        </button>
+        <div className="flex items-center gap-2 rounded-lg border border-border px-4 py-3">
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center justify-between disabled:opacity-60"
+            disabled={!editDayMode}
+            onClick={() => {
+              if (!editDayMode) return
+              setBurnInput(String(log.burnedCalories))
+              setBurnEditOpen(true)
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Flame className="h-5 w-5 text-primary" />
+              Burned calories
+            </span>
+            <span className="font-semibold">{log.burnedCalories} cal</span>
+          </button>
+          {editDayMode && (
+            <EditIconButton
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              label="Edit burned calories"
+              onClick={() => {
+                setBurnInput(String(log.burnedCalories))
+                setBurnEditOpen(true)
+              }}
+            />
+          )}
+        </div>
 
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-lg border border-border px-4 py-3"
-          disabled={!editDayMode}
-          onClick={() => {
-            if (!editDayMode) return
-            setWeightInput(
-              log.weightKg != null
-                ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
-                : '',
-            )
-            setWeightEditOpen(true)
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <Scale className="h-5 w-5 text-primary" />
-            Weight
-          </span>
-          <span className="font-semibold">
-            {weightDisplay ?? (
-              <span className="text-muted-foreground font-normal">Not logged</span>
-            )}
-          </span>
-        </button>
+        <div className="flex items-center gap-2 rounded-lg border border-border px-4 py-3">
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center justify-between disabled:opacity-60"
+            disabled={!editDayMode}
+            onClick={() => {
+              if (!editDayMode) return
+              setWeightInput(
+                log.weightKg != null
+                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+                  : '',
+              )
+              setWeightEditOpen(true)
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Scale className="h-5 w-5 text-primary" />
+              Weight
+            </span>
+            <span className="font-semibold">
+              {weightDisplay ?? (
+                <span className="text-muted-foreground font-normal">Not logged</span>
+              )}
+            </span>
+          </button>
+          {editDayMode && (
+            <EditIconButton
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              label="Edit weight"
+              onClick={() => {
+                setWeightInput(
+                  log.weightKg != null
+                    ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+                    : '',
+                )
+                setWeightEditOpen(true)
+              }}
+            />
+          )}
+        </div>
 
         <div className="rounded-lg border border-border">
           <button
@@ -667,6 +699,7 @@ export function DailyTab() {
         recipe={selectedFood}
         library={foodLibrary}
         meals={meals}
+        defaultMeal={settings.defaultMeal}
         onOpenChange={setCustomizeOpen}
         onConfirm={(meal, overrides) => addRecipe(meal, overrides)}
         onCancel={() => {

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { Download, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,7 +14,6 @@ import {
   ScrollDialogHeader,
   scrollDialogContentClass,
 } from '@/components/ui/scroll-modal'
-import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
 import { exportFullBackup, parseFullBackup } from '@/lib/importExport'
 import { clearAllStorage } from '@/lib/storage'
 import {
@@ -21,7 +22,7 @@ import {
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
-import { DEFAULT_MEALS, normalizeMeals } from '@/lib/meals'
+import { MealListEditor } from '@/components/settings/MealListEditor'
 import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import { parseWeightInput, weightFromKg } from '@/lib/weight'
@@ -38,7 +39,6 @@ export function SettingsTab() {
   const dailyLogs = useMacroStore((s) => s.dailyLogs)
   const customCategories = useMacroStore((s) => s.customCategories)
   const updateSettings = useMacroStore((s) => s.updateSettings)
-  const loadSeedLibrary = useMacroStore((s) => s.loadSeedLibrary)
   const restoreFullBackup = useMacroStore((s) => s.restoreFullBackup)
   const addGoalTemplate = useMacroStore((s) => s.addGoalTemplate)
   const updateGoalTemplate = useMacroStore((s) => s.updateGoalTemplate)
@@ -143,23 +143,26 @@ export function SettingsTab() {
                 </p>
               </div>
               <div className="flex gap-1">
-                <Button
-                  size="sm"
+                <EditIconButton
+                  size="icon"
                   variant="outline"
+                  className="h-8 w-8"
+                  label={`Edit ${g.name}`}
                   onClick={() => setEditingGoal(g)}
-                >
-                  Edit
-                </Button>
+                />
                 {settings.goalTemplates.length > 1 && (
                   <Button
-                    size="sm"
+                    size="icon"
                     variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    aria-label={`Delete ${g.name}`}
+                    title={`Delete ${g.name}`}
                     onClick={() => {
                       deleteGoalTemplate(g.id)
                       toast.success('Template deleted')
                     }}
                   >
-                    Del
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -188,28 +191,8 @@ export function SettingsTab() {
       </section>
 
       <section className="space-y-3">
-        <div>
-          <h2 className="font-semibold">Daily meals</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Group logged foods on the Daily tab. Comma-separated names; defaults are kept.
-          </p>
-        </div>
-        <Input
-          defaultValue={(settings.meals ?? DEFAULT_MEALS).join(', ')}
-          placeholder={DEFAULT_MEALS.join(', ')}
-          onBlur={(e) => {
-            const parsed = normalizeMeals(
-              e.target.value.split(',').map((s) => s.trim()),
-            )
-            const meals = parsed.length > 0 ? parsed : [...DEFAULT_MEALS]
-            const defaultMeal = meals.includes(settings.defaultMeal)
-              ? settings.defaultMeal
-              : meals[0]
-            updateSettings({ meals, defaultMeal })
-            e.target.value = meals.join(', ')
-            toast.success('Meals updated')
-          }}
-        />
+        <h2 className="font-semibold">Daily meals</h2>
+        <MealListEditor />
       </section>
 
       <section className="space-y-3">
@@ -368,10 +351,13 @@ export function SettingsTab() {
       </section>
 
       <Card className="border-primary/40">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle>Data</CardTitle>
+          <p className="text-sm text-muted-foreground font-normal">
+            Back up or restore your library, logs, and settings.
+          </p>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <input
             ref={backupFileRef}
             type="file"
@@ -383,56 +369,54 @@ export function SettingsTab() {
               e.target.value = ''
             }}
           />
-          <Button
-            className="w-full"
-            variant="outline"
-            onClick={() => backupFileRef.current?.click()}
-          >
-            Import Full Backup
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => backupFileRef.current?.click()}
+            >
+              <Upload className="h-4 w-4" />
+              Import
+            </Button>
+            <Button
+              variant="secondary"
+              className="gap-2"
+              onClick={() => {
+                exportFullBackup({
+                  settings,
+                  foodLibrary,
+                  dailyLogs,
+                  customCategories,
+                  exportedAt: new Date().toISOString(),
+                })
+                toast.success('Backup downloaded')
+              }}
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Restores a JSON file from Export Everything (library, logs, settings,
-            categories).
+            Import restores a JSON file from Export (library, daily logs, settings,
+            and categories).
           </p>
-          <Button
-            className="w-full"
-            onClick={() => {
-              loadSeedLibrary()
-              toast.success(`Loaded ${SEED_LIBRARY_COUNT} items`)
-            }}
-          >
-            Load Demo Food Library ({SEED_LIBRARY_COUNT} items)
-          </Button>
-          <Button
-            className="w-full"
-            variant="secondary"
-            onClick={() => {
-              exportFullBackup({
-                settings,
-                foodLibrary,
-                dailyLogs,
-                customCategories,
-                exportedAt: new Date().toISOString(),
-              })
-              toast.success('Backup downloaded')
-            }}
-          >
-            Export Everything
-          </Button>
-          <Button
-            className="w-full"
-            variant="destructive"
-            onClick={handleFactoryReset}
-          >
-            {resetStep === 0
-              ? 'Factory Reset'
-              : 'Confirm: Erase ALL data permanently'}
-          </Button>
-          {resetStep === 1 && (
-            <p className="text-xs text-destructive text-center">
-              Warning: This cannot be undone. Tap again to confirm.
-            </p>
-          )}
+          <div className="border-t border-border pt-4">
+            <Button
+              className="w-full gap-2"
+              variant="destructive"
+              onClick={handleFactoryReset}
+            >
+              <Trash2 className="h-4 w-4" />
+              {resetStep === 0
+                ? 'Factory Reset'
+                : 'Confirm: Erase ALL data permanently'}
+            </Button>
+            {resetStep === 1 && (
+              <p className="mt-2 text-xs text-destructive text-center">
+                Warning: This cannot be undone. Tap again to confirm.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

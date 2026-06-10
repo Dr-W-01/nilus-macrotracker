@@ -1,4 +1,5 @@
 import { Checkbox } from '@/components/ui/checkbox'
+import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { formatLoggedFoodQuantity } from '@/lib/scale'
 import { getLoggedFoodMacros, roundMacro } from '@/lib/macros'
@@ -75,9 +76,23 @@ export function LoggedFoodEntryRow({
                   : ''}
             </p>
           </div>
-          <span className="text-sm font-medium shrink-0">
-            {roundMacro(macros.calories, 0)} cal
-          </span>
+          <div className="flex shrink-0 items-center gap-1">
+            <span className="text-sm font-medium">
+              {roundMacro(macros.calories, 0)} cal
+            </span>
+            {editDayMode && !selectFoodsMode && (
+              <EditIconButton
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                label={`Edit ${food?.name ?? 'entry'}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onOpenEdit()
+                }}
+              />
+            )}
+          </div>
         </div>
         {editDayMode && !selectFoodsMode && (
           <div
