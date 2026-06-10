@@ -8,11 +8,13 @@ import {
   ChevronUp,
   Flame,
   Copy,
+  Pencil,
   Plus,
   Scale,
   UtensilsCrossed,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { toastFoodAdded, toastFoodRemoved, toastFoodUpdated } from '@/lib/foodToast'
 import { AddFoodSheet } from '@/components/daily/AddFoodSheet'
 import { EditLoggedRecipeSheet } from '@/components/daily/EditLoggedRecipeSheet'
 import { FoodPickerSheet } from '@/components/daily/FoodPickerSheet'
@@ -245,7 +247,7 @@ export function DailyTab() {
       meal: meal || undefined,
       overriddenComponents: overrides,
     })
-    toast.success(`Added ${selectedFood.name}`)
+    toastFoodAdded(selectedFood.name)
     resetFoodFlow()
   }
 
@@ -285,9 +287,19 @@ export function DailyTab() {
             />
           </div>
 
-          <p className="px-3 text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
-            {formatDisplayDate(currentDate)}
-          </p>
+          <div className="flex flex-col items-center gap-1 px-3">
+            <p className="text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
+              {formatDisplayDate(currentDate)}
+            </p>
+            <div className="min-h-[18px]">
+              {editDayMode && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  <Pencil className="h-3 w-3" aria-hidden />
+                  Editing
+                </span>
+              )}
+            </div>
+          </div>
 
           <div className="flex items-center gap-1.5 justify-self-end">
             <Popover>
@@ -325,8 +337,8 @@ export function DailyTab() {
 
       <div
         className={cn(
-          'p-4 space-y-4 transition-colors duration-200',
-          editDayMode && 'bg-daily-edit-surface',
+          'space-y-4 p-4 transition-colors duration-200',
+          editDayMode && 'border-t-2 border-t-primary bg-daily-edit-surface',
         )}
       >
         {editDayMode && (
@@ -365,12 +377,30 @@ export function DailyTab() {
           </div>
         )}
 
-        <div className="text-center py-2">
-          <p className="text-sm text-muted-foreground">Net Calories</p>
-          <p className="text-5xl font-bold tracking-tight text-primary">
+        <div
+          className={cn(
+            'text-center py-2',
+            !editDayMode &&
+              'rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 shadow-sm',
+          )}
+        >
+          <p
+            className={cn(
+              'text-muted-foreground',
+              editDayMode ? 'text-sm' : 'text-xs font-medium uppercase tracking-wide',
+            )}
+          >
+            Net Calories
+          </p>
+          <p
+            className={cn(
+              'font-bold tracking-tight text-primary tabular-nums',
+              editDayMode ? 'text-5xl' : 'text-6xl sm:text-7xl',
+            )}
+          >
             {roundMacro(netCalories, 0)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="mt-1 text-xs text-muted-foreground">
             {roundMacro(consumed.calories, 0)} eaten − {log.burnedCalories} burned
           </p>
         </div>
@@ -665,7 +695,7 @@ export function DailyTab() {
             note: result.note,
             meal: result.meal || undefined,
           })
-          toast.success(`Added ${selectedFood.name}`)
+          toastFoodAdded(selectedFood.name)
           resetFoodFlow()
         }}
         onCancel={resetFoodFlow}
@@ -710,14 +740,16 @@ export function DailyTab() {
         onClose={() => setEditLogged(null)}
         onSave={(patch) => {
           if (!editLogged) return
+          const foodName = foodLibrary.find((f) => f.id === editLogged.foodId)?.name
           updateLoggedFood(editLogged.id, patch)
-          toast.success('Updated entry')
+          toastFoodUpdated(foodName)
           setEditLogged(null)
         }}
         onDelete={() => {
           if (!editLogged) return
+          const foodName = foodLibrary.find((f) => f.id === editLogged.foodId)?.name
           removeLoggedFood(editLogged.id)
-          toast.success('Removed entry')
+          toastFoodRemoved(foodName)
           setEditLogged(null)
         }}
       />
@@ -735,13 +767,16 @@ export function DailyTab() {
         onClose={() => setEditRecipeLogged(null)}
         onSave={(patch) => {
           if (!editRecipeLogged) return
+          const foodName = foodLibrary.find((f) => f.id === editRecipeLogged.foodId)?.name
           updateLoggedFood(editRecipeLogged.id, patch)
+          toastFoodUpdated(foodName)
           setEditRecipeLogged(null)
         }}
         onDelete={() => {
           if (!editRecipeLogged) return
+          const foodName = foodLibrary.find((f) => f.id === editRecipeLogged.foodId)?.name
           removeLoggedFood(editRecipeLogged.id)
-          toast.success('Removed entry')
+          toastFoodRemoved(foodName)
           setEditRecipeLogged(null)
         }}
       />

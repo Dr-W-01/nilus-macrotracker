@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   ModalViewport,
@@ -57,7 +56,6 @@ export function EditLoggedRecipeSheet({
     onSave({
       overriddenComponents: buildRecipeOverridePayload(recipe, components),
     })
-    toast.success('Updated this log entry only')
   }
 
   return (

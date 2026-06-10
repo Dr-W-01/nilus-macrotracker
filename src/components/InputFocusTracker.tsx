@@ -16,6 +16,10 @@ function keyboardLikelyOpen(): boolean {
   return vv.height < window.innerHeight * 0.85
 }
 
+function shouldKeepBottomNavVisible(el: Element | null): boolean {
+  return Boolean(el?.closest('.settings-tab'))
+}
+
 /** Tracks focused text inputs app-wide to hide bottom nav while the keyboard is open. */
 export function InputFocusTracker() {
   const setInputFocusEngaged = useMacroStore((s) => s.setInputFocusEngaged)
@@ -24,8 +28,12 @@ export function InputFocusTracker() {
     let blurTimer: ReturnType<typeof setTimeout> | undefined
 
     const sync = () => {
-      const focused = isTextInput(document.activeElement)
-      const engaged = focused && keyboardLikelyOpen()
+      const active = document.activeElement
+      const focused = isTextInput(active)
+      const engaged =
+        focused &&
+        keyboardLikelyOpen() &&
+        !shouldKeepBottomNavVisible(active)
       setInputFocusEngaged(engaged)
     }
 
@@ -35,9 +43,13 @@ export function InputFocusTracker() {
     }
 
     const onFocusIn = (e: FocusEvent) => {
-      if (isTextInput(e.target as Element)) {
-        setInputFocusEngaged(true)
+      const target = e.target as Element
+      if (!isTextInput(target)) return
+      if (shouldKeepBottomNavVisible(target)) {
+        setInputFocusEngaged(false)
+        return
       }
+      setInputFocusEngaged(true)
     }
 
     const onFocusOut = () => {

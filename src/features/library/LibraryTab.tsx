@@ -10,6 +10,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { toastFoodRemoved } from '@/lib/foodToast'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -216,7 +217,12 @@ export function LibraryTab() {
       )
     } else {
       deleteFoodItems([...selected])
-      toast.success(`Deleted ${count} ${count === 1 ? 'item' : 'items'}`)
+      if (count === 1) {
+        const food = foodLibrary.find((f) => selected.has(f.id))
+        toastFoodRemoved(food?.name)
+      } else {
+        toast.success(`Removed ${count} items`, { duration: 2500 })
+      }
     }
 
     setDeleteConfirmOpen(false)
@@ -230,8 +236,8 @@ export function LibraryTab() {
 
   const bulkDeleteDescription =
     bulkDeleteKind === 'categories'
-      ? 'Category tags will be removed from your library. Food items are not deleted.'
-      : 'This permanently removes the selected entries from your library. Logged entries may show as unknown.'
+      ? 'Category labels will be removed from your library. Every food item stays — only the grouping tag is cleared.'
+      : 'Selected items will be removed from your library. Foods already logged on the Daily tab stay in your history and may show as "Unknown" until you delete those entries.'
 
   const bulkSelectHint =
     bulkDeleteKind === 'categories'

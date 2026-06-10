@@ -22,6 +22,7 @@ import {
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
+import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog'
 import { MealListEditor } from '@/components/settings/MealListEditor'
 import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
@@ -49,7 +50,7 @@ export function SettingsTab() {
   const factoryReset = useMacroStore((s) => s.factoryReset)
 
   const backupFileRef = useRef<HTMLInputElement>(null)
-  const [resetStep, setResetStep] = useState(0)
+  const [factoryResetOpen, setFactoryResetOpen] = useState(false)
   const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [editingGoal, setEditingGoal] = useState<GoalTemplate | null>(null)
   const [backupConfirmOpen, setBackupConfirmOpen] = useState(false)
@@ -100,13 +101,9 @@ export function SettingsTab() {
   }
 
   const handleFactoryReset = async () => {
-    if (resetStep === 0) {
-      setResetStep(1)
-      return
-    }
     await clearAllStorage()
     factoryReset()
-    setResetStep(0)
+    setFactoryResetOpen(false)
     toast.success('Factory reset complete')
   }
 
@@ -452,13 +449,17 @@ export function SettingsTab() {
                 'h-14 w-full gap-2.5 text-base font-semibold shadow-md',
                 'bg-emerald-600 text-white hover:bg-emerald-500',
                 'focus-visible:ring-emerald-500',
+                checkingUpdate && 'opacity-90',
               )}
               disabled={checkingUpdate}
+              aria-busy={checkingUpdate}
               onClick={handleCheckForUpdates}
             >
-              <RefreshCw className={cn('h-5 w-5', checkingUpdate && 'animate-spin')} />
+              <RefreshCw
+                className={cn('h-5 w-5 shrink-0', checkingUpdate && 'animate-spin')}
+              />
               {checkingUpdate
-                ? 'Checking…'
+                ? 'Checking for updates…'
                 : updateAvailable
                   ? 'Install update'
                   : 'Check for updates'}
@@ -477,19 +478,18 @@ export function SettingsTab() {
         <Button
           className="h-11 w-full gap-2"
           variant="destructive"
-          onClick={handleFactoryReset}
+          onClick={() => setFactoryResetOpen(true)}
         >
           <Trash2 className="h-4 w-4" />
-          {resetStep === 0
-            ? 'Factory Reset'
-            : 'Confirm: Erase ALL data permanently'}
+          Factory Reset
         </Button>
-        {resetStep === 1 && (
-          <p className="text-xs text-destructive text-center">
-            Warning: This cannot be undone. Tap again to confirm.
-          </p>
-        )}
       </section>
+
+      <FactoryResetDialog
+        open={factoryResetOpen}
+        onOpenChange={setFactoryResetOpen}
+        onConfirm={handleFactoryReset}
+      />
 
       <section className="text-center text-sm text-muted-foreground pb-8">
         <p>

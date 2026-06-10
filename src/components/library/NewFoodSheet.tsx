@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { toastFoodAdded } from '@/lib/foodToast'
 import { Button } from '@/components/ui/button'
 import {
   ModalViewport,
@@ -46,7 +47,7 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
       ...formValuesToFoodFields(values),
       isRecipe: false,
     })
-    toast.success('Food added')
+    toastFoodAdded(values.name.trim())
     onOpenChange(false)
   }
 

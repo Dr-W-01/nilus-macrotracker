@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { buildScaleLogPayload, getFoodBaseAmount } from '@/lib/scale'
 import { Search, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { toastFoodAdded } from '@/lib/foodToast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -76,7 +77,7 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
         quantity: c.quantity,
       })),
     })
-    toast.success('Recipe created')
+    toastFoodAdded(name.trim())
     setName('')
     setComponents([])
     onOpenChange(false)

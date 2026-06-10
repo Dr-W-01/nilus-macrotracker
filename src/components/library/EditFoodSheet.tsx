@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { toastFoodRemoved, toastFoodUpdated } from '@/lib/foodToast'
+import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
@@ -60,13 +62,13 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
       isRecipe: food.isRecipe,
       recipeComponents: food.recipeComponents,
     })
-    toast.success('Food updated')
+    toastFoodUpdated(values.name.trim() || food.name)
     onClose()
   }
 
   const handleDelete = () => {
     deleteFoodItems([food.id])
-    toast.success('Food deleted')
+    toastFoodRemoved(food.name)
     setDeleteConfirmOpen(false)
     onClose()
   }
@@ -123,15 +125,24 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
           <ScrollDialogHeader>
             <DialogTitle>Delete {food.name}?</DialogTitle>
           </ScrollDialogHeader>
-          <ScrollDialogBody className="py-2">
-            <p className="text-sm text-muted-foreground">
-              This removes the item from your library. Logged entries that reference
-              it may show as unknown.
-            </p>
+          <ScrollDialogBody className="space-y-3 py-2">
+            <div className="flex gap-3 rounded-lg border border-border bg-secondary/40 px-3 py-3">
+              <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
+              <div className="space-y-2 text-sm leading-relaxed">
+                <p className="text-foreground">
+                  <span className="font-medium">{food.name}</span> will be removed from your
+                  library.
+                </p>
+                <p className="text-muted-foreground">
+                  Foods already logged on the Daily tab are kept in your history. They may
+                  show as &quot;Unknown&quot; until you delete those entries manually.
+                </p>
+              </div>
+            </div>
           </ScrollDialogBody>
           <ScrollDialogFooter>
             <Button variant="destructive" size="lg" className="w-full" onClick={handleDelete}>
-              Delete permanently
+              Remove from library
             </Button>
             <Button
               variant="ghost"
