@@ -263,7 +263,7 @@ export function DailyTab() {
 
   return (
     <div className="daily-tab pb-below-nav">
-      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-2.5">
+      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center gap-1.5 justify-self-start">
             <EditIconButton
@@ -321,41 +321,6 @@ export function DailyTab() {
             </Popover>
           </div>
         </div>
-
-        {editDayMode && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-1.5"
-            onClick={handleDuplicateYesterday}
-          >
-            <Copy className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="truncate">Copy Yesterday</span>
-          </Button>
-        )}
-
-        {editDayMode && templates.length > 0 && (
-          <div className="space-y-1">
-            <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
-              Goal template for this day
-            </Label>
-            <select
-              id="daily-goal-template"
-              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              autoComplete="off"
-              value={activeTemplateId}
-              onChange={(e) =>
-                updateDailyLog(currentDate, { goalTemplateId: e.target.value })
-              }
-            >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} — {t.calories} cal
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
       </header>
 
       <div
@@ -364,6 +329,43 @@ export function DailyTab() {
           editDayMode && 'bg-daily-edit-surface',
         )}
       >
+        {editDayMode && (
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-1.5"
+              onClick={handleDuplicateYesterday}
+            >
+              <Copy className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="truncate">Copy Yesterday</span>
+            </Button>
+
+            {templates.length > 0 && (
+              <div className="space-y-1">
+                <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
+                  Goal template for this day
+                </Label>
+                <select
+                  id="daily-goal-template"
+                  className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  autoComplete="off"
+                  value={activeTemplateId}
+                  onChange={(e) =>
+                    updateDailyLog(currentDate, { goalTemplateId: e.target.value })
+                  }
+                >
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} — {t.calories} cal
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">Net Calories</p>
           <p className="text-5xl font-bold tracking-tight text-primary">
