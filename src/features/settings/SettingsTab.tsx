@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, Trash2, Upload } from 'lucide-react'
+import { Download, RefreshCw, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
@@ -30,6 +30,8 @@ import { parseWeightInput, weightFromKg } from '@/lib/weight'
 import type { GoalMode, GoalTemplate, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
+import { runManualUpdateCheck } from '@/lib/pwaUpdate'
+import { cn } from '@/lib/utils'
 
 const ACCENT_PRESETS = ['#B22222', '#8B0000', '#CD5C5C', '#2563EB', '#16A34A']
 const TEXT_PRESETS = ['#D1D1D1', '#C4C4C4', '#E5E5E5', '#A3A3A3', '#9CA3AF']
@@ -48,6 +50,7 @@ export function SettingsTab() {
 
   const backupFileRef = useRef<HTMLInputElement>(null)
   const [resetStep, setResetStep] = useState(0)
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [editingGoal, setEditingGoal] = useState<GoalTemplate | null>(null)
   const [backupConfirmOpen, setBackupConfirmOpen] = useState(false)
   const [pendingBackup, setPendingBackup] = useState<ReturnType<
@@ -82,6 +85,16 @@ export function SettingsTab() {
       setPendingBackup(null)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Restore failed')
+    }
+  }
+
+  const handleCheckForUpdates = async () => {
+    if (checkingUpdate) return
+    setCheckingUpdate(true)
+    try {
+      await runManualUpdateCheck()
+    } finally {
+      setCheckingUpdate(false)
     }
   }
 
@@ -420,7 +433,16 @@ export function SettingsTab() {
             Import restores a JSON file from Export (library, daily logs, settings,
             and categories).
           </p>
-          <div className="border-t border-border pt-4">
+          <div className="space-y-4 border-t border-border pt-4">
+            <Button
+              type="button"
+              className="h-11 w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600"
+              disabled={checkingUpdate}
+              onClick={handleCheckForUpdates}
+            >
+              <RefreshCw className={cn('h-5 w-5', checkingUpdate && 'animate-spin')} />
+              Check for updates
+            </Button>
             <Button
               className="w-full gap-2"
               variant="destructive"

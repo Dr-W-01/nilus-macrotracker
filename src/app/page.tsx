@@ -6,7 +6,7 @@ import { DailyTab } from '@/features/daily/DailyTab'
 import { LibraryTab } from '@/features/library/LibraryTab'
 import { StatsTab } from '@/features/stats/StatsTab'
 import { SettingsTab } from '@/features/settings/SettingsTab'
-import { checkForAppUpdate } from '@/lib/pwaUpdate'
+import { runPullToRefreshUpdate } from '@/lib/pwaUpdate'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export default function AppPage() {
@@ -18,9 +18,7 @@ export default function AppPage() {
       <InputFocusTracker />
       <PullToRefresh
         className="app-main"
-        onRefresh={async () => {
-          await checkForAppUpdate(true)
-        }}
+        onRefresh={runPullToRefreshUpdate}
       >
         {currentTab === 'daily' && <DailyTab />}
         {currentTab === 'library' && <LibraryTab />}

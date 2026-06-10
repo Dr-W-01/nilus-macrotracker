@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
-import { toast } from 'sonner'
-import { registerPwaUpdateHandler } from '@/lib/pwaUpdate'
+import { registerPwaUpdateHandler, showUpdateAvailableToast } from '@/lib/pwaUpdate'
 
 const UPDATE_CHECK_MS = 60 * 60 * 1000
 
@@ -39,19 +38,9 @@ export function PwaUpdateManager() {
     if (!needRefresh) return
     if (updateToastId.current != null) return
 
-    updateToastId.current = toast('Update available', {
-      description: 'A new version of NullTracker is ready. Refresh to load it.',
-      duration: Infinity,
-      action: {
-        label: 'Refresh',
-        onClick: () => {
-          updateToastId.current = undefined
-          void updateServiceWorker(true)
-        },
-      },
-      onDismiss: () => {
-        updateToastId.current = undefined
-      },
+    showUpdateAvailableToast(() => {
+      updateToastId.current = undefined
+      void updateServiceWorker(true)
     })
   }, [needRefresh, updateServiceWorker])
 
