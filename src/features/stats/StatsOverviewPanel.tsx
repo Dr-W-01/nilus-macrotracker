@@ -4,13 +4,8 @@ import { BarChart3 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { DailyEnergyBalanceChart } from '@/components/stats/DailyEnergyBalanceChart'
 
-import { GoalProgressRings } from '@/components/stats/GoalProgressRings'
 import { PeriodComparisonCard } from '@/components/stats/PeriodComparisonCard'
 import { EmptyState } from '@/components/ui/EmptyState'
-import {
-  goalModeOverviewDescription,
-  goalModeOverviewTitle,
-} from '@/lib/goalMode'
 import {
   ADHERENCE_LABELS,
   type AdherenceKey,
@@ -62,16 +57,6 @@ export function StatsOverviewPanel({
   const totals = sumDayRows(dayRows)
   const loggedDays = dayRows.length
   const avgNet = loggedDays > 0 ? totals.net / loggedDays : 0
-  const avgCalories = loggedDays > 0 ? totals.calories / loggedDays : 0
-  const avgProtein = loggedDays > 0 ? totals.protein / loggedDays : 0
-  const avgCalGoal =
-    loggedDays > 0
-      ? dayRows.reduce((s, d) => s + d.goal.calories, 0) / loggedDays
-      : 0
-  const avgProteinGoal =
-    loggedDays > 0
-      ? dayRows.reduce((s, d) => s + d.goal.protein, 0) / loggedDays
-      : 0
   const prevAvgNet =
     prevRows.length > 0 ? sumDayRows(prevRows).net / prevRows.length : null
   const netDelta =
@@ -131,20 +116,6 @@ export function StatsOverviewPanel({
 
   return (
     <div className="space-y-4">
-      <Card className="border-primary/25 bg-primary/5">
-        <CardContent className="pt-3 pb-3">
-          <p className="text-sm font-semibold">{goalModeOverviewTitle(goalMode)}</p>
-          <p className="text-xs text-muted-foreground mt-1 leading-snug">
-            {goalModeOverviewDescription(goalMode)}
-          </p>
-        </CardContent>
-      </Card>
-
-      <GoalProgressRings
-        calories={{ current: avgCalories, goal: avgCalGoal }}
-        protein={{ current: avgProtein, goal: avgProteinGoal }}
-      />
-
       <div className="text-center py-2">
         <p className="text-sm text-muted-foreground">{netHeadline}</p>
         <p className="text-5xl font-bold tracking-tight text-primary">
