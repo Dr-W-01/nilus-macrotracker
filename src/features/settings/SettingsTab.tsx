@@ -110,9 +110,12 @@ export function SettingsTab() {
   }
 
   return (
-    <div className="p-4 pb-below-nav space-y-6 settings-tab">
-      <h1 className="text-xl font-bold">Settings</h1>
+    <div className="settings-tab pb-below-nav">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <h1 className="text-xl font-bold">Settings</h1>
+      </header>
 
+      <div className="space-y-6 p-4">
       <section className="space-y-3">
         <div>
           <h2 className="font-semibold">Current Goal Mode</h2>
@@ -469,6 +472,7 @@ export function SettingsTab() {
           local-first macro tracking PWA. Built with React, Vite, and ☦️
         </p>
       </section>
+      </div>
 
       <Dialog open={backupConfirmOpen} onOpenChange={setBackupConfirmOpen}>
         <ModalViewport active={backupConfirmOpen} />

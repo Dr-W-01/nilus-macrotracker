@@ -126,7 +126,9 @@ body {
 
 /* Daily/Library: natural content height — no flex stretch past the last item */
 .daily-tab,
-.library-tab {
+.library-tab,
+.stats-tab,
+.settings-tab {
   display: block;
 }
 
