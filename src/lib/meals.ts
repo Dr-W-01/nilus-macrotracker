@@ -50,6 +50,12 @@ export function remapCollapsedMeals(
   return out
 }
 
+export function isConfiguredMeal(meal: string | undefined, meals: string[]): boolean {
+  if (!meal?.trim()) return false
+  const key = meal.trim().toLowerCase()
+  return meals.some((m) => m.toLowerCase() === key)
+}
+
 /** Resolve a user-chosen meal name to a configured meal, or undefined if empty. */
 export function resolveLoggedMeal(
   meal: string | undefined,

@@ -10,6 +10,7 @@ export const mobileFriendlyInputProps = {
   'data-bwignore': 'true',
   'data-form-type': 'other',
   'data-autofill': 'off',
+  'aria-autocomplete': 'none' as const,
 } as const
 
 /** Lean props for short label/name fields (e.g. meal names in Settings). */

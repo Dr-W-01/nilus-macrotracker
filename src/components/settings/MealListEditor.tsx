@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Input } from '@/components/ui/input'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
 import { useMacroStore } from '@/store/useMacroStore'
+
+const actionBtnClass = 'h-9 w-9 shrink-0'
 
 export function MealListEditor() {
   const meals = useMacroStore((s) => s.settings.meals)
@@ -14,7 +17,9 @@ export function MealListEditor() {
   const reorderMeals = useMacroStore((s) => s.reorderMeals)
 
   const [newMeal, setNewMeal] = useState('')
-  const [editing, setEditing] = useState<Record<string, string>>({})
+  const [editingMeal, setEditingMeal] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const editRef = useRef<HTMLInputElement>(null)
 
   const handleAdd = () => {
     const name = newMeal.trim()
@@ -27,13 +32,20 @@ export function MealListEditor() {
     }
   }
 
+  const startEditing = (meal: string) => {
+    setEditingMeal(meal)
+    setEditValue(meal)
+    requestAnimationFrame(() => editRef.current?.focus())
+  }
+
+  const cancelEditing = () => {
+    setEditingMeal(null)
+    setEditValue('')
+  }
+
   const commitRename = (original: string) => {
-    const next = (editing[original] ?? original).trim()
-    setEditing((prev) => {
-      const copy = { ...prev }
-      delete copy[original]
-      return copy
-    })
+    const next = editValue.trim()
+    cancelEditing()
     if (!next || next.toLowerCase() === original.toLowerCase()) return
     if (renameMeal(original, next)) {
       toast.success(`Renamed "${original}" to "${next}"`)
@@ -48,74 +60,90 @@ export function MealListEditor() {
     reorderMeals(index, target)
   }
 
+  const handleRemove = (meal: string) => {
+    if (meals.length <= 1) return
+    removeMeal(meal)
+    toast.success(`Removed "${meal}" — logged foods moved to uncategorized`)
+  }
+
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2">
       <p className="text-xs text-muted-foreground">
-        Use the arrows to reorder. Rename or add meals used on the Daily tab.
+        Reorder meals for the Daily tab. Deleting a meal uncategorizes its logged foods.
       </p>
 
       <ul className="space-y-1">
-        {meals.map((meal, index) => (
-          <li
-            key={meal}
-            className="flex items-center gap-1 rounded-md border border-border bg-card px-1 py-0.5"
-          >
-            <div className="flex shrink-0 flex-col">
+        {meals.map((meal, index) => {
+          const isEditing = editingMeal === meal
+
+          return (
+            <li
+              key={meal}
+              className="flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-1"
+            >
+              {isEditing ? (
+                <Input
+                  ref={editRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => commitRename(meal)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.currentTarget.blur()
+                    if (e.key === 'Escape') cancelEditing()
+                  }}
+                  className="h-8 min-h-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-1"
+                  aria-label={`Edit meal name: ${meal}`}
+                  {...mobilePlainTextInputProps}
+                />
+              ) : (
+                <span className="min-w-0 flex-1 truncate px-1 text-sm font-medium">
+                  {meal}
+                </span>
+              )}
+
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="h-6 w-6 text-muted-foreground"
+                className={actionBtnClass}
                 disabled={index === 0}
                 aria-label={`Move ${meal} up`}
                 onClick={() => moveMeal(index, 'up')}
               >
-                <ChevronUp className="h-3.5 w-3.5" />
+                <ChevronUp className="h-4 w-4" />
               </Button>
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="h-6 w-6 text-muted-foreground"
+                className={actionBtnClass}
                 disabled={index === meals.length - 1}
                 aria-label={`Move ${meal} down`}
                 onClick={() => moveMeal(index, 'down')}
               >
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className="h-4 w-4" />
               </Button>
-            </div>
-            <Input
-              value={editing[meal] ?? meal}
-              onChange={(e) =>
-                setEditing((prev) => ({ ...prev, [meal]: e.target.value }))
-              }
-              onBlur={() => commitRename(meal)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.currentTarget.blur()
-                }
-              }}
-              className="h-7 min-h-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-0"
-              aria-label={`Meal name: ${meal}`}
-              {...mobilePlainTextInputProps}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-              disabled={meals.length <= 1}
-              onClick={() => {
-                if (meals.length <= 1) return
-                removeMeal(meal)
-                toast.success(`Removed "${meal}"`)
-              }}
-              aria-label={`Remove ${meal}`}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </li>
-        ))}
+              <EditIconButton
+                variant="outline"
+                className={actionBtnClass}
+                iconClassName="h-4 w-4"
+                label={`Edit ${meal}`}
+                onClick={() => startEditing(meal)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className={`${actionBtnClass} text-muted-foreground hover:border-destructive/50 hover:text-destructive`}
+                disabled={meals.length <= 1}
+                aria-label={`Delete ${meal}`}
+                onClick={() => handleRemove(meal)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </li>
+          )
+        })}
       </ul>
 
       <div className="flex gap-1.5">
@@ -126,11 +154,11 @@ export function MealListEditor() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleAdd()
           }}
-          className="h-8 text-sm"
+          className="h-9 text-sm"
           {...mobilePlainTextInputProps}
         />
-        <Button type="button" variant="outline" size="sm" className="h-8 shrink-0 gap-1 px-2.5" onClick={handleAdd}>
-          <Plus className="h-3.5 w-3.5" />
+        <Button type="button" variant="outline" size="sm" className="h-9 shrink-0 gap-1 px-2.5" onClick={handleAdd}>
+          <Plus className="h-4 w-4" />
           Add
         </Button>
       </div>

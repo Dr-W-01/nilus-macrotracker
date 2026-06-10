@@ -131,9 +131,9 @@ body {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
-/* Reserve space for fixed bottom nav + home indicator (iOS) */
+/* Scroll padding above in-flow bottom nav + home indicator (iOS) */
 .pb-below-nav {
-  padding-bottom: calc(var(--bottom-nav-inner) + max(0.75rem, var(--safe-bottom)));
+  padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
 .pb-below-nav-search {
@@ -163,7 +163,7 @@ body {
 }
 
 /* Lean mobile keyboard: fewer browser decorations and accessory affordances */
-input,
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']):not([type='range']),
 textarea,
 select {
   -webkit-appearance: none;

@@ -3,7 +3,7 @@ import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { formatLoggedFoodQuantity } from '@/lib/scale'
 import { getLoggedFoodMacros, roundMacro } from '@/lib/macros'
-import { normalizeMealName } from '@/lib/meals'
+import { isConfiguredMeal, resolveLoggedMeal } from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
 
 interface LoggedFoodEntryRowProps {
@@ -32,9 +32,10 @@ export function LoggedFoodEntryRow({
   onAssignMeal,
 }: LoggedFoodEntryRowProps) {
   const macros = getLoggedFoodMacros(foodLibrary, entry)
-  const entryMeal = entry.meal?.trim()
-    ? normalizeMealName(entry.meal, meals)
-    : null
+  const entryMeal =
+    entry.meal?.trim() && isConfiguredMeal(entry.meal, meals)
+      ? resolveLoggedMeal(entry.meal, meals) ?? null
+      : null
 
   return (
     <li>

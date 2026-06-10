@@ -17,6 +17,7 @@ import { AddFoodSheet } from '@/components/daily/AddFoodSheet'
 import { EditLoggedRecipeSheet } from '@/components/daily/EditLoggedRecipeSheet'
 import { FoodPickerSheet } from '@/components/daily/FoodPickerSheet'
 import { BulkMealAssignBar } from '@/components/daily/BulkMealAssignBar'
+import { DailyMealSections } from '@/components/daily/DailyMealSections'
 import { LoggedFoodEntryRow } from '@/components/daily/LoggedFoodEntryRow'
 import { MealPicker } from '@/components/daily/MealPicker'
 
@@ -55,14 +56,15 @@ import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { EmptyState } from '@/components/ui/EmptyState'
 import {
   computeDayMacros,
-  formatMealGroupTotals,
   roundMacro,
   scaleMacros,
 } from '@/lib/macros'
 import {
+  isConfiguredMeal,
   mealSortIndex,
   normalizeMealName,
   normalizeMeals,
+  resolveLoggedMeal,
 } from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
 import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
@@ -96,7 +98,6 @@ export function DailyTab() {
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
   const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
   const setDailyNote = useMacroStore((s) => s.setDailyNote)
-  const toggleMealCollapsed = useMacroStore((s) => s.toggleMealCollapsed)
   const collapsedMealNames = useMacroStore(
     (s) => s.mealCollapseByDate[s.currentDate] ?? NO_COLLAPSED_MEALS,
   )
@@ -152,11 +153,11 @@ export function DailyTab() {
     const unassigned: LoggedFood[] = []
     const groups = new Map<string, LoggedFood[]>()
     for (const entry of log.foods) {
-      if (!entry.meal?.trim()) {
+      if (!entry.meal?.trim() || !isConfiguredMeal(entry.meal, meals)) {
         unassigned.push(entry)
         continue
       }
-      const meal = normalizeMealName(entry.meal, meals)
+      const meal = resolveLoggedMeal(entry.meal, meals)!
       const list = groups.get(meal) ?? []
       list.push(entry)
       groups.set(meal, list)
@@ -263,46 +264,48 @@ export function DailyTab() {
   return (
     <div className="daily-tab flex flex-col pb-below-nav">
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 space-y-2.5">
-        <div className="flex items-center justify-center gap-2 sm:gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-11 w-11 shrink-0"
-            onClick={() => setCurrentDate(shiftDate(currentDate, -1))}
-            aria-label="Previous day"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          <p className="min-w-0 truncate font-semibold text-[15px] sm:text-base px-1">
-            {formatDisplayDate(currentDate)}
-          </p>
+        <div className="flex items-center justify-center gap-2">
           <EditIconButton
             variant={editDayMode ? 'default' : 'outline'}
             size="icon"
-            className="h-11 w-11 shrink-0"
-            iconClassName="h-5 w-5"
+            className="h-12 w-12 shrink-0"
+            iconClassName="h-6 w-6"
             label={editDayMode ? 'Exit edit mode' : 'Edit day'}
             onClick={() => setEditDayMode(!editDayMode)}
           />
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-11 w-11 shrink-0"
-            onClick={() => setCurrentDate(shiftDate(currentDate, 1))}
-            aria-label="Next day"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
+          <div className="flex min-w-0 items-center gap-0.5">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 shrink-0"
+              onClick={() => setCurrentDate(shiftDate(currentDate, -1))}
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+            <p className="min-w-0 max-w-[9.5rem] truncate px-0.5 text-center font-semibold text-[15px] sm:max-w-none sm:text-base">
+              {formatDisplayDate(currentDate)}
+            </p>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 shrink-0"
+              onClick={() => setCurrentDate(shiftDate(currentDate, 1))}
+              aria-label="Next day"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+          </div>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 shrink-0"
+                className="h-12 w-12 shrink-0"
                 aria-label="Open calendar"
                 title="Open calendar"
               >
-                <CalendarIcon className="h-5 w-5" />
+                <CalendarIcon className="h-6 w-6" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -335,6 +338,7 @@ export function DailyTab() {
             <select
               id="daily-goal-template"
               className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              autoComplete="off"
               value={activeTemplateId}
               onChange={(e) =>
                 updateDailyLog(currentDate, { goalTemplateId: e.target.value })
@@ -589,71 +593,23 @@ export function DailyTab() {
                   })}
                 </ul>
               )}
-              {foodsByMeal.map(({ meal, entries, totals }) => {
-                const mealExpanded = !collapsedMeals.has(meal)
-                return (
-                <section key={meal}>
-                  <button
-                    type="button"
-                    className="mb-1.5 flex w-full min-h-11 items-start gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50"
-                    onClick={() => toggleMealCollapsed(meal, currentDate)}
-                    aria-expanded={mealExpanded}
-                    aria-controls={`meal-foods-${meal.replace(/\s+/g, '-')}`}
-                  >
-                    <span className="mt-0.5 shrink-0 text-primary">
-                      {mealExpanded ? (
-                        <ChevronUp className="h-4 w-4" aria-hidden />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" aria-hidden />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1 space-y-0.5">
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-primary">
-                        {meal}
-                        <span className="sr-only">
-                          {mealExpanded ? ', expanded' : ', collapsed'}
-                        </span>
-                      </span>
-                      <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
-                        {formatMealGroupTotals(totals)}
-                      </span>
-                    </span>
-                    <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground tabular-nums">
-                      {entries.length} {entries.length === 1 ? 'item' : 'items'}
-                    </span>
-                  </button>
-                  {mealExpanded && (
-                  <ul
-                    id={`meal-foods-${meal.replace(/\s+/g, '-')}`}
-                    className="space-y-2"
-                  >
-                    {entries.map((entry) => {
-                      const food = foodLibrary.find((f) => f.id === entry.foodId)
-                      return (
-                        <LoggedFoodEntryRow
-                          key={entry.id}
-                          entry={entry}
-                          food={food}
-                          foodLibrary={foodLibrary}
-                          meals={meals}
-                          editDayMode={editDayMode}
-                          selectFoodsMode={selectFoodsMode}
-                          selected={selectedLogIds.has(entry.id)}
-                          onToggleSelect={() => toggleLogSelection(entry.id)}
-                          onOpenEdit={() => {
-                            if (food?.isRecipe) setEditRecipeLogged(entry)
-                            else setEditLogged(entry)
-                          }}
-                          onAssignMeal={(m) =>
-                            updateLoggedFood(entry.id, { meal: m })
-                          }
-                        />
-                      )
-                    })}
-                  </ul>
-                  )}
-                </section>
-              )})}
+              <DailyMealSections
+                sections={foodsByMeal}
+                allMeals={meals}
+                editDayMode={editDayMode}
+                currentDate={currentDate}
+                foodLibrary={foodLibrary}
+                meals={meals}
+                collapsedMeals={collapsedMeals}
+                selectFoodsMode={selectFoodsMode}
+                selectedLogIds={selectedLogIds}
+                onToggleSelect={toggleLogSelection}
+                onOpenEdit={(entry, isRecipe) => {
+                  if (isRecipe) setEditRecipeLogged(entry)
+                  else setEditLogged(entry)
+                }}
+                onAssignMeal={(entryId, m) => updateLoggedFood(entryId, { meal: m })}
+              />
             </div>
           )}
         </div>
