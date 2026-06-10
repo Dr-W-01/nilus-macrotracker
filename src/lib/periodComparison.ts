@@ -1,4 +1,5 @@
 import { roundMacro } from '@/lib/macros'
+import { normalizeGoalMode, type GoalMode } from '@/lib/goalMode'
 import {
   buildStatsDayRows,
   computeAdherenceBreakdown,
@@ -147,5 +148,61 @@ export function formatComparisonValue(
       return weightUnit ? `${roundMacro(value, 1)} ${weightUnit}` : String(value)
     default:
       return String(value)
+  }
+}
+
+export function formatComparisonDelta(
+  delta: number | null,
+  format: ComparisonValueFormat,
+): string | null {
+  if (delta == null) return null
+  if (delta === 0) return '±0'
+
+  switch (format) {
+    case 'signedCal':
+    case 'cal':
+      return `${delta > 0 ? '+' : ''}${roundMacro(delta, 0)}`
+    case 'percent':
+      return `${delta > 0 ? '+' : ''}${roundMacro(delta, 0)}%`
+    case 'grams':
+      return `${delta > 0 ? '+' : ''}${roundMacro(delta, 1)}g`
+    case 'weight':
+      return `${delta > 0 ? '+' : ''}${roundMacro(delta, 1)}`
+    default:
+      return `${delta > 0 ? '+' : ''}${delta}`
+  }
+}
+
+/** Whether a period-over-period delta is improving for the user's goal mode. */
+export function isComparisonDeltaImproving(
+  label: string,
+  delta: number | null,
+  goalMode: GoalMode,
+): boolean | null {
+  if (delta == null || delta === 0) return null
+
+  const mode = normalizeGoalMode(goalMode)
+
+  switch (label) {
+    case 'Protein':
+      return delta > 0
+    case 'Calories Out':
+      return delta > 0
+    case 'Energy Balance':
+      return delta > 0
+    case 'Net Calories':
+      if (mode === 'cut') return delta < 0
+      if (mode === 'bulk') return delta > 0
+      return null
+    case 'Calories In':
+      if (mode === 'bulk') return delta > 0
+      if (mode === 'cut') return delta < 0
+      return null
+    case 'Weight':
+      if (mode === 'cut') return delta < 0
+      if (mode === 'bulk') return delta > 0
+      return null
+    default:
+      return null
   }
 }
