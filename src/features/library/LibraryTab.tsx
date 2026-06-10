@@ -264,8 +264,8 @@ export function LibraryTab() {
     <div
       className={`library-tab ${librarySearchEngaged ? 'pb-below-nav-search' : 'pb-below-nav'}`}
     >
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <header className="border-b border-border p-4 space-y-3">
+      <div className="tab-sticky-header">
+        <div className="space-y-3 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-xl font-bold">Library</h1>
             {librarySegment === 'categories' && activeCategory ? (
@@ -376,7 +376,7 @@ export function LibraryTab() {
               Done editing
             </Button>
           )}
-        </header>
+        </div>
 
         {editMode && showBulkEdit && (
           <div

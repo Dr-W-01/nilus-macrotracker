@@ -54,7 +54,7 @@ export function StatsTab() {
 
   return (
     <div className="stats-tab pb-below-nav">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
         <h1 className="text-xl font-bold">Stats</h1>
       </header>
 

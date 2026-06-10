@@ -132,6 +132,14 @@ body {
   display: block;
 }
 
+.tab-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
 .safe-top {
   padding-top: var(--safe-top);
 }

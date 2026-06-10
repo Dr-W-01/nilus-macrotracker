@@ -263,7 +263,7 @@ export function DailyTab() {
 
   return (
     <div className="daily-tab pb-below-nav">
-      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
+      <header className="tab-sticky-header px-4 py-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center gap-1.5 justify-self-start">
             <Button
