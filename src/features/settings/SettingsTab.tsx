@@ -29,6 +29,7 @@ import { parseWeightInput, weightFromKg } from '@/lib/weight'
 import type { GoalTemplate, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
+import { useAppUpdateState } from '@/hooks/useAppUpdateState'
 import { runManualUpdateCheck } from '@/lib/pwaUpdate'
 import { cn } from '@/lib/utils'
 
@@ -59,6 +60,7 @@ export function SettingsTab() {
   const accentColor = settings.accentColor || DEFAULT_ACCENT_COLOR
   const secondaryTextColor =
     settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR
+  const { updateAvailable, lastUpdatedLabel } = useAppUpdateState()
 
   const handleBackupFile = async (file: File) => {
     try {
@@ -420,16 +422,58 @@ export function SettingsTab() {
         </CardContent>
       </Card>
 
-      <section className="space-y-4">
-        <Button
-          type="button"
-          className="h-12 w-full gap-2 bg-emerald-600 text-base text-white hover:bg-emerald-700 focus-visible:ring-emerald-600"
-          disabled={checkingUpdate}
-          onClick={handleCheckForUpdates}
+      <section className="space-y-3">
+        <Card
+          className={cn(
+            'overflow-hidden border-emerald-600/25 bg-emerald-500/10',
+            updateAvailable && 'ring-2 ring-emerald-500/40',
+          )}
         >
-          <RefreshCw className={cn('h-5 w-5', checkingUpdate && 'animate-spin')} />
-          {checkingUpdate ? 'Checking…' : 'Check for updates'}
-        </Button>
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">App updates</p>
+                <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                  {updateAvailable
+                    ? 'A new version is ready to install.'
+                    : 'Check for the latest improvements and fixes.'}
+                </p>
+              </div>
+              {updateAvailable && (
+                <span className="shrink-0 rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  New
+                </span>
+              )}
+            </div>
+            <Button
+              type="button"
+              size="lg"
+              className={cn(
+                'h-14 w-full gap-2.5 text-base font-semibold shadow-md',
+                'bg-emerald-600 text-white hover:bg-emerald-500',
+                'focus-visible:ring-emerald-500',
+              )}
+              disabled={checkingUpdate}
+              onClick={handleCheckForUpdates}
+            >
+              <RefreshCw className={cn('h-5 w-5', checkingUpdate && 'animate-spin')} />
+              {checkingUpdate
+                ? 'Checking…'
+                : updateAvailable
+                  ? 'Install update'
+                  : 'Check for updates'}
+            </Button>
+            {lastUpdatedLabel ? (
+              <p className="text-center text-xs text-muted-foreground">
+                Last updated: {lastUpdatedLabel}
+              </p>
+            ) : (
+              <p className="text-center text-xs text-muted-foreground">
+                Last updated: not recorded yet
+              </p>
+            )}
+          </CardContent>
+        </Card>
         <Button
           className="h-11 w-full gap-2"
           variant="destructive"

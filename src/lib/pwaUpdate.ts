@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { toast } from 'sonner'
 
 type UpdateServiceWorker = (reloadPage?: boolean) => Promise<void>
@@ -5,6 +6,10 @@ type UpdateServiceWorker = (reloadPage?: boolean) => Promise<void>
 export type AppUpdateStatus = 'update-ready' | 'up-to-date' | 'unsupported'
 
 const RELOAD_PARAM = '_app_reload'
+const LAST_UPDATED_KEY = 'nulltracker:last-updated'
+
+let updateAvailable = false
+const updateListeners = new Set<() => void>()
 
 /** iOS can be slow to download and install a waiting worker. */
 const PROBE_TIMEOUT_MS = 10000
@@ -13,6 +18,46 @@ let updateServiceWorker: UpdateServiceWorker | null = null
 
 export function registerPwaUpdateHandler(handler: UpdateServiceWorker) {
   updateServiceWorker = handler
+}
+
+export function setUpdateAvailable(available: boolean): void {
+  if (updateAvailable === available) return
+  updateAvailable = available
+  updateListeners.forEach((listener) => listener())
+}
+
+export function getUpdateAvailable(): boolean {
+  return updateAvailable
+}
+
+export function subscribeAppUpdateState(listener: () => void): () => void {
+  updateListeners.add(listener)
+  return () => {
+    updateListeners.delete(listener)
+  }
+}
+
+export function recordSuccessfulUpdate(): void {
+  try {
+    localStorage.setItem(LAST_UPDATED_KEY, new Date().toISOString())
+  } catch {
+    // Ignore storage errors (private mode, quota, etc.)
+  }
+}
+
+export function getLastUpdatedAt(): Date | null {
+  try {
+    const raw = localStorage.getItem(LAST_UPDATED_KEY)
+    if (!raw) return null
+    const date = new Date(raw)
+    return Number.isNaN(date.getTime()) ? null : date
+  } catch {
+    return null
+  }
+}
+
+export function formatLastUpdated(date: Date): string {
+  return format(date, 'MMM d, yyyy')
 }
 
 export function showUpdateAvailableToast(onRefresh: () => void) {
@@ -198,6 +243,8 @@ export async function applyAppUpdate(): Promise<void> {
     await requestSkipWaiting(registration)
   }
 
+  recordSuccessfulUpdate()
+  setUpdateAvailable(false)
   performHardReload()
 }
 

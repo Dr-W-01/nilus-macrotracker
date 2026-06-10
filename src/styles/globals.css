@@ -210,6 +210,17 @@ body {
   color: var(--accent);
 }
 
+/* Consistent paired action buttons on tab toolbars */
+.tab-action-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-action-row > .flex-1,
+.tab-action-row > [class*='flex-1'] {
+  min-width: 0;
+}
+
 .sticky-letter {
   position: sticky;
   top: 0;

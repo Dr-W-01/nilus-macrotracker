@@ -318,8 +318,8 @@ export function LibraryTab() {
             onSearchBlur={() => setSearchFocused(false)}
           />
           {!editMode && librarySegment === 'items' && (
-            <div className="flex gap-2">
-              <Button className="min-w-0 flex-1" size="sm" onClick={() => setNewFoodOpen(true)}>
+            <div className="tab-action-row">
+              <Button className="min-w-0 flex-1" onClick={() => setNewFoodOpen(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 New Food
               </Button>
@@ -335,8 +335,8 @@ export function LibraryTab() {
             </div>
           )}
           {!editMode && librarySegment === 'categories' && !activeCategory && (
-            <div className="flex gap-2">
-              <Button className="min-w-0 flex-1" size="sm" onClick={() => setAddCategoryOpen(true)}>
+            <div className="tab-action-row">
+              <Button className="min-w-0 flex-1" onClick={() => setAddCategoryOpen(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 New Category
               </Button>
@@ -352,8 +352,8 @@ export function LibraryTab() {
             </div>
           )}
           {!editMode && librarySegment === 'recipes' && (
-            <div className="flex gap-2">
-              <Button className="min-w-0 flex-1" size="sm" onClick={() => setRecipeOpen(true)}>
+            <div className="tab-action-row">
+              <Button className="min-w-0 flex-1" onClick={() => setRecipeOpen(true)}>
                 <ChefHat className="h-4 w-4 mr-1" />
                 Create Recipe
               </Button>
@@ -371,8 +371,7 @@ export function LibraryTab() {
           {editMode && showBulkEdit && (
             <Button
               variant="default"
-              size="sm"
-              className="w-full gap-1.5"
+              className="h-11 w-full gap-1.5"
               onClick={exitEditMode}
             >
               <Check className="h-4 w-4" />

@@ -83,7 +83,9 @@ export function MealListEditor() {
     if (ok) {
       toast.success(`Removed "${meal}" — logged foods moved to Uncategorized`)
     } else {
-      toast.error('Could not delete meal. Your logged food data was not changed.')
+      toast.error(
+        'Could not remove this meal. Your logged foods are unchanged — try again in a moment.',
+      )
     }
   }
 

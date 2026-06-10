@@ -4,6 +4,7 @@ import {
   applyAppUpdate,
   performHardReload,
   registerPwaUpdateHandler,
+  setUpdateAvailable,
   showUpdateAvailableToast,
 } from '@/lib/pwaUpdate'
 
@@ -41,6 +42,10 @@ export function PwaUpdateManager() {
   useEffect(() => {
     registerPwaUpdateHandler(updateServiceWorker)
   }, [updateServiceWorker])
+
+  useEffect(() => {
+    setUpdateAvailable(needRefresh)
+  }, [needRefresh])
 
   useEffect(() => {
     if (!needRefresh) return

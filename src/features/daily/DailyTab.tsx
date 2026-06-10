@@ -333,8 +333,7 @@ export function DailyTab() {
           <div className="space-y-3">
             <Button
               variant="outline"
-              size="sm"
-              className="w-full gap-1.5"
+              className="h-11 w-full gap-1.5"
               onClick={handleDuplicateYesterday}
             >
               <Copy className="h-4 w-4 shrink-0" aria-hidden />
