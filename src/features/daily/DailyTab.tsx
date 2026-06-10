@@ -266,14 +266,6 @@ export function DailyTab() {
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center gap-1.5 justify-self-start">
-            <EditIconButton
-              variant={editDayMode ? 'default' : 'outline'}
-              size="icon"
-              className="h-12 w-12 shrink-0"
-              iconClassName="h-6 w-6"
-              label={editDayMode ? 'Exit edit mode' : 'Edit day'}
-              onClick={() => setEditDayMode(!editDayMode)}
-            />
             <Button
               variant="outline"
               size="icon"
@@ -283,6 +275,14 @@ export function DailyTab() {
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
+            <EditIconButton
+              variant={editDayMode ? 'default' : 'outline'}
+              size="icon"
+              className="h-12 w-12 shrink-0"
+              iconClassName="h-6 w-6"
+              label={editDayMode ? 'Exit edit mode' : 'Edit day'}
+              onClick={() => setEditDayMode(!editDayMode)}
+            />
           </div>
 
           <p className="px-3 text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
@@ -290,15 +290,6 @@ export function DailyTab() {
           </p>
 
           <div className="flex items-center gap-1.5 justify-self-end">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 shrink-0"
-              onClick={() => setCurrentDate(shiftDate(currentDate, 1))}
-              aria-label="Next day"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -319,6 +310,15 @@ export function DailyTab() {
                 />
               </PopoverContent>
             </Popover>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 shrink-0"
+              onClick={() => setCurrentDate(shiftDate(currentDate, 1))}
+              aria-label="Next day"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
           </div>
         </div>
       </header>
