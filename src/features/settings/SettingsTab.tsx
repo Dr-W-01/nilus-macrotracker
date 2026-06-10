@@ -22,6 +22,7 @@ import {
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { GOAL_MODE_OPTIONS } from '@/lib/goalMode'
+import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { MealListEditor } from '@/components/settings/MealListEditor'
 import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
@@ -146,16 +147,25 @@ export function SettingsTab() {
                     {g.calories} cal intake
                     {deficitLabel ? ` · ${deficitLabel}` : ''}
                   </p>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    P{g.protein} C{g.carbs} F{g.fat}
-                  </p>
+                  <LoggedMacroPreview
+                    macros={{
+                      calories: g.calories,
+                      protein: g.protein,
+                      carbs: g.carbs,
+                      fat: g.fat,
+                      fiber: g.fiber,
+                      sugars: g.sugars,
+                    }}
+                    size="sm"
+                    className="leading-snug"
+                  />
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <EditIconButton
                     size="icon"
                     variant="outline"
-                    className="h-10 w-10"
-                    iconClassName="h-5 w-5"
+                    className="h-11 w-11"
+                    iconClassName="h-6 w-6"
                     label={`Edit ${g.name}`}
                     onClick={() => setEditingGoal(g)}
                   />

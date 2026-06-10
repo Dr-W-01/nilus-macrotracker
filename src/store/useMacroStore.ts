@@ -274,7 +274,6 @@ interface MacroStore {
   renameMeal: (from: string, to: string) => boolean
   removeMeal: (name: string) => void
   reorderMeals: (fromIndex: number, toIndex: number) => void
-  restoreDefaultMeals: () => void
   recordFoodSearch: (scope: 'library' | 'picker', query: string) => void
   clearRecentFoodSearches: (scope: 'library' | 'picker') => void
   addGoalTemplate: (t: Omit<GoalTemplate, 'id'>) => string
@@ -752,44 +751,6 @@ export const useMacroStore = create<MacroStore>()(
 
         set({
           settings: { ...get().settings, meals: nextMeals, defaultMeal },
-          dailyLogs,
-          mealCollapseByDate,
-        })
-      },
-
-      restoreDefaultMeals: () => {
-        const current = normalizeMeals(get().settings.meals)
-        const defaults = [...DEFAULT_MEALS]
-        const renameMap = new Map<string, string>()
-        current.forEach((meal, idx) => {
-          if (defaults[idx] && meal.toLowerCase() !== defaults[idx].toLowerCase()) {
-            renameMap.set(meal.toLowerCase(), defaults[idx])
-          }
-        })
-
-        const dailyLogs = Object.fromEntries(
-          Object.entries(get().dailyLogs).map(([date, log]) => [
-            date,
-            {
-              ...log,
-              foods: remapMealReferences(log.foods, renameMap, new Set()),
-            },
-          ]),
-        )
-
-        const mealCollapseByDate = Object.fromEntries(
-          Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
-            date,
-            remapCollapsedMeals(collapsed, renameMap, new Set()),
-          ]),
-        )
-
-        set({
-          settings: {
-            ...get().settings,
-            meals: defaults,
-            defaultMeal: DEFAULT_MEALS[0],
-          },
           dailyLogs,
           mealCollapseByDate,
         })
