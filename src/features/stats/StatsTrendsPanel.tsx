@@ -30,6 +30,14 @@ import { MACRO_CHART_COLORS, macroMetricOptions } from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 import { LoggingConsistencyCard } from '@/components/stats/LoggingConsistencyCard'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
+import {
+  CHART_AXIS_STROKE,
+  CHART_GOAL_INTAKE,
+  CHART_GOAL_NET,
+  CHART_GRID_STROKE,
+  CHART_REFERENCE_STROKE,
+  chartTooltipStyle,
+} from '@/lib/chartTheme'
 
 const CALORIE_METRICS: { key: TrendMetricKey; label: string }[] = [
   { key: 'net', label: 'Net Calories' },
@@ -44,8 +52,8 @@ const CALORIE_LINE_COLORS: Record<'net' | 'calories', string> = {
 }
 
 const GOAL_LINE_COLORS = {
-  intake: '#fbbf24',
-  net: '#94a3b8',
+  intake: CHART_GOAL_INTAKE,
+  net: CHART_GOAL_NET,
 } as const
 
 type GoalLine = { y: number; label: string; stroke: string }
@@ -74,6 +82,7 @@ interface StatsTrendsPanelProps {
   settings: Settings
   accentColor: string
   onDayClick: (date: string) => void
+  onStartLogging?: () => void
 }
 
 function TrendsChartLegend({
@@ -178,10 +187,10 @@ function TrendsLineChart({
               if (row) onDayClick(row.fullDate)
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-            <XAxis dataKey="date" stroke="#888" fontSize={11} />
-            <YAxis stroke="#888" fontSize={11} domain={yDomain ?? ['auto', 'auto']} />
-            {yDomain && <ReferenceLine y={0} stroke="#666" strokeWidth={1} />}
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
+            <XAxis dataKey="date" stroke={CHART_AXIS_STROKE} fontSize={11} tickLine={false} />
+            <YAxis stroke={CHART_AXIS_STROKE} fontSize={11} tickLine={false} domain={yDomain ?? ['auto', 'auto']} />
+            {yDomain && <ReferenceLine y={0} stroke={CHART_REFERENCE_STROKE} strokeWidth={1} />}
             {goalLines?.map((goal) => (
               <ReferenceLine
                 key={goal.label}
@@ -197,7 +206,7 @@ function TrendsLineChart({
                 }}
               />
             ))}
-            <Tooltip contentStyle={{ background: '#141414', border: '1px solid #333' }} />
+            <Tooltip contentStyle={chartTooltipStyle} />
             <Legend
               content={
                 <TrendsChartLegend
@@ -252,6 +261,7 @@ export function StatsTrendsPanel({
   settings,
   accentColor,
   onDayClick,
+  onStartLogging,
 }: StatsTrendsPanelProps) {
   const [rollingWindow, setRollingWindow] = useState<7 | 14>(7)
   const [showRolling, setShowRolling] = useState(false)
@@ -426,7 +436,9 @@ export function StatsTrendsPanel({
         <EmptyState
           icon={TrendingUp}
           title="No trends yet"
-          description="Log food on the Daily tab to see calorie and macro charts for this period. Try a wider date range if you recently started tracking."
+          description="No logged days in this range. Start tracking to see calorie and macro charts, or try a wider date range if you recently began."
+          actionLabel="Start logging"
+          onAction={onStartLogging}
         />
       )}
 

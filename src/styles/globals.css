@@ -4,23 +4,23 @@
 
 :root {
   --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #141414;
-  --card-foreground: #fafafa;
-  --popover: #141414;
-  --popover-foreground: #fafafa;
+  --foreground: #f4f4f5;
+  --card: #171717;
+  --card-foreground: #f4f4f5;
+  --popover: #171717;
+  --popover-foreground: #f4f4f5;
   --primary: #b22222;
   --primary-foreground: #ffffff;
-  --secondary: #1f1f1f;
-  --secondary-foreground: #fafafa;
-  --muted: #1f1f1f;
-  --muted-foreground: #c4c4c4;
+  --secondary: #222222;
+  --secondary-foreground: #f4f4f5;
+  --muted: #222222;
+  --muted-foreground: #a3a3a3;
   --accent: #b22222;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #2a2a2a;
-  --input: #2a2a2a;
+  --border: #2e2e2e;
+  --input: #2e2e2e;
   --ring: #b22222;
   --radius: 0.75rem;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -28,7 +28,17 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --bottom-nav-inner: 4.5rem;
-  --daily-edit-surface: #111318;
+  --daily-edit-surface: #12151c;
+  --chart-grid: #2a2a2a;
+  --chart-axis: #9ca3af;
+  --chart-reference: #525252;
+  --chart-tooltip-bg: #1a1a1a;
+  --chart-tooltip-border: #3a3a3a;
+  --chart-tooltip-text: #f4f4f5;
+  --chart-goal-intake: #fbbf24;
+  --chart-goal-net: #94a3b8;
+  --chart-trend-line: #94a3b8;
+  --chart-deficit-bar: #64748b;
 }
 
 .light {
@@ -52,6 +62,16 @@
   --input: #e4e4e7;
   --ring: #b22222;
   --daily-edit-surface: #eceef2;
+  --chart-grid: #e4e4e7;
+  --chart-axis: #71717a;
+  --chart-reference: #a1a1aa;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e4e4e7;
+  --chart-tooltip-text: #0a0a0a;
+  --chart-goal-intake: #d97706;
+  --chart-goal-net: #64748b;
+  --chart-trend-line: #64748b;
+  --chart-deficit-bar: #94a3b8;
 }
 
 @theme inline {
@@ -170,8 +190,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: color-mix(in srgb, var(--background) 92%, transparent);
-  backdrop-filter: blur(8px);
+  background-color: var(--background);
+  border-bottom: 1px solid var(--border);
 }
 
 /* Daily tab uses the same customizable secondary text color */

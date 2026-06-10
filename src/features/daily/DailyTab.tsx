@@ -545,7 +545,7 @@ export function DailyTab() {
           </div>
 
           {editDayMode && selectFoodsMode && log.foods.length > 0 && (
-            <div className="sticky top-0 z-10 -mx-1 mb-3 bg-background/95 py-1 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <div className="sticky top-0 z-10 -mx-1 mb-3 bg-background py-1">
               <BulkMealAssignBar
                 count={selectedLogIds.size}
                 meals={meals}
@@ -564,11 +564,19 @@ export function DailyTab() {
               title="No foods logged yet"
               description={
                 editDayMode
-                  ? 'Add your first food, copy yesterday\'s log, or pick a favorite from your library for quick logging.'
-                  : 'Switch to Edit Day to start logging meals for this date.'
+                  ? 'Add your first food from your library, copy yesterday\'s log, or use a favorite for quick logging.'
+                  : 'Turn on Edit Day to start logging meals for this date.'
               }
-              actionLabel={editDayMode ? 'Add your first food' : undefined}
-              onAction={editDayMode ? () => setPickerOpen(true) : undefined}
+              actionLabel={editDayMode ? 'Add your first food' : 'Start logging'}
+              onAction={
+                editDayMode ? () => setPickerOpen(true) : () => setEditDayMode(true)
+              }
+              secondaryActionLabel={editDayMode ? 'Browse Library' : undefined}
+              onSecondaryAction={
+                editDayMode
+                  ? () => useMacroStore.getState().setCurrentTab('library')
+                  : undefined
+              }
             />
           ) : (
             <div className="space-y-4">

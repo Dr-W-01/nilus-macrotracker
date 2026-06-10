@@ -39,6 +39,7 @@ interface StatsOverviewPanelProps {
   foodLibrary: FoodItem[]
   settings: Settings
   accentColor: string
+  onStartLogging?: () => void
 }
 
 export function StatsOverviewPanel({
@@ -48,6 +49,7 @@ export function StatsOverviewPanel({
   foodLibrary,
   settings,
   accentColor,
+  onStartLogging,
 }: StatsOverviewPanelProps) {
   const goalMode = settings.goalMode ?? 'cut'
   const dayRows = buildStatsDayRows(range, dailyLogs, foodLibrary, settings)
@@ -108,7 +110,9 @@ export function StatsOverviewPanel({
         <EmptyState
           icon={BarChart3}
           title="No data for this period"
-          description="Log food on the Daily tab to unlock overview stats, adherence scores, and insights for the selected date range."
+          description="Nothing logged in this date range yet. Start tracking on the Daily tab to see net calories, adherence, and insights here."
+          actionLabel="Start logging"
+          onAction={onStartLogging}
         />
       </div>
     )

@@ -31,6 +31,7 @@ import {
   MACRO_DISPLAY_LABELS,
   MACRO_NUTRIENT_ORDER,
 } from '@/lib/macroColors'
+import { chartTooltipStyle } from '@/lib/chartTheme'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
 
 type SortKey =
@@ -56,6 +57,7 @@ interface StatsBreakdownsPanelProps {
   foodLibrary: FoodItem[]
   settings: Settings
   onDayClick: (date: string) => void
+  onStartLogging?: () => void
 }
 
 export function StatsBreakdownsPanel({
@@ -64,6 +66,7 @@ export function StatsBreakdownsPanel({
   foodLibrary,
   settings,
   onDayClick,
+  onStartLogging,
 }: StatsBreakdownsPanelProps) {
   const [sortKey, setSortKey] = useState<SortKey>('date')
   const [sortAsc, setSortAsc] = useState(true)
@@ -118,7 +121,7 @@ export function StatsBreakdownsPanel({
   }
 
   const headerClass =
-    'sticky top-0 z-10 cursor-pointer whitespace-nowrap bg-background px-2 py-2 text-[10px] font-semibold uppercase tracking-wide sm:text-xs sm:normal-case sm:tracking-normal shadow-[0_1px_0_hsl(var(--border))]'
+    'sticky top-0 z-10 cursor-pointer whitespace-nowrap bg-background px-2 py-2 text-[10px] font-semibold uppercase tracking-wide sm:text-xs sm:normal-case sm:tracking-normal shadow-[0_1px_0_var(--border)]'
   const cellClass = 'whitespace-nowrap px-2 py-1.5 tabular-nums text-[11px] sm:text-sm'
 
   if (dayRows.length === 0) {
@@ -126,7 +129,9 @@ export function StatsBreakdownsPanel({
       <EmptyState
         icon={PieChartIcon}
         title="No breakdown data"
-        description="Log meals on the Daily tab to see macro distribution, top foods, and a day-by-day table for this period."
+        description="Nothing logged in this range yet. Start tracking to see macro distribution, top foods, and a day-by-day breakdown."
+        actionLabel="Start logging"
+        onAction={onStartLogging}
       />
     )
   }
@@ -162,7 +167,7 @@ export function StatsBreakdownsPanel({
                   const grams = (item?.payload as { grams?: number })?.grams
                   return [`${value}% (${grams}g)`, item?.name ?? '']
                 }}
-                contentStyle={{ background: '#141414', border: '1px solid #333' }}
+                contentStyle={chartTooltipStyle}
               />
               <Legend />
             </PieChart>

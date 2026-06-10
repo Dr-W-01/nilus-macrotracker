@@ -9,6 +9,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  CHART_AXIS_STROKE,
+  CHART_DEFICIT_BAR,
+  CHART_GRID_STROKE,
+  CHART_REFERENCE_STROKE,
+  chartTooltipStyle,
+} from '@/lib/chartTheme'
 
 interface DailyEnergyBalanceChartProps {
   data: { label: string; net: number }[]
@@ -29,25 +36,25 @@ export function DailyEnergyBalanceChart({ data, color }: DailyEnergyBalanceChart
       <div className="h-36 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-            <XAxis dataKey="label" stroke="#888" fontSize={10} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} vertical={false} />
+            <XAxis dataKey="label" stroke={CHART_AXIS_STROKE} fontSize={10} tickLine={false} />
             <YAxis
-              stroke="#888"
+              stroke={CHART_AXIS_STROKE}
               fontSize={10}
               width={42}
               domain={[-maxAbs, maxAbs]}
               tickFormatter={(v) => `${v}`}
             />
-            <ReferenceLine y={0} stroke="#666" strokeWidth={1} />
+            <ReferenceLine y={0} stroke={CHART_REFERENCE_STROKE} strokeWidth={1} />
             <Tooltip
-              contentStyle={{ background: '#141414', border: '1px solid #333', fontSize: 12 }}
+              contentStyle={chartTooltipStyle}
               formatter={(value) => [`${value ?? 0} cal`, 'Net']}
             />
             <Bar dataKey="net" radius={[2, 2, 0, 0]} isAnimationActive={false}>
               {data.map((entry, i) => (
                 <Cell
                   key={i}
-                  fill={entry.net >= 0 ? color : '#64748b'}
+                  fill={entry.net >= 0 ? color : CHART_DEFICIT_BAR}
                   fillOpacity={entry.net >= 0 ? 1 : 0.85}
                 />
               ))}

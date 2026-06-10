@@ -246,9 +246,11 @@ export function LibraryTab() {
         <EmptyState
           icon={BookOpen}
           title="Your food library is empty"
-          description="Load the built-in demo library to get started quickly, or add your own foods and mark favorites for one-tap logging on the Daily tab."
-          actionLabel={`Load demo library (${SEED_LIBRARY_COUNT} items)`}
-          onAction={() => {
+          description="Save foods you eat often so you can log them in one tap from the Daily tab. Add your own items or load the demo library to explore."
+          actionLabel="Add your first food"
+          onAction={() => setNewFoodOpen(true)}
+          secondaryActionLabel={`Load demo library (${SEED_LIBRARY_COUNT} items)`}
+          onSecondaryAction={() => {
             loadSeedLibrary()
             toast.success(`Loaded ${SEED_LIBRARY_COUNT} foods`)
           }}
@@ -256,6 +258,7 @@ export function LibraryTab() {
         <p className="mt-4 text-center text-xs text-muted-foreground">
           You can also import a backup from Settings → Data
         </p>
+        <NewFoodSheet open={newFoodOpen} onOpenChange={setNewFoodOpen} />
       </div>
     )
   }

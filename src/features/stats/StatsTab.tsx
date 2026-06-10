@@ -6,6 +6,7 @@ import { StatsOverviewPanel } from '@/features/stats/StatsOverviewPanel'
 import { StatsTrendsPanel } from '@/features/stats/StatsTrendsPanel'
 import { StatsBreakdownsPanel } from '@/features/stats/StatsBreakdownsPanel'
 import { clampStatsRange, getMonthRange, getWeekRangeForDate } from '@/lib/dates'
+import { navigateToDailyLogging } from '@/lib/navigateToDaily'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export function StatsTab() {
@@ -88,6 +89,7 @@ export function StatsTab() {
           foodLibrary={foodLibrary}
           settings={settings}
           accentColor={accentColor}
+          onStartLogging={navigateToDailyLogging}
         />
       )}
 
@@ -100,6 +102,7 @@ export function StatsTab() {
           settings={settings}
           accentColor={accentColor}
           onDayClick={goToDay}
+          onStartLogging={navigateToDailyLogging}
         />
       )}
 
@@ -110,6 +113,7 @@ export function StatsTab() {
           foodLibrary={foodLibrary}
           settings={settings}
           onDayClick={goToDay}
+          onStartLogging={navigateToDailyLogging}
         />
       )}
       </div>

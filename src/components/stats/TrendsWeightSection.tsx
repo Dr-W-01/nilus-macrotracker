@@ -24,6 +24,12 @@ import {
   type WeightRangePreset,
 } from '@/lib/weightStats'
 import { weightFromKg, weightUnitLabel } from '@/lib/weight'
+import {
+  CHART_AXIS_STROKE,
+  CHART_GRID_STROKE,
+  CHART_TREND_LINE,
+  chartTooltipStyle,
+} from '@/lib/chartTheme'
 import type { DailyLog, Settings } from '@/lib/types'
 
 interface TrendsWeightSectionProps {
@@ -45,7 +51,8 @@ function WeightChartLegend({ accentColor }: { accentColor: string }) {
       </span>
       <span className="inline-flex items-center gap-1.5">
         <span
-          className="inline-block h-0 w-3 border-t-2 border-dashed border-[#94a3b8]"
+          className="inline-block h-0 w-3 border-t-2 border-dashed"
+          style={{ borderColor: CHART_TREND_LINE }}
         />
         7-day avg
       </span>
@@ -148,10 +155,10 @@ export function TrendsWeightSection({
                   if (row?.weight != null) onDayClick(row.date)
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
                 <XAxis
                   dataKey="date"
-                  stroke="#888"
+                  stroke={CHART_AXIS_STROKE}
                   fontSize={10}
                   tickFormatter={(d) => weightChartAxisTick(String(d), spanDays)}
                   interval={spanDays <= 16 ? 0 : 'preserveStartEnd'}
@@ -159,13 +166,13 @@ export function TrendsWeightSection({
                   padding={{ left: 28, right: 28 }}
                 />
                 <YAxis
-                  stroke="#888"
+                  stroke={CHART_AXIS_STROKE}
                   fontSize={11}
                   domain={['auto', 'auto']}
                   tickFormatter={(v) => `${v}`}
                 />
                 <Tooltip
-                  contentStyle={{ background: '#141414', border: '1px solid #333' }}
+                  contentStyle={chartTooltipStyle}
                   labelFormatter={(_, payload) => {
                     const row = payload?.[0]?.payload as WeightChartPoint | undefined
                     if (!row?.date) return ''
@@ -206,7 +213,7 @@ export function TrendsWeightSection({
                   dataKey="trend"
                   name="7-day avg"
                   legendType="none"
-                  stroke="#94a3b8"
+                  stroke={CHART_TREND_LINE}
                   strokeWidth={2}
                   strokeDasharray="6 4"
                   dot={false}
