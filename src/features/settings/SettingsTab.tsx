@@ -24,6 +24,11 @@ import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog'
 import { MealListEditor } from '@/components/settings/MealListEditor'
+import { TrackingToggle } from '@/components/settings/TrackingToggle'
+import {
+  isTrackBurnedCaloriesEnabled,
+  isTrackCurrentWeightEnabled,
+} from '@/lib/trackingSettings'
 import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import { parseWeightInput, weightFromKg } from '@/lib/weight'
@@ -198,8 +203,31 @@ export function SettingsTab() {
         >
           Create new template
         </Button>
+
+        <div className="mt-4 space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Turn features off to hide them in Daily and Stats. Your logged data is always kept.
+          </p>
+          <TrackingToggle
+            label="Track current weight"
+            description="Show weight logging on the Daily tab and weight charts in Stats."
+            checked={isTrackCurrentWeightEnabled(settings)}
+            onCheckedChange={(checked) =>
+              updateSettings({ trackCurrentWeight: checked })
+            }
+          />
+          <TrackingToggle
+            label="Track burned calories"
+            description="Show burned calories on the Daily tab and net calorie trends in Stats."
+            checked={isTrackBurnedCaloriesEnabled(settings)}
+            onCheckedChange={(checked) =>
+              updateSettings({ trackBurnedCalories: checked })
+            }
+          />
+        </div>
       </section>
 
+      {isTrackCurrentWeightEnabled(settings) && (
       <section className="space-y-3">
         <div>
           <h2 className="font-semibold">Units</h2>
@@ -224,7 +252,9 @@ export function SettingsTab() {
           </Button>
         </div>
       </section>
+      )}
 
+      {isTrackCurrentWeightEnabled(settings) && (
       <section className="space-y-3">
         <div>
           <h2 className="font-semibold">Target weight</h2>
@@ -267,6 +297,7 @@ export function SettingsTab() {
           />
         </div>
       </section>
+      )}
 
       <section className="space-y-3">
         <h2 className="font-semibold">Daily meals</h2>

@@ -3,7 +3,7 @@ pid: 10948
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-10T01:34:58.469Z
-running_for_ms: 51230001 
+running_for_ms: 92293587 
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -19,3 +19,9 @@ Port 5174 is in use, trying another one...
 10:38:12 PM [vite] vite.config.ts changed, restarting server...
 10:38:12 PM [vite] vite.config.ts changed, restarting server...
 10:38:12 PM [vite] server restarted.
+
+---
+exit_code: -1
+elapsed_ms: 92293587
+ended_at: 2026-06-11T03:13:04.211Z
+---

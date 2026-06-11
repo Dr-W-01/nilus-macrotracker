@@ -1,5 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { LoggedFoodEntryRow } from '@/components/daily/LoggedFoodEntryRow'
 import { computeDayMacros, formatMealGroupTotals } from '@/lib/macros'
 import type { FoodItem, LoggedFood } from '@/lib/types'
@@ -42,125 +41,28 @@ export function DailyMealSections({
   onAssignMeal,
 }: DailyMealSectionsProps) {
   const toggleMealCollapsed = useMacroStore((s) => s.toggleMealCollapsed)
-  const reorderMeals = useMacroStore((s) => s.reorderMeals)
 
   const sectionByMeal = new Map(sections.map((s) => [s.meal.toLowerCase(), s]))
   const displayMeals = editDayMode
     ? allMeals
     : sections.map((s) => s.meal)
 
-  const [dragFrom, setDragFrom] = useState<number | null>(null)
-  const [dragOver, setDragOver] = useState<number | null>(null)
-  const rowRefs = useRef<Map<number, HTMLElement>>(new Map())
-
-  const finishDrag = useCallback(
-    (from: number | null, to: number | null) => {
-      if (from !== null && to !== null && from !== to) {
-        reorderMeals(from, to)
-      }
-      setDragFrom(null)
-      setDragOver(null)
-    },
-    [reorderMeals],
-  )
-
-  const resolveDropIndex = (clientY: number): number | null => {
-    for (const [index, el] of rowRefs.current.entries()) {
-      const rect = el.getBoundingClientRect()
-      if (clientY >= rect.top && clientY <= rect.bottom) return index
-    }
-    return null
-  }
-
-  const onGripPointerDown = (index: number) => (e: React.PointerEvent) => {
-    if (!editDayMode) return
-    e.preventDefault()
-    e.stopPropagation()
-    setDragFrom(index)
-    setDragOver(index)
-    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-
-    const onMove = (ev: PointerEvent) => {
-      setDragOver(resolveDropIndex(ev.clientY))
-    }
-    const onUp = (ev: PointerEvent) => {
-      const to = resolveDropIndex(ev.clientY)
-      finishDrag(index, to ?? index)
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-      window.removeEventListener('pointercancel', onUp)
-    }
-
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-    window.addEventListener('pointercancel', onUp)
-  }
-
-  const onDragStart = (index: number) => (e: React.DragEvent) => {
-    if (!editDayMode) return
-    setDragFrom(index)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', String(index))
-  }
-
-  const onDragOver = (index: number) => (e: React.DragEvent) => {
-    if (!editDayMode || dragFrom === null) return
-    e.preventDefault()
-    setDragOver(index)
-  }
-
-  const onDrop = (index: number) => (e: React.DragEvent) => {
-    e.preventDefault()
-    finishDrag(dragFrom, index)
-  }
-
-  const onDragEnd = () => {
-    setDragFrom(null)
-    setDragOver(null)
-  }
-
   if (displayMeals.length === 0) return null
 
   return (
     <div className={cn('space-y-2', editDayMode && 'space-y-1.5')}>
-      {displayMeals.map((meal, index) => {
+      {displayMeals.map((meal) => {
         const section = sectionByMeal.get(meal.toLowerCase())
         const entries = section?.entries ?? []
         const totals = section?.totals
         const mealExpanded = !collapsedMeals.has(meal)
-        const isDragging = dragFrom === index
-        const isDropTarget = dragOver === index && dragFrom !== null && dragFrom !== index
 
         return (
           <section
             key={meal}
-            ref={(el) => {
-              if (el) rowRefs.current.set(index, el)
-              else rowRefs.current.delete(index)
-            }}
-            className={cn(
-              'rounded-md border border-border/70 bg-card/40 transition-shadow',
-              isDragging && 'opacity-60',
-              isDropTarget && 'ring-2 ring-primary/40',
-            )}
-            onDragOver={onDragOver(index)}
-            onDrop={onDrop(index)}
+            className="rounded-md border border-border/70 bg-card/40 transition-shadow"
           >
             <div className="flex min-h-9 items-center gap-1 px-0.5 py-0.5">
-              {editDayMode && (
-                <button
-                  type="button"
-                  className="flex h-9 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground active:cursor-grabbing"
-                  aria-label={`Drag to reorder ${meal}`}
-                  draggable
-                  onDragStart={onDragStart(index)}
-                  onDragEnd={onDragEnd}
-                  onPointerDown={onGripPointerDown(index)}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <GripVertical className="h-4 w-4" aria-hidden />
-                </button>
-              )}
               <button
                 type="button"
                 className="mb-0 flex min-h-9 w-full min-w-0 flex-1 items-start gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50"

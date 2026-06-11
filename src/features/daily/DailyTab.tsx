@@ -71,6 +71,10 @@ import {
 import type { FoodItem, LoggedFood } from '@/lib/types'
 import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { mobileFriendlyInputProps } from '@/lib/mobileInput'
+import {
+  isTrackBurnedCaloriesEnabled,
+  isTrackCurrentWeightEnabled,
+} from '@/lib/trackingSettings'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -120,6 +124,8 @@ export function DailyTab() {
     [foodLibrary, log.foods],
   )
 
+  const trackBurnedCalories = isTrackBurnedCaloriesEnabled(settings)
+  const trackCurrentWeight = isTrackCurrentWeightEnabled(settings)
   const netCalories = consumed.calories - log.burnedCalories
 
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -390,7 +396,7 @@ export function DailyTab() {
               editDayMode ? 'text-sm' : 'text-xs font-medium uppercase tracking-wide',
             )}
           >
-            Net Calories
+            {trackBurnedCalories ? 'Net Calories' : 'Calories'}
           </p>
           <p
             className={cn(
@@ -398,10 +404,12 @@ export function DailyTab() {
               editDayMode ? 'text-5xl' : 'text-6xl sm:text-7xl',
             )}
           >
-            {roundMacro(netCalories, 0)}
+            {roundMacro(trackBurnedCalories ? netCalories : consumed.calories, 0)}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {roundMacro(consumed.calories, 0)} eaten − {log.burnedCalories} burned
+            {trackBurnedCalories
+              ? `${roundMacro(consumed.calories, 0)} eaten − ${log.burnedCalories} burned`
+              : `${roundMacro(consumed.calories, 0)} eaten`}
           </p>
         </div>
 
@@ -439,6 +447,7 @@ export function DailyTab() {
           </CardContent>
         </Card>
 
+        {trackBurnedCalories && (
         <div className="flex items-center gap-2 rounded-lg border border-border px-4 py-3">
           <button
             type="button"
@@ -469,7 +478,9 @@ export function DailyTab() {
             />
           )}
         </div>
+        )}
 
+        {trackCurrentWeight && (
         <div className="flex items-center gap-2 rounded-lg border border-border px-4 py-3">
           <button
             type="button"
@@ -512,6 +523,7 @@ export function DailyTab() {
             />
           )}
         </div>
+        )}
 
         <div className="rounded-lg border border-border">
           <button
@@ -781,6 +793,7 @@ export function DailyTab() {
         }}
       />
 
+      {trackBurnedCalories && (
       <Sheet open={burnEditOpen} onOpenChange={setBurnEditOpen}>
         <ModalViewport active={burnEditOpen} />
         <SheetContent side="bottom" className={scrollSheetContentClass}>
@@ -814,7 +827,9 @@ export function DailyTab() {
           </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
+      )}
 
+      {trackCurrentWeight && (
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>
         <ModalViewport active={weightEditOpen} />
         <SheetContent side="bottom" className={scrollSheetContentClass}>
@@ -868,6 +883,7 @@ export function DailyTab() {
           </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
+      )}
     </div>
   )
 }

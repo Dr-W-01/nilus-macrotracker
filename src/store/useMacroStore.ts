@@ -54,6 +54,8 @@ const defaultSettings: Settings = {
   weightUnit: DEFAULT_WEIGHT_UNIT,
   meals: [...DEFAULT_MEALS],
   defaultMeal: DEFAULT_MEALS[0],
+  trackCurrentWeight: true,
+  trackBurnedCalories: true,
   theme: 'dark',
   accentColor: DEFAULT_ACCENT_COLOR,
   secondaryTextColor: DEFAULT_SECONDARY_TEXT_COLOR,
@@ -177,6 +179,8 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
         persisted.settings.targetWeightKg > 0
           ? persisted.settings.targetWeightKg
           : undefined,
+      trackCurrentWeight: persisted.settings?.trackCurrentWeight !== false,
+      trackBurnedCalories: persisted.settings?.trackBurnedCalories !== false,
     },
     dailyLogs,
     customCategories: Array.isArray(persisted.customCategories)

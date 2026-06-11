@@ -74,6 +74,10 @@ export interface Settings {
   defaultMeal: string
   /** Goal body weight in kilograms (optional). */
   targetWeightKg?: number
+  /** When false, weight UI is hidden; logged data is kept. Default: true. */
+  trackCurrentWeight?: boolean
+  /** When false, burned-calorie UI is hidden; logged data is kept. Default: true. */
+  trackBurnedCalories?: boolean
   theme: 'dark' | 'light'
   accentColor: string
   /** Secondary / muted text (labels, hints, grey copy) */

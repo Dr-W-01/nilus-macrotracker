@@ -26,6 +26,10 @@ import {
 import { roundMacro } from '@/lib/macros'
 import { MACRO_CHART_COLORS, macroMetricOptions } from '@/lib/macroColors'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
+import {
+  isTrackBurnedCaloriesEnabled,
+  isTrackCurrentWeightEnabled,
+} from '@/lib/trackingSettings'
 import { LoggingConsistencyCard } from '@/components/stats/LoggingConsistencyCard'
 import { TrendsWeightSection } from '@/components/stats/TrendsWeightSection'
 import {
@@ -261,8 +265,13 @@ export function StatsTrendsPanel({
   onDayClick,
   onStartLogging,
 }: StatsTrendsPanelProps) {
+  const trackBurnedCalories = isTrackBurnedCaloriesEnabled(settings)
+  const trackCurrentWeight = isTrackCurrentWeightEnabled(settings)
   const rollingWindow = 7 as const
   const showRollingLines = statsPeriod !== 'week'
+  const calorieMetrics = trackBurnedCalories
+    ? CALORIE_METRICS
+    : CALORIE_METRICS.filter((m) => m.key !== 'net')
 
   const dayRows = useMemo(
     () => buildStatsDayRows(range, dailyLogs, foodLibrary, settings),
@@ -316,7 +325,11 @@ export function StatsTrendsPanel({
         stroke: GOAL_LINE_COLORS.intake,
       },
     ]
-    if (calorieGoalLines.netTarget != null && calorieGoalLines.netLabel) {
+    if (
+      trackBurnedCalories &&
+      calorieGoalLines.netTarget != null &&
+      calorieGoalLines.netLabel
+    ) {
       lines.push({
         y: calorieGoalLines.netTarget,
         label: calorieGoalLines.netLabel,
@@ -324,23 +337,26 @@ export function StatsTrendsPanel({
       })
     }
     return lines
-  }, [calorieGoalLines])
+  }, [calorieGoalLines, trackBurnedCalories])
 
   const calorieYDomain = useMemo(() => {
     const values: number[] = []
     chartData.forEach((row) => {
-      values.push(row.net, row.calories)
+      if (trackBurnedCalories) values.push(row.net)
+      values.push(row.calories)
       if (showRollingLines) {
-        if (row.rollNet != null) values.push(row.rollNet)
+        if (trackBurnedCalories && row.rollNet != null) values.push(row.rollNet)
         if (row.rollCal != null) values.push(row.rollCal)
       }
     })
     if (calorieGoalLines) {
       values.push(calorieGoalLines.intakeTarget)
-      if (calorieGoalLines.netTarget != null) values.push(calorieGoalLines.netTarget)
+      if (trackBurnedCalories && calorieGoalLines.netTarget != null) {
+        values.push(calorieGoalLines.netTarget)
+      }
     }
     return stableCalorieYDomain(values)
-  }, [chartData, showRollingLines, calorieGoalLines])
+  }, [chartData, showRollingLines, calorieGoalLines, trackBurnedCalories])
 
   const macroYDomain = useMemo(() => {
     const values: number[] = []
@@ -368,12 +384,16 @@ export function StatsTrendsPanel({
           <TrendsLineChart
             title="Calories"
             description={
-              showRollingLines
-                ? 'Calories in and net calories (eaten − burned). Dashed lines are goals and 7-day averages. Tap a point to open that day.'
-                : 'Calories in and net calories (eaten − burned). Dashed lines are your intake and net calorie goals. Tap a point to open that day.'
+              trackBurnedCalories
+                ? showRollingLines
+                  ? 'Calories in and net calories (eaten − burned). Dashed lines are goals and 7-day averages. Tap a point to open that day.'
+                  : 'Calories in and net calories (eaten − burned). Dashed lines are your intake and net calorie goals. Tap a point to open that day.'
+                : showRollingLines
+                  ? 'Calories in per logged day. Dashed lines are your intake goal and 7-day average. Tap a point to open that day.'
+                  : 'Calories in per logged day. Dashed line is your intake goal. Tap a point to open that day.'
             }
             data={chartData}
-            metrics={CALORIE_METRICS}
+            metrics={calorieMetrics}
             accentColor={accentColor}
             rollingWindow={rollingWindow}
             showRolling={showRollingLines}
@@ -408,12 +428,14 @@ export function StatsTrendsPanel({
         />
       )}
 
-      <TrendsWeightSection
-        dailyLogs={dailyLogs}
-        settings={settings}
-        accentColor={accentColor}
-        onDayClick={onDayClick}
-      />
+      {trackCurrentWeight && (
+        <TrendsWeightSection
+          dailyLogs={dailyLogs}
+          settings={settings}
+          accentColor={accentColor}
+          onDayClick={onDayClick}
+        />
+      )}
     </div>
   )
 }
