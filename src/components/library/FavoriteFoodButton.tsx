@@ -22,7 +22,7 @@ export function FavoriteFoodButton({
     <button
       type="button"
       className={cn(
-        'shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-amber-400 active:scale-95',
+        'shrink-0 rounded-md p-1.5 text-foreground/60 transition-colors hover:bg-secondary/60 hover:text-amber-400 active:scale-95',
         isFavorite && 'text-amber-400',
         className,
       )}

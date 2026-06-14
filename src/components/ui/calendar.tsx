@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
 const navButtonClass =
-  'absolute top-1 inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-transparent p-0 text-foreground transition-colors hover:bg-secondary active:bg-secondary/80 disabled:opacity-50'
+  'absolute top-1 inline-flex h-8 w-8 items-center justify-center rounded-md border border-interactive-border bg-interactive-surface p-0 text-foreground shadow-sm transition-colors hover:bg-secondary hover:border-foreground/30 active:bg-secondary/80 disabled:opacity-50 [&_svg]:stroke-[2.5]'
 
 function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (

@@ -33,7 +33,7 @@ export function EditIconButton({
           variant === 'default' ? 'text-primary-foreground' : 'text-foreground',
           iconClassName,
         )}
-        strokeWidth={2}
+        strokeWidth={2.5}
       />
       <span className="sr-only">{label}</span>
     </Button>

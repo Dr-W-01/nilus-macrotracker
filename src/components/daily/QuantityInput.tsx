@@ -86,7 +86,7 @@ export function QuantityInput({
         >
           <Button
             type="button"
-            variant="outline"
+            variant="stepper"
             size="icon"
             className={
               compact
@@ -96,7 +96,7 @@ export function QuantityInput({
             disabled={disabled || intQty <= 1}
             onClick={() => onCountQuantityChange?.(Math.max(1, intQty - 1))}
           >
-            <Minus className={compact ? 'h-4 w-4' : 'h-6 w-6'} />
+            <Minus className={compact ? 'h-4 w-4' : 'h-6 w-6'} aria-hidden />
           </Button>
           <span
             className={
@@ -109,7 +109,7 @@ export function QuantityInput({
           </span>
           <Button
             type="button"
-            variant="outline"
+            variant="stepper"
             size="icon"
             className={
               compact
@@ -119,7 +119,7 @@ export function QuantityInput({
             disabled={disabled}
             onClick={() => onCountQuantityChange?.(intQty + 1)}
           >
-            <Plus className={compact ? 'h-4 w-4' : 'h-6 w-6'} />
+            <Plus className={compact ? 'h-4 w-4' : 'h-6 w-6'} aria-hidden />
           </Button>
         </div>
         {showInlineMacroPreview && (

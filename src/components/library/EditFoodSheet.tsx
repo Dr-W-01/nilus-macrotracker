@@ -50,8 +50,6 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
 
   if (!food || !values) return null
 
-  const isRecipe = food.isRecipe
-
   const save = () => {
     if (!values.name.trim()) {
       toast.error('Name is required')
@@ -59,8 +57,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
     }
     updateFoodItem(food.id, {
       ...formValuesToFoodFields(values),
-      isRecipe: food.isRecipe,
-      recipeComponents: food.recipeComponents,
+      isRecipe: false,
     })
     toastFoodUpdated(values.name.trim() || food.name)
     onClose()
@@ -83,9 +80,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <ScrollSheetHeader>
-            <SheetTitle>
-              {isRecipe ? 'Edit master recipe' : 'Edit library food'}
-            </SheetTitle>
+            <SheetTitle>Edit library food</SheetTitle>
             <p className="text-xs text-muted-foreground font-normal">
               Changes here update your Library for all future logs. To edit a single
               day&apos;s entry, use the Daily tab.
@@ -96,8 +91,8 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
               values={values}
               onChange={setValues}
               allCategories={allCategories}
-              macrosReadOnly={isRecipe}
-              scaleReadOnly={isRecipe}
+              macrosReadOnly={false}
+              scaleReadOnly={false}
             />
           </ScrollSheetBody>
           <ScrollSheetFooter>

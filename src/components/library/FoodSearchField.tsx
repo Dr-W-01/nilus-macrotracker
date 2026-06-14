@@ -67,7 +67,7 @@ export function FoodSearchField({
         {value && (
           <button
             type="button"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-foreground/70 transition-colors hover:bg-secondary hover:text-foreground"
             onClick={() => onChange('')}
             aria-label="Clear search"
           >

@@ -158,7 +158,7 @@ export function MealListEditor() {
                 type="button"
                 variant="outline"
                 size="icon"
-                className={`${actionBtnClass} text-muted-foreground hover:border-destructive/50 hover:text-destructive`}
+                className={`${actionBtnClass} text-foreground/75 hover:border-destructive/50 hover:text-destructive`}
                 disabled={meals.length <= 1}
                 aria-label={`Delete ${meal}`}
                 onClick={() => requestDelete(meal)}

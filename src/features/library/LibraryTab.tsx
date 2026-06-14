@@ -37,6 +37,7 @@ import type { FoodItem } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { NewFoodSheet } from '@/components/library/NewFoodSheet'
 import { EditFoodSheet } from '@/components/library/EditFoodSheet'
+import { EditRecipeSheet } from '@/components/library/EditRecipeSheet'
 import { CreateRecipeSheet } from '@/components/library/CreateRecipeSheet'
 import { AddCategoryDialog } from '@/components/library/AddCategoryDialog'
 import { BulkAssignCategoryDialog } from '@/components/library/BulkAssignCategoryDialog'
@@ -510,7 +511,14 @@ export function LibraryTab() {
       </Dialog>
 
       <NewFoodSheet open={newFoodOpen} onOpenChange={setNewFoodOpen} />
-      <EditFoodSheet food={editingFood} onClose={() => setEditingFood(null)} />
+      <EditFoodSheet
+        food={editingFood?.isRecipe ? null : editingFood}
+        onClose={() => setEditingFood(null)}
+      />
+      <EditRecipeSheet
+        recipe={editingFood?.isRecipe ? editingFood : null}
+        onClose={() => setEditingFood(null)}
+      />
       <CreateRecipeSheet open={recipeOpen} onOpenChange={setRecipeOpen} />
       <AddCategoryDialog
         open={addCategoryOpen}
