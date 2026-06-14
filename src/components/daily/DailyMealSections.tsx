@@ -68,7 +68,7 @@ export function DailyMealSections({
                 type="button"
                 className={cn(
                   'mb-0 flex min-h-9 w-full min-w-0 flex-1 gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50',
-                  mealExpanded ? 'items-start' : 'items-center',
+                  'items-start',
                 )}
                 onClick={() => toggleMealCollapsed(meal, currentDate)}
                 aria-expanded={mealExpanded}
@@ -95,22 +95,22 @@ export function DailyMealSections({
                       )}
                     </span>
                   ) : (
-                    <span className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-xs font-semibold uppercase tracking-wide text-primary [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      <span className="shrink-0 whitespace-nowrap">
-                        {meal} ({roundMacro(totals?.calories ?? 0, 0)} CAL)
+                    <span className="block min-w-0 space-y-0.5">
+                      <span className="block whitespace-nowrap text-xs font-semibold uppercase tracking-wide">
+                        <span className="text-primary">{meal}</span>
+                        <span className="text-foreground">
+                          {' '}
+                          ({roundMacro(totals?.calories ?? 0, 0)} CAL)
+                        </span>
                         <span className="sr-only">, collapsed</span>
                       </span>
                       {totals && entries.length > 0 && (
-                        <>
-                          <span className="shrink-0 text-muted-foreground/60">·</span>
-                          <LoggedMacroPreview
-                            macros={totals}
-                            size="xs"
-                            inline
-                            nowrap
-                            className="shrink-0 font-normal normal-case"
-                          />
-                        </>
+                        <LoggedMacroPreview
+                          macros={totals}
+                          size="xs"
+                          nowrap
+                          className="block overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        />
                       )}
                     </span>
                   )}

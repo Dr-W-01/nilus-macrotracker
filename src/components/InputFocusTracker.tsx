@@ -17,7 +17,9 @@ function keyboardLikelyOpen(): boolean {
 }
 
 function shouldKeepBottomNavVisible(el: Element | null): boolean {
-  return Boolean(el?.closest('.settings-tab'))
+  if (!el) return false
+  if (el.closest('.library-tab')) return false
+  return Boolean(el.closest('.settings-tab'))
 }
 
 /** Tracks focused text inputs app-wide to hide bottom nav while the keyboard is open. */

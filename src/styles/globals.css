@@ -204,6 +204,11 @@ body {
 }
 
 .pb-below-nav-search {
+  /* Keyboard open: bottom nav is hidden — only need minimal scroll padding */
+  padding-bottom: max(1rem, var(--safe-bottom));
+}
+
+.library-tab:has(.library-search-input:focus) {
   padding-bottom: max(1rem, var(--safe-bottom));
 }
 

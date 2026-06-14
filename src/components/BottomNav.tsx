@@ -14,10 +14,14 @@ const TABS: { id: AppTab; label: string; icon: typeof CalendarDays }[] = [
 export function BottomNav() {
   const currentTab = useMacroStore((s) => s.currentTab)
   const inputFocusEngaged = useMacroStore((s) => s.inputFocusEngaged)
+  const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
   const setCurrentTab = useMacroStore((s) => s.setCurrentTab)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
 
-  if (inputFocusEngaged) {
+  const hideForKeyboard =
+    inputFocusEngaged || (currentTab === 'library' && librarySearchEngaged)
+
+  if (hideForKeyboard) {
     return null
   }
 
