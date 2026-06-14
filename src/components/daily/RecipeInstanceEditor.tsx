@@ -90,11 +90,11 @@ export function RecipeInstanceMacroBar({
   macros: ReturnType<typeof computeComponentMacros>
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2">
+    <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
       <p className="text-lg font-bold tabular-nums text-primary">
         {Math.round(macros.calories)} cal
       </p>
-      <LoggedMacroPreview macros={macros} size="sm" className="text-xs" />
+      <LoggedMacroPreview macros={macros} size="md" className="mt-1" />
     </div>
   )
 }

@@ -128,7 +128,7 @@ export function QuantityInput({
           </div>
         )}
         {showNote && (
-          <NoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
+          <FoodNoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
         )}
       </div>
     )
@@ -211,13 +211,13 @@ export function QuantityInput({
       )}
 
       {showNote && (
-        <NoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
+        <FoodNoteField note={note} onNoteChange={onNoteChange} disabled={disabled} />
       )}
     </div>
   )
 }
 
-function NoteField({
+export function FoodNoteField({
   note,
   onNoteChange,
   disabled,

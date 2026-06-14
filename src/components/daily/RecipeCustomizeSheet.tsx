@@ -12,7 +12,6 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import {
   RecipeIngredientsEditor,
   RecipeInstanceMacroBar,
-  RecipeInstanceScopeBanner,
   useRecipeOverrideState,
 } from '@/components/daily/RecipeInstanceEditor'
 import type { FoodItem } from '@/lib/types'
@@ -85,7 +84,6 @@ export function RecipeCustomizeSheet({
           <p className="text-sm text-muted-foreground">Customize for today</p>
         </ScrollSheetHeader>
         <ScrollSheetBody className="space-y-4">
-          <RecipeInstanceScopeBanner mode="add" recipeName={recipe.name} />
           {previewMacros && <RecipeInstanceMacroBar macros={previewMacros} />}
           <RecipeIngredientsEditor
             recipe={recipe}

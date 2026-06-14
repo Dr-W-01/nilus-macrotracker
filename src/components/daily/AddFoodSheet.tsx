@@ -9,8 +9,9 @@ import {
   scrollSheetContentClass,
 } from '@/components/ui/scroll-modal'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { MealPicker } from '@/components/daily/MealPicker'
-import { QuantityInput } from '@/components/daily/QuantityInput'
+import { FoodNoteField, QuantityInput } from '@/components/daily/QuantityInput'
 import { buildScaleLogPayload, getFoodBaseAmount } from '@/lib/scale'
 import { scaleMacros, roundMacro } from '@/lib/macros'
 import type { FoodItem } from '@/lib/types'
@@ -116,12 +117,16 @@ export function AddFoodSheet({
             onCountQuantityChange={setCountQty}
             amountEaten={amountEaten}
             onAmountEatenChange={setAmountEaten}
+            showNote={false}
+            showInlineMacroPreview={false}
           />
           {macros && (
-            <p className="text-center text-sm text-muted-foreground">
-              Total: {roundMacro(macros.calories, 0)} cal · P {roundMacro(macros.protein)} · C{' '}
-              {roundMacro(macros.carbs)} · F {roundMacro(macros.fat)}
-            </p>
+            <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
+              <p className="text-lg font-bold text-primary tabular-nums">
+                {roundMacro(macros.calories, 0)} cal
+              </p>
+              <LoggedMacroPreview macros={macros} size="md" className="mt-1" />
+            </div>
           )}
           <MealPicker
             label="Meal"
@@ -129,6 +134,7 @@ export function AddFoodSheet({
             value={meal}
             onChange={setMeal}
           />
+          <FoodNoteField note={note} onNoteChange={setNote} />
         </ScrollSheetBody>
         <ScrollSheetFooter>
           <Button
