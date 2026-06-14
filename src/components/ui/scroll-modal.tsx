@@ -1,5 +1,5 @@
 import { useEffect, type HTMLAttributes, type ReactNode } from 'react'
-import { SURFACE_GRADIENT } from '@/lib/surfaceStyles'
+import { MODAL_HEADER_SURFACE, MODAL_SURFACE } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 /** Syncs --modal-vh to visual viewport height (keyboard open on mobile). */
@@ -30,16 +30,18 @@ export function ModalViewport({ active }: { active: boolean }) {
 }
 
 /** Bottom sheet: fixed header, scrollable body, sticky footer */
-export const scrollSheetContentClass =
-  'flex max-h-[min(92dvh,var(--modal-vh,92dvh))] flex-col gap-0 overflow-hidden p-0'
+export const scrollSheetContentClass = cn(
+  'flex max-h-[min(92dvh,var(--modal-vh,92dvh))] flex-col gap-0 overflow-hidden p-0',
+  MODAL_SURFACE,
+)
 
 export const scrollSheetHeaderClass = cn(
-  'shrink-0 border-b px-4 py-3 pr-12 text-left',
-  SURFACE_GRADIENT,
+  'shrink-0 px-4 py-3 pr-12 text-left',
+  MODAL_HEADER_SURFACE,
 )
 
 export const scrollSheetBodyClass =
-  'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]'
+  'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-card px-4 py-4 [-webkit-overflow-scrolling:touch]'
 
 /** Compact sticky footer: ~44px buttons, reduced padding (applies to all child buttons). */
 export const scrollModalFooterButtonClass =
@@ -81,18 +83,18 @@ export function ScrollSheetFooter({
 export const scrollDialogContentClass = cn(
   'fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 flex h-[min(92dvh,var(--modal-vh,92dvh))]',
   'w-[calc(100%-1rem)] max-w-lg -translate-x-1/2 translate-y-0 flex-col gap-0 overflow-hidden p-0',
-  'max-h-[min(92dvh,var(--modal-vh,92dvh))] rounded-xl border shadow-lg',
-  SURFACE_GRADIENT,
+  'max-h-[min(92dvh,var(--modal-vh,92dvh))] rounded-xl shadow-lg',
+  MODAL_SURFACE,
   'sm:top-[5dvh] sm:h-[min(90dvh,var(--modal-vh,90dvh))] sm:max-h-[min(90dvh,var(--modal-vh,90dvh))]',
 )
 
 export const scrollDialogHeaderClass = cn(
-  'shrink-0 space-y-1.5 border-b px-4 pt-4 pr-12 text-left sm:px-6 sm:pt-6',
-  SURFACE_GRADIENT,
+  'shrink-0 space-y-1.5 px-4 pt-4 pr-12 text-left sm:px-6 sm:pt-6',
+  MODAL_HEADER_SURFACE,
 )
 
 export const scrollDialogBodyClass =
-  'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch] sm:px-6'
+  'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-card px-4 py-4 [-webkit-overflow-scrolling:touch] sm:px-6'
 
 export const scrollDialogFooterClass = cn(
   'shrink-0 space-y-1.5 border-t border-border bg-card px-4 pt-2.5 sm:px-6',

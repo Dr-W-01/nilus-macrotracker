@@ -14,7 +14,7 @@ import { FoodSearchField } from '@/components/library/FoodSearchField'
 import { FavoriteFoodButton } from '@/components/library/FavoriteFoodButton'
 import { foodCategories } from '@/lib/categories'
 import { getRecentFoods, searchFoodItems } from '@/lib/foodSearch'
-import { SURFACE_GRADIENT } from '@/lib/surfaceStyles'
+import { MODAL_HEADER_SURFACE } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 import type { FoodItem } from '@/lib/types'
@@ -120,7 +120,7 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
           <DialogTitle>Add Food</DialogTitle>
         </ScrollDialogHeader>
 
-        <div className={cn('shrink-0 border-b px-4 py-3 sm:px-6', SURFACE_GRADIENT)}>
+        <div className={cn('shrink-0 px-4 py-3 sm:px-6', MODAL_HEADER_SURFACE)}>
           <FoodSearchField
             scope="picker"
             value={query}
