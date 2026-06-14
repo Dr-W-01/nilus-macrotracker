@@ -13,7 +13,10 @@ import {
 } from 'recharts'
 import { TrendingUp } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  StatsSectionCard,
+  StatsSectionHeader,
+} from '@/components/stats/StatsSectionCard'
 import {
   buildStatsDayRows,
   buildTrendMetricSeries,
@@ -174,12 +177,9 @@ function TrendsLineChart({
   onDayClick: (date: string) => void
 }) {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm">{title}</CardTitle>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </CardHeader>
-      <CardContent className={compactDots ? 'h-80 sm:h-96' : 'h-72 sm:h-80'}>
+    <StatsSectionCard contentClassName="space-y-3">
+      <StatsSectionHeader title={title} description={description} />
+      <div className={compactDots ? 'h-80 sm:h-96' : 'h-72 sm:h-80'}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
@@ -268,8 +268,8 @@ function TrendsLineChart({
               ))}
           </LineChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </StatsSectionCard>
   )
 }
 
@@ -399,7 +399,7 @@ export function StatsTrendsPanel({
   const hasTrendData = dayRows.length > 0
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <LoggingConsistencyCard dailyLogs={dailyLogs} />
 
       {hasTrendData ? (

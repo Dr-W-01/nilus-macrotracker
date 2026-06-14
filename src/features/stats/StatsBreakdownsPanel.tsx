@@ -9,7 +9,10 @@ import {
   Tooltip,
 } from 'recharts'
 import { PieChart as PieChartIcon } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  StatsSectionCard,
+  StatsSectionHeader,
+} from '@/components/stats/StatsSectionCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import {
   Table,
@@ -137,15 +140,13 @@ export function StatsBreakdownsPanel({
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Average macro distribution</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Share of calories from protein, carbs, and fat (daily averages)
-          </p>
-        </CardHeader>
-        <CardContent className="h-56">
+    <div className="space-y-4">
+      <StatsSectionCard contentClassName="space-y-3">
+        <StatsSectionHeader
+          title="Average macro distribution"
+          description="Share of calories from protein, carbs, and fat (daily averages)"
+        />
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -172,26 +173,25 @@ export function StatsBreakdownsPanel({
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center text-xs">
-        {pieData.map((d) => (
-          <div key={d.name} className="rounded-lg bg-secondary/50 p-2">
-            <p className="text-muted-foreground">{d.name}</p>
-            <p className="font-bold text-primary">{d.value}%</p>
-            <p className="text-muted-foreground">{d.grams}g avg</p>
-          </div>
-        ))}
-      </div>
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          {pieData.map((d) => (
+            <div key={d.name} className="rounded-lg border border-border/60 bg-secondary/30 p-2">
+              <p className="text-muted-foreground">{d.name}</p>
+              <p className="font-bold text-primary">{d.value}%</p>
+              <p className="text-muted-foreground">{d.grams}g avg</p>
+            </div>
+          ))}
+        </div>
+      </StatsSectionCard>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Top foods</CardTitle>
-          <p className="text-xs text-muted-foreground">By total calories in period</p>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y divide-border">
+      <StatsSectionCard contentClassName="space-y-3">
+        <StatsSectionHeader
+          title="Top foods"
+          description="By total calories in period"
+        />
+        <ul className="-mx-4 divide-y divide-border border-t border-border sm:-mx-0 sm:rounded-lg sm:border">
             {topFoods.length === 0 ? (
               <li className="px-4 py-6 text-center text-sm text-muted-foreground">
                 No foods logged
@@ -217,15 +217,12 @@ export function StatsBreakdownsPanel({
                 </li>
               ))
             )}
-          </ul>
-        </CardContent>
-      </Card>
+        </ul>
+      </StatsSectionCard>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Period averages (per logged day)</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+      <StatsSectionCard contentClassName="space-y-3">
+        <StatsSectionHeader title="Period averages" description="Per logged day" />
+        <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
           <AvgCell label="Calories" value={roundMacro(avg.calories, 0)} />
           <AvgCell label="Net" value={roundMacro(avg.net, 0)} accent />
           {MACRO_NUTRIENT_ORDER.map((key) => (
@@ -235,14 +232,16 @@ export function StatsBreakdownsPanel({
               value={`${avg[key]}g`}
             />
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </StatsSectionCard>
 
-      <div className="space-y-1.5">
-        <h3 className="text-sm font-semibold">Daily log table</h3>
-        <p className="text-xs text-muted-foreground sm:hidden">
-          Swipe sideways to see all columns →
-        </p>
+      <StatsSectionCard contentClassName="space-y-3">
+        <div>
+          <StatsSectionHeader title="Daily log table" />
+          <p className="mt-0.5 text-xs text-muted-foreground sm:hidden">
+            Swipe sideways to see all columns →
+          </p>
+        </div>
         <div className="-mx-4 sm:mx-0">
           <Table
             scrollable
@@ -338,7 +337,7 @@ export function StatsBreakdownsPanel({
             </TableBody>
           </Table>
         </div>
-      </div>
+      </StatsSectionCard>
     </div>
   )
 }
@@ -353,7 +352,7 @@ function AvgCell({
   accent?: boolean
 }) {
   return (
-    <div className="rounded-lg bg-secondary/50 p-2">
+    <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`font-bold ${accent ? 'text-primary text-lg' : ''}`}>{value}</p>
     </div>

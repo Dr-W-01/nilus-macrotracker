@@ -3,7 +3,7 @@ pid: 27508
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-14T01:45:50.150Z
-running_for_ms: 84999    
+running_for_ms: 769999   
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -14,3 +14,22 @@ running_for_ms: 84999
 
   ➜  Local:   http://localhost:5173/nilus-macrotracker/
   ➜  Network: http://192.168.1.69:5173/nilus-macrotracker/
+9:55:43 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/InsightsCard.tsx
+9:55:43 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/StatsPeriodBar.tsx
+9:55:48 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/StatsPeriodBar.tsx
+9:55:48 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
+9:55:48 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
+9:55:48 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
+9:55:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTrendsPanel.tsx
+9:55:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/TrendsWeightSection.tsx
+9:55:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/PeriodComparisonCard.tsx
+9:55:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/LoggingConsistencyCard.tsx
+9:55:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTrendsPanel.tsx
+9:55:57 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/TrendsWeightSection.tsx
+9:56:03 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsBreakdownsPanel.tsx
+9:56:03 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsBreakdownsPanel.tsx
+9:56:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsBreakdownsPanel.tsx
+9:56:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsBreakdownsPanel.tsx
+9:56:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
+9:56:35 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
+9:56:35 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTrendsPanel.tsx

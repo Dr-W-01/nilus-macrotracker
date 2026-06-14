@@ -10,7 +10,10 @@ import {
   Utensils,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import {
+  StatsSectionCard,
+  StatsSectionHeader,
+} from '@/components/stats/StatsSectionCard'
 import type { InsightBullet, InsightSummary, InsightTone } from '@/lib/stats'
 import { cn } from '@/lib/utils'
 
@@ -63,33 +66,23 @@ interface InsightsCardProps {
 
 export function InsightsCard({ summary }: InsightsCardProps) {
   return (
-    <Card className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
-      <CardContent className="space-y-4 pt-4 pb-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-            Insights
-          </p>
-          <p className="mt-1.5 text-base font-medium leading-snug text-foreground">
-            {summary.headline}
-          </p>
-        </div>
+    <StatsSectionCard>
+      <StatsSectionHeader title="Insights" />
+      <p className="text-base font-medium leading-snug text-foreground">{summary.headline}</p>
 
-        <ul className="space-y-2">
-          {summary.bullets.map((bullet) => (
-            <InsightRow key={bullet.id} bullet={bullet} />
-          ))}
-        </ul>
+      <ul className="space-y-2">
+        {summary.bullets.map((bullet) => (
+          <InsightRow key={bullet.id} bullet={bullet} />
+        ))}
+      </ul>
 
-        <div className="rounded-lg border border-primary/25 bg-primary/10 px-3 py-2.5">
-          <div className="flex items-center gap-1.5">
-            <Lightbulb className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-              Key takeaway
-            </p>
-          </div>
-          <p className="mt-1 text-sm leading-snug text-foreground">{summary.takeaway}</p>
+      <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+        <div className="flex items-center gap-1.5">
+          <Lightbulb className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+          <p className="text-xs font-medium text-muted-foreground">Key takeaway</p>
         </div>
-      </CardContent>
-    </Card>
+        <p className="mt-1 text-sm leading-snug text-foreground">{summary.takeaway}</p>
+      </div>
+    </StatsSectionCard>
   )
 }

@@ -11,7 +11,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  StatsSectionCard,
+  StatsSectionHeader,
+} from '@/components/stats/StatsSectionCard'
 import {
   buildLoggedWeightChartData,
   countLoggedWeights,
@@ -111,32 +114,29 @@ export function TrendsWeightSection({
   }, [chartData, targetDisplay])
 
   return (
-    <Card>
-      <CardHeader className="space-y-2 pb-2 pt-3">
-        <div>
-          <CardTitle className="text-sm">Weight over time</CardTitle>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {logCount === 0
+    <StatsSectionCard contentClassName="space-y-3">
+      <div className="space-y-2">
+        <StatsSectionHeader
+          title="Weight over time"
+          description={
+            logCount === 0
               ? 'Log weight on the Daily tab to see your chart.'
-              : `All time · ${logCount} ${logCount === 1 ? 'entry' : 'entries'} · 7-day average`}
-          </p>
-        </div>
+              : `All time · ${logCount} ${logCount === 1 ? 'entry' : 'entries'} · 7-day average`
+          }
+        />
         {latestLogged?.weight != null && (
           <p className="text-xs text-muted-foreground">
             Latest:{' '}
-            <span className="font-semibold text-foreground tabular-nums">
+            <span className="font-semibold tabular-nums text-foreground">
               {latestLogged.weight} {weightUnitLabel(unit)}
             </span>
             {targetDisplay != null && (
-              <span className="ml-1.5 text-emerald-400">
-                · {goalLabel}
-              </span>
+              <span className="ml-1.5 text-emerald-400">· {goalLabel}</span>
             )}
           </p>
         )}
-      </CardHeader>
-      <CardContent className="pb-3">
-        <div className="h-56 min-h-[14rem] sm:h-64">
+      </div>
+      <div className="h-56 min-h-[14rem] sm:h-64">
           {logCount === 0 ? (
             <p className="flex h-full items-center justify-center text-sm text-muted-foreground">
               No weight data yet.
@@ -232,9 +232,8 @@ export function TrendsWeightSection({
               </LineChart>
             </ResponsiveContainer>
           )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </StatsSectionCard>
   )
 }
 

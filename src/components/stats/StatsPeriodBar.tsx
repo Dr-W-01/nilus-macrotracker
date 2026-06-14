@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
+  STATS_SECTION_CARD_CLASS,
+  StatsSectionHeader,
+} from '@/components/stats/StatsSectionCard'
+import {
   getMonthRange,
   getWeekRange,
   getWeekRangeForDate,
@@ -13,6 +17,7 @@ import {
 } from '@/lib/dates'
 import { format, parseISO } from 'date-fns'
 import { useMacroStore } from '@/store/useMacroStore'
+import { cn } from '@/lib/utils'
 
 interface StatsPeriodBarProps {
   range: { start: string; end: string }
@@ -40,10 +45,13 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-primary/20 bg-card p-4 shadow-sm ring-1 ring-primary/10">
-      <p className="text-xs font-semibold uppercase tracking-wide text-foreground">
-        Period
-      </p>
+    <section
+      className={cn(
+        'space-y-2 rounded-xl border p-3 shadow-sm',
+        STATS_SECTION_CARD_CLASS,
+      )}
+    >
+      <StatsSectionHeader title="Period" />
       <Tabs
         value={statsPeriod}
         onValueChange={(v) => {
@@ -62,7 +70,7 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
           }
         }}
       >
-        <TabsList className="grid h-10 grid-cols-3 bg-secondary/80 p-1">
+        <TabsList className="grid h-9 grid-cols-3 bg-secondary/80 p-1">
           <TabsTrigger value="week" className="text-xs font-medium sm:text-sm">
             This Week
           </TabsTrigger>

@@ -1,11 +1,14 @@
 import { useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { BarChart3 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { DailyEnergyBalanceChart } from '@/components/stats/DailyEnergyBalanceChart'
-
 import { InsightsCard } from '@/components/stats/InsightsCard'
 import { PeriodComparisonCard } from '@/components/stats/PeriodComparisonCard'
+import {
+  StatsSectionCard,
+  StatsSectionHeader,
+  StatsSubsectionLabel,
+} from '@/components/stats/StatsSectionCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import {
   ADHERENCE_LABELS,
@@ -143,60 +146,55 @@ export function StatsOverviewPanel({
         </p>
       </div>
 
-      <Card>
-        <CardContent className="pt-4 pb-3 space-y-4">
-          <div>
-            <p className="text-sm font-medium">Goal adherence</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              % of logged days on target. Protein counts when you meet or beat the goal.
-              {goalMode === 'cut'
-                ? ' Energy balance is your deficit net calorie goal.'
-                : goalMode === 'bulk'
-                  ? ' Energy balance is your surplus net calorie goal.'
-                  : ' Energy balance uses your template net goal when set.'}
-            </p>
-          </div>
+      <StatsSectionCard contentClassName="space-y-4">
+        <StatsSectionHeader
+          title="Goal adherence"
+          description={`% of logged days on target. Protein counts when you meet or beat the goal.${
+            goalMode === 'cut'
+              ? ' Energy balance is your deficit net calorie goal.'
+              : goalMode === 'bulk'
+                ? ' Energy balance is your surplus net calorie goal.'
+                : ' Energy balance uses your template net goal when set.'
+          }`}
+        />
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {goalMode === 'cut' || goalMode === 'bulk'
-                ? 'Priority metrics'
-                : 'Calories & protein'}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {primaryKeys.map((key) => (
-                <AdherenceCell
-                  key={key}
-                  label={ADHERENCE_LABELS[key]}
-                  hint={ADHERENCE_HINTS[key]}
-                  percent={adherence[key]!}
-                  prominent={
-                    key === 'targetDeficit' ||
-                    key === 'calories' ||
-                    key === 'protein'
-                  }
-                />
-              ))}
-            </div>
+        <div className="space-y-2">
+          <StatsSubsectionLabel>
+            {goalMode === 'cut' || goalMode === 'bulk'
+              ? 'Priority metrics'
+              : 'Calories & protein'}
+          </StatsSubsectionLabel>
+          <div className="grid grid-cols-2 gap-2">
+            {primaryKeys.map((key) => (
+              <AdherenceCell
+                key={key}
+                label={ADHERENCE_LABELS[key]}
+                hint={ADHERENCE_HINTS[key]}
+                percent={adherence[key]!}
+                prominent={
+                  key === 'targetDeficit' ||
+                  key === 'calories' ||
+                  key === 'protein'
+                }
+              />
+            ))}
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Other macros
-            </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {OTHER_ADHERENCE.map((key) => (
-                <AdherenceCell
-                  key={key}
-                  label={ADHERENCE_LABELS[key]}
-                  hint={ADHERENCE_HINTS[key]}
-                  percent={adherence[key]!}
-                />
-              ))}
-            </div>
+        <div className="space-y-2">
+          <StatsSubsectionLabel>Other macros</StatsSubsectionLabel>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {OTHER_ADHERENCE.map((key) => (
+              <AdherenceCell
+                key={key}
+                label={ADHERENCE_LABELS[key]}
+                hint={ADHERENCE_HINTS[key]}
+                percent={adherence[key]!}
+              />
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </StatsSectionCard>
 
       <PeriodComparisonCard
         range={range}
@@ -210,12 +208,13 @@ export function StatsOverviewPanel({
 
       {insightSummary && <InsightsCard summary={insightSummary} />}
 
-      <Card>
-        <CardContent className="pt-4 pb-3">
-          <p className="text-sm font-medium mb-1">Daily energy balance</p>
-          <DailyEnergyBalanceChart data={balanceChartData} color={accentColor} />
-        </CardContent>
-      </Card>
+      <StatsSectionCard contentClassName="space-y-3">
+        <StatsSectionHeader
+          title="Daily energy balance"
+          description="Net calories per logged day in this period."
+        />
+        <DailyEnergyBalanceChart data={balanceChartData} color={accentColor} />
+      </StatsSectionCard>
     </div>
   )
 }
@@ -235,7 +234,7 @@ function AdherenceCell({
   const partial = percent >= 40 && percent < 70
   return (
     <div
-      className={`rounded-lg bg-secondary/50 px-3 py-2.5 ${
+      className={`rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5 ${
         prominent ? 'ring-1 ring-primary/25' : ''
       }`}
     >

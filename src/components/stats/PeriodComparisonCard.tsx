@@ -1,5 +1,8 @@
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import {
+  StatsSectionCard,
+  StatsSectionHeader,
+} from '@/components/stats/StatsSectionCard'
 import {
   buildPeriodComparison,
   formatComparisonDelta,
@@ -41,21 +44,17 @@ export function PeriodComparisonCard({
   if (rows.length === 0) return null
 
   return (
-    <Card>
-      <CardContent className="space-y-3 pt-4 pb-3">
-        <div>
-          <p className="text-sm font-medium">This period vs {periodLabel}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Daily averages for logged days (— if not tracked)
-          </p>
-        </div>
-        <div className="space-y-2">
-          {rows.map((r) => (
-            <ComparisonRow key={r.label} row={r} goalMode={goalMode} />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <StatsSectionCard contentClassName="space-y-3">
+      <StatsSectionHeader
+        title="Period averages"
+        description={`This period vs ${periodLabel}. Daily averages for logged days (— if not tracked).`}
+      />
+      <div className="space-y-2">
+        {rows.map((r) => (
+          <ComparisonRow key={r.label} row={r} goalMode={goalMode} />
+        ))}
+      </div>
+    </StatsSectionCard>
   )
 }
 
@@ -73,13 +72,11 @@ function ComparisonRow({
     <div
       className={cn(
         'rounded-lg border px-3 py-2.5',
-        row.emphasized ? 'border-primary/30 bg-primary/5' : 'border-border bg-secondary/30',
+        row.emphasized ? 'border-primary/30 bg-primary/5' : 'border-border/60 bg-secondary/30',
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          {row.label}
-        </p>
+        <p className="text-xs font-medium text-muted-foreground">{row.label}</p>
         {row.delta != null && (
           <DeltaBadge delta={row.delta} improving={improving} label={deltaText ?? '—'} />
         )}
