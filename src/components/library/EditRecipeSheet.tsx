@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { toastFoodRemoved, toastFoodUpdated } from '@/lib/foodToast'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { FormSection } from '@/components/ui/form-section'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -98,9 +99,9 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
           className={scrollSheetContentClass}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <ScrollSheetHeader>
+          <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
             <SheetTitle className="flex items-center gap-2">
-              <ChefHat className="h-5 w-5 text-primary" />
+              <ChefHat className="h-5 w-5 text-primary" aria-hidden />
               Edit recipe
             </SheetTitle>
             <p className="text-xs font-normal text-muted-foreground">
@@ -108,7 +109,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
             </p>
           </ScrollSheetHeader>
           <ScrollSheetBody className="space-y-4">
-            <div className="flex gap-3 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2.5">
+            <div className="flex gap-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card px-3 py-2.5">
               <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
               <p className="text-xs leading-relaxed text-muted-foreground">
                 You are editing the <span className="font-medium text-foreground">recipe contents</span>{' '}
@@ -117,26 +118,29 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
               </p>
             </div>
 
-            <div>
-              <Label htmlFor="recipe-name">Recipe name</Label>
-              <Input
-                id="recipe-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="My meal..."
-                className="mt-1.5"
-              />
-            </div>
+            <FormSection title="Basics">
+              <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+                <Label htmlFor="recipe-name" className="text-xs font-medium text-muted-foreground">
+                  Recipe name
+                </Label>
+                <Input
+                  id="recipe-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="My meal..."
+                  className="mt-1.5"
+                />
+              </div>
+            </FormSection>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Recipe totals</Label>
+            <FormSection
+              title="Recipe totals"
+              description="Calculated automatically from ingredients."
+            >
               <RecipeMacroSummary macros={previewMacros} />
-            </div>
+            </FormSection>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                Ingredients ({orderedIds.length})
-              </Label>
+            <FormSection title={`Ingredients (${orderedIds.length})`}>
               <RecipeIngredientList
                 library={foodLibrary}
                 orderedIds={orderedIds}
@@ -144,13 +148,15 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
                 setOverrides={setOverrides}
                 onRemove={removeIngredient}
               />
-            </div>
+            </FormSection>
 
-            <RecipeAddIngredientPanel
-              library={foodLibrary}
-              excludeIds={excludeIds}
-              onAdd={addIngredient}
-            />
+            <FormSection title="Add ingredient">
+              <RecipeAddIngredientPanel
+                library={foodLibrary}
+                excludeIds={excludeIds}
+                onAdd={addIngredient}
+              />
+            </FormSection>
           </ScrollSheetBody>
           <ScrollSheetFooter>
             <Button size="lg" className="w-full" onClick={save}>

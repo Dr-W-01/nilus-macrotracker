@@ -3,7 +3,7 @@ pid: 27508
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-14T01:45:50.150Z
-running_for_ms: 769999   
+running_for_ms: 905001   
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -33,3 +33,13 @@ running_for_ms: 769999
 9:56:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
 9:56:35 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
 9:56:35 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsTrendsPanel.tsx
+10:00:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx, /src/features/daily/DailyTab.tsx, /src/features/stats/StatsBreakdownsPanel.tsx, /src/features/stats/StatsTrendsPanel.tsx, /src/components/daily/LoggedMacroPreview.tsx, /src/app/page.tsx, /src/app/layout.tsx, /src/components/BottomNav.tsx, /src/components/InputFocusTracker.tsx, /src/features/stats/StatsTab.tsx, /src/features/library/LibraryTab.tsx, /src/components/stats/StatsPeriodBar.tsx, /src/components/daily/FoodPickerSheet.tsx and 23 more
+10:00:04 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+10:00:18 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/AddFoodSheet.tsx
+10:00:18 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CreateRecipeSheet.tsx
+10:00:18 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditRecipeSheet.tsx
+10:00:18 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/NewFoodSheet.tsx
+10:00:18 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/AddFoodSheet.tsx
+10:00:23 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
+10:00:23 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
+10:00:34 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx

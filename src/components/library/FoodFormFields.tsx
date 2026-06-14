@@ -1,14 +1,19 @@
 import { Button } from '@/components/ui/button'
+import { FormSection } from '@/components/ui/form-section'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CategoryPicker } from '@/components/library/CategoryPicker'
 import { normalizeCategoryList } from '@/lib/categories'
-import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
+import {
+  FORM_MACRO_NUTRIENT_ORDER,
+  MACRO_DISPLAY_LABELS,
+} from '@/lib/macroColors'
 import {
   inferBaseAmountFromServing,
   normalizeScaleFoodItem,
 } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 export interface FoodFormValues {
   name: string
@@ -103,70 +108,86 @@ export function FoodFormFields({
   const patch = (partial: Partial<FoodFormValues>) =>
     onChange({ ...values, ...partial })
 
+  const nutritionDescription =
+    values.scaleType === 'scale' && !scaleReadOnly
+      ? `Per ${values.baseAmount || '1'} ${values.baseUnit} (base serving).`
+      : 'Values per serving, like a nutrition facts label.'
+
   return (
     <div className="space-y-4">
-      <FormField label="Name *" required>
-        <Input
-          value={values.name}
-          onChange={(e) => patch({ name: e.target.value })}
-          placeholder="Food name"
-        />
-      </FormField>
-
-      <FormField label="Calories per serving">
-        <Input
-          type="number"
-          inputMode="decimal"
-          value={values.calories}
-          disabled={macrosReadOnly}
-          onChange={(e) => patch({ calories: e.target.value })}
-        />
-      </FormField>
-
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {MACRO_NUTRIENT_ORDER.map((key) => (
-          <MacroField
-            key={key}
-            label={`${MACRO_DISPLAY_LABELS[key]} (g)`}
-            value={values[key]}
-            readOnly={macrosReadOnly}
-            onChange={(v) => patch({ [key]: v })}
+      <FormSection title="Basics">
+        <FormField label="Name" required>
+          <Input
+            value={values.name}
+            onChange={(e) => patch({ name: e.target.value })}
+            placeholder="Food name"
           />
-        ))}
-      </div>
+        </FormField>
+      </FormSection>
 
-      {macrosReadOnly && (
-        <p className="text-xs text-muted-foreground">
-          Macros are calculated from recipe components.
-        </p>
-      )}
+      <FormSection title="Nutrition facts" description={nutritionDescription}>
+        <FormField label="Calories">
+          <Input
+            type="number"
+            inputMode="decimal"
+            value={values.calories}
+            disabled={macrosReadOnly}
+            onChange={(e) => patch({ calories: e.target.value })}
+            className="font-semibold tabular-nums"
+          />
+        </FormField>
+
+        <div className="grid grid-cols-2 gap-2">
+          {FORM_MACRO_NUTRIENT_ORDER.map((key) => (
+            <MacroField
+              key={key}
+              label={`${MACRO_DISPLAY_LABELS[key]} (g)`}
+              value={values[key]}
+              readOnly={macrosReadOnly}
+              onChange={(v) => patch({ [key]: v })}
+            />
+          ))}
+        </div>
+
+        {macrosReadOnly && (
+          <p className="text-xs leading-snug text-muted-foreground">
+            Macros are calculated from recipe components.
+          </p>
+        )}
+      </FormSection>
 
       {!scaleReadOnly && (
-        <>
-          <div>
-            <Label className="text-xs text-muted-foreground">Scale type</Label>
-            <div className="mt-2 flex gap-2" role="radiogroup" aria-label="Scale type">
-              <Button
-                type="button"
-                variant={values.scaleType === 'count' ? 'default' : 'outline'}
-                className="flex-1"
-                onClick={() => patch({ scaleType: 'count' })}
-              >
-                Count
-              </Button>
-              <Button
-                type="button"
-                variant={values.scaleType === 'scale' ? 'default' : 'outline'}
-                className="flex-1"
-                onClick={() => patch({ scaleType: 'scale' })}
-              >
-                Scale
-              </Button>
-            </div>
+        <FormSection
+          title="Serving type"
+          description="Count for discrete items; scale for weight-based foods."
+        >
+          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Scale type">
+            <Button
+              type="button"
+              variant={values.scaleType === 'count' ? 'default' : 'outline'}
+              className={cn(
+                'h-10',
+                values.scaleType === 'count' && 'ring-1 ring-primary/25',
+              )}
+              onClick={() => patch({ scaleType: 'count' })}
+            >
+              Count
+            </Button>
+            <Button
+              type="button"
+              variant={values.scaleType === 'scale' ? 'default' : 'outline'}
+              className={cn(
+                'h-10',
+                values.scaleType === 'scale' && 'ring-1 ring-primary/25',
+              )}
+              onClick={() => patch({ scaleType: 'scale' })}
+            >
+              Scale
+            </Button>
           </div>
 
           {values.scaleType === 'scale' && (
-            <>
+            <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <FormField label="Base amount">
                   <Input
@@ -194,27 +215,28 @@ export function FoodFormFields({
                   </select>
                 </FormField>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Macros above are per {values.baseAmount || '1'} {values.baseUnit} (base serving).
-              </p>
-            </>
+            </div>
           )}
-        </>
+        </FormSection>
       )}
 
-      <FormField label="Serving description">
-        <Input
-          value={values.servingDesc}
-          onChange={(e) => patch({ servingDesc: e.target.value })}
-          placeholder="e.g. 1 medium apple, per 28g"
-        />
-      </FormField>
+      <FormSection title="Serving description">
+        <FormField label="How you describe one serving">
+          <Input
+            value={values.servingDesc}
+            onChange={(e) => patch({ servingDesc: e.target.value })}
+            placeholder="e.g. 1 medium apple, per 28g"
+          />
+        </FormField>
+      </FormSection>
 
-      <CategoryPicker
-        selected={values.categories}
-        allCategories={allCategories}
-        onChange={(categories) => patch({ categories })}
-      />
+      <FormSection title="Categories">
+        <CategoryPicker
+          selected={values.categories}
+          allCategories={allCategories}
+          onChange={(categories) => patch({ categories })}
+        />
+      </FormSection>
     </div>
   )
 }
@@ -229,12 +251,12 @@ function FormField({
   required?: boolean
 }) {
   return (
-    <div>
-      <Label className="text-xs text-muted-foreground">
+    <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+      <Label className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-primary"> *</span>}
       </Label>
-      <div className="mt-1">{children}</div>
+      <div className="mt-1.5">{children}</div>
     </div>
   )
 }
@@ -251,12 +273,12 @@ function MacroField({
   readOnly?: boolean
 }) {
   return (
-    <div>
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+    <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       <Input
         type="number"
         inputMode="decimal"
-        className="mt-1"
+        className="mt-1.5 tabular-nums"
         value={value}
         disabled={readOnly}
         onChange={(e) => onChange(e.target.value)}

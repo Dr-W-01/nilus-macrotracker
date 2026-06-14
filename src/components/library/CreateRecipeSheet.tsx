@@ -3,6 +3,7 @@ import { ChefHat } from 'lucide-react'
 import { toast } from 'sonner'
 import { toastFoodAdded } from '@/lib/foodToast'
 import { Button } from '@/components/ui/button'
+import { FormSection } from '@/components/ui/form-section'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -88,36 +89,39 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader>
+        <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
           <SheetTitle className="flex items-center gap-2">
-            <ChefHat className="h-5 w-5 text-primary" />
-            Create Recipe
+            <ChefHat className="h-5 w-5 text-primary" aria-hidden />
+            Create recipe
           </SheetTitle>
           <p className="text-xs font-normal text-muted-foreground">
             Combine foods from your library into a reusable recipe.
           </p>
         </ScrollSheetHeader>
         <ScrollSheetBody className="space-y-4">
-          <div>
-            <Label htmlFor="new-recipe-name">Recipe name</Label>
-            <Input
-              id="new-recipe-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="My meal..."
-              className="mt-1.5"
-            />
-          </div>
+          <FormSection title="Basics">
+            <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+              <Label htmlFor="new-recipe-name" className="text-xs font-medium text-muted-foreground">
+                Recipe name
+              </Label>
+              <Input
+                id="new-recipe-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="My meal..."
+                className="mt-1.5"
+              />
+            </div>
+          </FormSection>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Recipe totals</Label>
+          <FormSection
+            title="Recipe totals"
+            description="Calculated automatically from ingredients."
+          >
             <RecipeMacroSummary macros={previewMacros} />
-          </div>
+          </FormSection>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">
-              Ingredients ({orderedIds.length})
-            </Label>
+          <FormSection title={`Ingredients (${orderedIds.length})`}>
             <RecipeIngredientList
               library={foodLibrary}
               orderedIds={orderedIds}
@@ -125,13 +129,15 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
               setOverrides={setOverrides}
               onRemove={removeIngredient}
             />
-          </div>
+          </FormSection>
 
-          <RecipeAddIngredientPanel
-            library={foodLibrary}
-            excludeIds={excludeIds}
-            onAdd={addIngredient}
-          />
+          <FormSection title="Add ingredient">
+            <RecipeAddIngredientPanel
+              library={foodLibrary}
+              excludeIds={excludeIds}
+              onAdd={addIngredient}
+            />
+          </FormSection>
         </ScrollSheetBody>
         <ScrollSheetFooter>
           <Button

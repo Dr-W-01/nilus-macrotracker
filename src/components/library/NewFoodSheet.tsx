@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { toastFoodAdded } from '@/lib/foodToast'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   ModalViewport,
@@ -59,8 +60,14 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader>
-          <SheetTitle>New Food</SheetTitle>
+        <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
+          <SheetTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5 text-primary" aria-hidden />
+            New food
+          </SheetTitle>
+          <p className="text-xs font-normal text-muted-foreground">
+            Add a food to your library with nutrition facts per serving.
+          </p>
         </ScrollSheetHeader>
         <ScrollSheetBody>
           <FoodFormFields
@@ -71,7 +78,7 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
         </ScrollSheetBody>
         <ScrollSheetFooter>
           <Button size="lg" className="w-full" onClick={save}>
-            Save Food
+            Save food
           </Button>
           <Button
             size="lg"

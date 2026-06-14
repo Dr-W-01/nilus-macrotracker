@@ -9,6 +9,15 @@ export const MACRO_NUTRIENT_ORDER: readonly MacroNutrientKey[] = [
   'sugars',
 ] as const
 
+/** Nutrition-label order for food edit/add forms only — not for display elsewhere. */
+export const FORM_MACRO_NUTRIENT_ORDER: readonly MacroNutrientKey[] = [
+  'fat',
+  'carbs',
+  'fiber',
+  'sugars',
+  'protein',
+] as const
+
 export const MACRO_DISPLAY_LABELS: Record<MacroNutrientKey, string> = {
   protein: 'Protein',
   carbs: 'Carbs',

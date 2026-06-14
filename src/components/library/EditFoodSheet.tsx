@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { toastFoodRemoved, toastFoodUpdated } from '@/lib/foodToast'
-import { Info } from 'lucide-react'
+import { Info, UtensilsCrossed } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
@@ -79,14 +79,24 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
           className={scrollSheetContentClass}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <ScrollSheetHeader>
-            <SheetTitle>Edit library food</SheetTitle>
-            <p className="text-xs text-muted-foreground font-normal">
+          <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
+            <SheetTitle className="flex items-center gap-2">
+              <UtensilsCrossed className="h-5 w-5 text-primary" aria-hidden />
+              Edit library food
+            </SheetTitle>
+            <p className="text-xs font-normal text-muted-foreground">
               Changes here update your Library for all future logs. To edit a single
               day&apos;s entry, use the Daily tab.
             </p>
           </ScrollSheetHeader>
           <ScrollSheetBody>
+            <div className="mb-4 flex gap-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card px-3 py-2.5">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Editing <span className="font-medium text-foreground">{food.name}</span> in your
+                library. Saved changes apply everywhere this food is used.
+              </p>
+            </div>
             <FoodFormFields
               values={values}
               onChange={setValues}
@@ -121,7 +131,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
             <DialogTitle>Delete {food.name}?</DialogTitle>
           </ScrollDialogHeader>
           <ScrollDialogBody className="space-y-3 py-2">
-            <div className="flex gap-3 rounded-lg border border-border bg-secondary/40 px-3 py-3">
+            <div className="flex gap-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card px-3 py-3">
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
               <div className="space-y-2 text-sm leading-relaxed">
                 <p className="text-foreground">

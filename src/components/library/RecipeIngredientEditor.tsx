@@ -6,7 +6,7 @@ import type { RecipeOverrideState } from '@/components/daily/RecipeInstanceEdito
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+
 import { computeComponentMacros } from '@/lib/macros'
 import {
   amountEatenFromServings,
@@ -194,7 +194,7 @@ export function RecipeIngredientList({
   }
 
   return (
-    <div className="divide-y divide-border rounded-lg border border-border">
+    <div className="divide-y divide-border rounded-lg border border-border/60 bg-secondary/20">
       {orderedIds.map((foodId) => {
         const food = library.find((f) => f.id === foodId)
         if (!food) {
@@ -338,7 +338,7 @@ export function RecipeAddIngredientPanel({
 
   if (adding) {
     return (
-      <div className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+      <div className="space-y-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card p-4">
         <p className="text-sm font-medium">Add {adding.name}</p>
         <QuantityInput
           food={adding}
@@ -364,7 +364,6 @@ export function RecipeAddIngredientPanel({
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium">Add ingredient from library</Label>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input

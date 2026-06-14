@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
+import { FormSection } from '@/components/ui/form-section'
 import {
   ModalViewport,
   ScrollSheetBody,
@@ -105,36 +106,47 @@ export function AddFoodSheet({
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader>
+        <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
           <SheetTitle>{food.name}</SheetTitle>
+          <p className="text-xs font-normal text-muted-foreground">
+            Add to {dateLabel}
+          </p>
         </ScrollSheetHeader>
         <ScrollSheetBody className="space-y-4">
-          <QuantityInput
-            food={food}
-            note={note}
-            onNoteChange={setNote}
-            countQuantity={countQty}
-            onCountQuantityChange={setCountQty}
-            amountEaten={amountEaten}
-            onAmountEatenChange={setAmountEaten}
-            showNote={false}
-            showInlineMacroPreview={false}
-          />
+          <FormSection title="Quantity">
+            <QuantityInput
+              food={food}
+              note={note}
+              onNoteChange={setNote}
+              countQuantity={countQty}
+              onCountQuantityChange={setCountQty}
+              amountEaten={amountEaten}
+              onAmountEatenChange={setAmountEaten}
+              showNote={false}
+              showInlineMacroPreview={false}
+            />
+          </FormSection>
           {macros && (
-            <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
-              <p className="text-lg font-bold text-primary tabular-nums">
-                {roundMacro(macros.calories, 0)} cal
-              </p>
-              <LoggedMacroPreview macros={macros} size="md" className="mt-1" />
-            </div>
+            <FormSection title="This entry">
+              <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5 text-center">
+                <p className="text-lg font-bold text-primary tabular-nums">
+                  {roundMacro(macros.calories, 0)} cal
+                </p>
+                <LoggedMacroPreview macros={macros} size="md" className="mt-1" />
+              </div>
+            </FormSection>
           )}
-          <MealPicker
-            label="Meal"
-            meals={meals}
-            value={meal}
-            onChange={setMeal}
-          />
-          <FoodNoteField note={note} onNoteChange={setNote} />
+          <FormSection title="Details">
+            <div className="space-y-3">
+              <MealPicker
+                label="Meal"
+                meals={meals}
+                value={meal}
+                onChange={setMeal}
+              />
+              <FoodNoteField note={note} onNoteChange={setNote} />
+            </div>
+          </FormSection>
         </ScrollSheetBody>
         <ScrollSheetFooter>
           <Button
