@@ -10,22 +10,37 @@ import { cn } from '@/lib/utils'
 interface LoggedMacroPreviewProps {
   macros: MacroTotals
   className?: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xs'
+  /** Render inline (span) for single-line layouts */
+  inline?: boolean
+  nowrap?: boolean
 }
 
 export function LoggedMacroPreview({
   macros,
   className,
   size = 'sm',
+  inline = false,
+  nowrap = false,
 }: LoggedMacroPreviewProps) {
   const valueClass =
-    size === 'sm' ? 'text-[11px]' : size === 'lg' ? 'text-base' : 'text-sm'
+    size === 'xs'
+      ? 'text-xs'
+      : size === 'sm'
+        ? 'text-[11px]'
+        : size === 'lg'
+          ? 'text-base'
+          : 'text-sm'
+
+  const Tag = inline ? 'span' : 'p'
 
   return (
-    <p
+    <Tag
       className={cn(
         'text-muted-foreground tabular-nums leading-tight',
         valueClass,
+        inline && 'inline',
+        nowrap && 'whitespace-nowrap',
         className,
       )}
     >
@@ -38,7 +53,7 @@ export function LoggedMacroPreview({
           </span>
         )
       })}
-    </p>
+    </Tag>
   )
 }
 

@@ -689,13 +689,13 @@ function FoodList({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="mr-1 shrink-0 self-center h-9 gap-1 px-2.5 text-xs"
+                size="icon"
+                className="mr-1 h-9 w-9 shrink-0 self-center"
                 onClick={() => onAddToToday(food)}
+                aria-label={`Add ${food.name} to today`}
+                title="Add to Today"
               >
-                <CalendarPlus className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                <span className="hidden min-[380px]:inline">Add to Today</span>
-                <span className="min-[380px]:hidden">Today</span>
+                <CalendarPlus className="h-4 w-4" aria-hidden />
               </Button>
             </div>
           )}
@@ -729,7 +729,12 @@ function FoodRowContent({
           {Math.round(food.caloriesPerServing)} cal
         </span>
       </div>
-      <LoggedMacroPreview macros={foodItemMacros(food)} size="sm" />
+      <LoggedMacroPreview
+        macros={foodItemMacros(food)}
+        size="sm"
+        nowrap
+        className="min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      />
     </>
   )
 }

@@ -66,7 +66,10 @@ export function DailyMealSections({
             <div className="flex min-h-9 items-center gap-1 px-0.5 py-0.5">
               <button
                 type="button"
-                className="mb-0 flex min-h-9 w-full min-w-0 flex-1 items-start gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50"
+                className={cn(
+                  'mb-0 flex min-h-9 w-full min-w-0 flex-1 gap-2 rounded-lg px-0.5 py-1 text-left transition-colors active:bg-secondary/50',
+                  mealExpanded ? 'items-start' : 'items-center',
+                )}
                 onClick={() => toggleMealCollapsed(meal, currentDate)}
                 aria-expanded={mealExpanded}
                 aria-controls={`meal-foods-${meal.replace(/\s+/g, '-')}`}
@@ -78,29 +81,41 @@ export function DailyMealSections({
                     <ChevronDown className="h-4 w-4" aria-hidden />
                   )}
                 </span>
-                <span className="min-w-0 flex-1 space-y-0.5">
-                  <span className="block text-xs font-semibold uppercase tracking-wide text-primary">
-                    {meal}
-                    <span className="sr-only">
-                      {mealExpanded ? ', expanded' : ', collapsed'}
-                    </span>
-                  </span>
-                  {totals && entries.length > 0 && (
-                    mealExpanded ? (
-                      <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
-                        {formatMealGroupTotals(totals)}
+                <span className="min-w-0 flex-1">
+                  {mealExpanded ? (
+                    <span className="space-y-0.5">
+                      <span className="block text-xs font-semibold uppercase tracking-wide text-primary">
+                        {meal}
+                        <span className="sr-only">, expanded</span>
                       </span>
-                    ) : (
-                      <span className="block space-y-0.5">
-                        <span className="text-xs font-semibold tabular-nums text-foreground">
-                          {roundMacro(totals.calories, 0)} cal
+                      {totals && entries.length > 0 && (
+                        <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
+                          {formatMealGroupTotals(totals)}
                         </span>
-                        <LoggedMacroPreview macros={totals} size="lg" />
+                      )}
+                    </span>
+                  ) : (
+                    <span className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-xs font-semibold uppercase tracking-wide text-primary [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <span className="shrink-0 whitespace-nowrap">
+                        {meal} ({roundMacro(totals?.calories ?? 0, 0)} CAL)
+                        <span className="sr-only">, collapsed</span>
                       </span>
-                    )
+                      {totals && entries.length > 0 && (
+                        <>
+                          <span className="shrink-0 text-muted-foreground/60">·</span>
+                          <LoggedMacroPreview
+                            macros={totals}
+                            size="xs"
+                            inline
+                            nowrap
+                            className="shrink-0 font-normal normal-case"
+                          />
+                        </>
+                      )}
+                    </span>
                   )}
                 </span>
-                <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground tabular-nums">
+                <span className="shrink-0 text-[10px] text-muted-foreground tabular-nums">
                   {entries.length} {entries.length === 1 ? 'item' : 'items'}
                 </span>
               </button>
