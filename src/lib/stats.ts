@@ -1,5 +1,5 @@
-import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns'
-import { clampStatsRange, datesInRange, shiftDate } from '@/lib/dates'
+import { addDays, format, parseISO } from 'date-fns'
+import { clampStatsRange, datesInRange, shiftDate, todayString } from '@/lib/dates'
 import {
   computeDayMacros,
   getLoggedFoodMacros,
@@ -13,6 +13,7 @@ import {
   roundAmount,
 } from '@/lib/scale'
 import type { GoalMode } from '@/lib/goalMode'
+import { computeLoggingStreak } from '@/lib/loggingStreak'
 import type { DailyLog, FoodItem, GoalTemplate, LoggedFood, Settings } from '@/lib/types'
 
 export type StatsDayRow = {
@@ -395,143 +396,208 @@ export function computeAdherence(rows: StatsDayRow[]): number {
   return Math.round(values.reduce((a, b) => a + b, 0) / values.length)
 }
 
-export function generateInsights(
+export type InsightTone = 'positive' | 'warning' | 'neutral'
+
+export type InsightBullet = {
+  id: string
+  text: string
+  tone: InsightTone
+}
+
+export type InsightSummary = {
+  headline: string
+  bullets: InsightBullet[]
+  takeaway: string
+}
+
+/** Structured, scannable insights for the Stats Overview tab. */
+export function buildInsightSummary(
   rows: StatsDayRow[],
   period: 'week' | 'month' | 'custom',
-  range: { start: string; end: string },
-  goalMode: GoalMode = 'maintain',
-): string[] {
-  if (rows.length === 0) return ['Log foods on the Daily tab to unlock insights for this period.']
+  goalMode: GoalMode,
+  dailyLogs: Record<string, DailyLog>,
+): InsightSummary | null {
+  if (rows.length === 0) return null
 
-  const mode = goalMode
-  const insights: string[] = []
-  const periodLabel = period === 'month' ? 'month' : 'period'
   const n = rows.length
-
+  const periodLabel = period === 'week' ? 'this week' : period === 'month' ? 'this month' : 'this period'
   const avgIntake = rows.reduce((s, d) => s + d.calories, 0) / n
   const avgIntakeGoal = rows.reduce((s, d) => s + d.goal.calories, 0) / n
   const avgNet = rows.reduce((s, d) => s + d.net, 0) / n
+  const intakeDelta = roundMacro(avgIntake - avgIntakeGoal, 0)
+  const intakeTol = Math.max(25, Math.abs(avgIntakeGoal) * ADHERENCE_TOLERANCE)
+
+  const proteinHitDays = rows.filter((d) =>
+    isProteinOnTarget(d.protein, d.goal.protein),
+  ).length
+  const proteinRate = proteinHitDays / n
+  const streak = computeLoggingStreak(dailyLogs, todayString())
+
+  const bullets: InsightBullet[] = []
+
+  if (streak > 0) {
+    bullets.push({
+      id: 'streak',
+      text: `${streak}-day logging streak — keep it going!`,
+      tone: streak >= 3 ? 'positive' : 'neutral',
+    })
+  } else {
+    bullets.push({
+      id: 'streak',
+      text: 'No active streak — log food today to start one.',
+      tone: 'warning',
+    })
+  }
+
+  bullets.push({
+    id: 'protein',
+    text: `Hit protein goal on ${proteinHitDays} of ${n} logged day${n === 1 ? '' : 's'} ${periodLabel}.`,
+    tone: proteinRate >= 0.7 ? 'positive' : proteinRate >= 0.4 ? 'neutral' : 'warning',
+  })
 
   const energyGoalRows = rows.filter((d) => (d.goal.targetDeficit ?? 0) !== 0)
-  const usesEnergyGoal = energyGoalRows.length > 0
+  const deficitRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) < 0)
+  const surplusRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
 
-  if (usesEnergyGoal) {
-    const deficitRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) < 0)
-    const surplusRows = energyGoalRows.filter((d) => (d.goal.targetDeficit ?? 0) > 0)
+  const showDeficit =
+    deficitRows.length > 0 && (goalMode === 'cut' || goalMode === 'maintain')
+  const showSurplus =
+    surplusRows.length > 0 && (goalMode === 'bulk' || goalMode === 'maintain')
 
-    const showDeficitInsight =
-      deficitRows.length > 0 && (mode === 'cut' || mode === 'maintain')
-    const showSurplusInsight =
-      surplusRows.length > 0 && (mode === 'bulk' || mode === 'maintain')
+  if (showDeficit) {
+    const avgTargetNet =
+      deficitRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
+      deficitRows.length
+    const avgActualNet =
+      deficitRows.reduce((s, d) => s + d.net, 0) / deficitRows.length
+    const netGap = roundMacro(avgActualNet - avgTargetNet, 0)
+    const tol = Math.max(50, Math.abs(avgTargetNet) * ADHERENCE_TOLERANCE)
 
-    if (showDeficitInsight) {
-      const avgTargetNet =
-        deficitRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
-        deficitRows.length
-      const avgActualNet =
-        deficitRows.reduce((s, d) => s + d.net, 0) / deficitRows.length
-      const netGap = roundMacro(avgActualNet - avgTargetNet, 0)
-      const tol = Math.max(50, Math.abs(avgTargetNet) * ADHERENCE_TOLERANCE)
-
-      if (Math.abs(netGap) <= tol) {
-        insights.push(
-          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day, very close to your ${roundMacro(avgTargetNet, 0)} deficit goal.`,
-        )
-      } else if (netGap < 0) {
-        insights.push(
-          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${Math.abs(netGap)} kcal more deficit than your ${roundMacro(avgTargetNet, 0)} goal.`,
-        )
-      } else {
-        insights.push(
-          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${netGap} kcal less deficit than your ${roundMacro(avgTargetNet, 0)} goal.`,
-        )
-      }
-    }
-
-    if (showSurplusInsight) {
-      const avgTargetNet =
-        surplusRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
-        surplusRows.length
-      const avgActualNet =
-        surplusRows.reduce((s, d) => s + d.net, 0) / surplusRows.length
-      const netGap = roundMacro(avgActualNet - avgTargetNet, 0)
-      const tol = Math.max(50, Math.abs(avgTargetNet) * ADHERENCE_TOLERANCE)
-
-      if (Math.abs(netGap) <= tol) {
-        insights.push(
-          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day, very close to your +${roundMacro(avgTargetNet, 0)} surplus goal.`,
-        )
-      } else if (netGap > 0) {
-        insights.push(
-          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${netGap} kcal above your +${roundMacro(avgTargetNet, 0)} surplus goal.`,
-        )
-      } else {
-        insights.push(
-          `You're averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${Math.abs(netGap)} kcal below your +${roundMacro(avgTargetNet, 0)} surplus goal.`,
-        )
-      }
-    }
-
-    const intakeDelta = roundMacro(avgIntake - avgIntakeGoal, 0)
-    if (Math.abs(intakeDelta) > 25) {
-      insights.push(
-        intakeDelta > 0
-          ? `Average intake was ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal/day target (separate from your energy balance goal).`
-          : `Average intake was ${Math.abs(intakeDelta)} cal below your ${roundMacro(avgIntakeGoal, 0)} cal/day target.`,
-      )
-    }
-  } else {
-    const intakeDelta = roundMacro(avgIntake - avgIntakeGoal, 0)
-    if (intakeDelta > 25) {
-      insights.push(
-        `Your average daily intake is ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal target this ${periodLabel}.`,
-      )
-    } else if (intakeDelta < -25) {
-      insights.push(
-        `Your average daily intake is ${Math.abs(intakeDelta)} cal below your ${roundMacro(avgIntakeGoal, 0)} cal target this ${periodLabel}.`,
-      )
+    let text: string
+    if (Math.abs(netGap) <= tol) {
+      text = `Averaging ${roundMacro(avgActualNet, 0)} net cal/day — on target for your ${roundMacro(avgTargetNet, 0)} deficit goal.`
+    } else if (netGap < 0) {
+      text = `Averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${Math.abs(netGap)} cal deeper deficit than your ${roundMacro(avgTargetNet, 0)} goal.`
     } else {
-      insights.push(
-        `Your average daily intake (${roundMacro(avgIntake, 0)} cal) is close to your ${roundMacro(avgIntakeGoal, 0)} cal target.`,
-      )
+      text = `Averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${netGap} cal shy of your ${roundMacro(avgTargetNet, 0)} deficit goal.`
     }
-    insights.push(
-      `Average net calories (after burned): ${roundMacro(avgNet, 0)} cal/day.`,
-    )
+    bullets.push({
+      id: 'net-deficit',
+      text,
+      tone: Math.abs(netGap) <= tol ? 'positive' : netGap > 0 ? 'warning' : 'neutral',
+    })
+  } else if (showSurplus) {
+    const avgTargetNet =
+      surplusRows.reduce((s, d) => s + (d.goal.targetDeficit ?? 0), 0) /
+      surplusRows.length
+    const avgActualNet =
+      surplusRows.reduce((s, d) => s + d.net, 0) / surplusRows.length
+    const netGap = roundMacro(avgActualNet - avgTargetNet, 0)
+    const tol = Math.max(50, Math.abs(avgTargetNet) * ADHERENCE_TOLERANCE)
+
+    let text: string
+    if (Math.abs(netGap) <= tol) {
+      text = `Averaging ${roundMacro(avgActualNet, 0)} net cal/day — on target for your +${roundMacro(avgTargetNet, 0)} surplus goal.`
+    } else if (netGap > 0) {
+      text = `Averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${netGap} cal above your +${roundMacro(avgTargetNet, 0)} surplus goal.`
+    } else {
+      text = `Averaging ${roundMacro(avgActualNet, 0)} net cal/day — ${Math.abs(netGap)} cal below your +${roundMacro(avgTargetNet, 0)} surplus goal.`
+    }
+    bullets.push({
+      id: 'net-surplus',
+      text,
+      tone: Math.abs(netGap) <= tol ? 'positive' : netGap < 0 ? 'warning' : 'neutral',
+    })
+  } else {
+    bullets.push({
+      id: 'net-avg',
+      text: `Averaging ${roundMacro(avgNet, 0)} net cal/day (eaten minus burned).`,
+      tone: 'neutral',
+    })
   }
 
-  const adherence = computeAdherenceBreakdown(rows)
-  const energyLabel =
-    mode === 'cut'
-      ? 'deficit goal'
-      : mode === 'bulk'
-        ? 'surplus goal'
-        : 'energy balance'
-  insights.push(
-    `Adherence: protein ${adherence.protein}%, intake ${adherence.calories}%` +
-      (adherence.targetDeficit != null
-        ? `, ${energyLabel} ${adherence.targetDeficit}%`
-        : '') +
-      '.',
-  )
-
-  const best = [...rows].sort((a, b) => b.net - a.net)[0]
-  const toughest = [...rows].sort((a, b) => a.net - b.net)[0]
-  if (rows.length >= 2 && best.date !== toughest.date) {
-    insights.push(
-      `Highest net day: ${format(parseISO(best.date), 'MMM d')} (${roundMacro(best.net, 0)} cal). Lowest: ${format(parseISO(toughest.date), 'MMM d')} (${roundMacro(toughest.net, 0)} cal).`,
-    )
+  if (Math.abs(intakeDelta) <= intakeTol) {
+    bullets.push({
+      id: 'intake',
+      text: `Average intake ${roundMacro(avgIntake, 0)} cal/day — within range of your ${roundMacro(avgIntakeGoal, 0)} cal target.`,
+      tone: 'positive',
+    })
+  } else if (intakeDelta > 0) {
+    bullets.push({
+      id: 'intake',
+      text: `Average intake ${roundMacro(avgIntake, 0)} cal/day — ${intakeDelta} cal above your ${roundMacro(avgIntakeGoal, 0)} cal target.`,
+      tone: 'warning',
+    })
+  } else {
+    bullets.push({
+      id: 'intake',
+      text: `Average intake ${roundMacro(avgIntake, 0)} cal/day — ${Math.abs(intakeDelta)} cal below your ${roundMacro(avgIntakeGoal, 0)} cal target.`,
+      tone: 'warning',
+    })
   }
 
-  const spanDays =
-    differenceInCalendarDays(parseISO(range.end), parseISO(range.start)) + 1
-  if (spanDays > rows.length) {
-    insights.push(
-      `${spanDays - rows.length} day(s) in range had no food logged.`,
-    )
+  if (n >= 2) {
+    const best = [...rows].sort((a, b) => b.net - a.net)[0]
+    const toughest = [...rows].sort((a, b) => a.net - b.net)[0]
+    if (best.date !== toughest.date) {
+      bullets.push({
+        id: 'range',
+        text: `Highest net: ${format(parseISO(best.date), 'MMM d')} (${roundMacro(best.net, 0)} cal). Lowest: ${format(parseISO(toughest.date), 'MMM d')} (${roundMacro(toughest.net, 0)} cal).`,
+        tone: 'neutral',
+      })
+    }
   }
 
-  return insights.slice(0, 5)
+  const trimmedBullets = bullets.slice(0, 6)
+
+  const onTrackCount = trimmedBullets.filter((b) => b.tone === 'positive').length
+  const warnCount = trimmedBullets.filter((b) => b.tone === 'warning').length
+
+  let headline: string
+  if (onTrackCount >= 3 && warnCount === 0) {
+    headline =
+      goalMode === 'cut'
+        ? `Solid ${periodLabel} — you're largely on track with your cut goals.`
+        : goalMode === 'bulk'
+          ? `Strong ${periodLabel} — intake and surplus goals are looking good.`
+          : `Strong ${periodLabel} — your logging and macros are in a good place.`
+  } else if (warnCount >= 2) {
+    headline = `A few areas need attention ${periodLabel} — small tweaks can get you back on track.`
+  } else {
+    headline = `Mixed ${periodLabel} — some wins, with room to sharpen a couple of habits.`
+  }
+
+  let takeaway: string
+  if (proteinRate < 0.7) {
+    takeaway = 'Prioritize protein at your next meal to build momentum.'
+  } else if (streak === 0) {
+    takeaway = 'Log today to restart your streak and keep trends accurate.'
+  } else if (Math.abs(intakeDelta) > intakeTol) {
+    takeaway =
+      intakeDelta > 0
+        ? 'Trim portion sizes slightly to align intake with your target.'
+        : 'Add a snack or larger serving to close your intake gap.'
+  } else if (showDeficit && bullets.find((b) => b.id === 'net-deficit')?.tone === 'warning') {
+    takeaway = 'Tighten portions or activity to hit your deficit net calorie goal.'
+  } else if (showSurplus && bullets.find((b) => b.id === 'net-surplus')?.tone === 'warning') {
+    takeaway = 'Add calories to your meals to reach your surplus net goal.'
+  } else {
+    takeaway = 'Keep logging daily — consistency is your biggest lever right now.'
+  }
+
+  return { headline, bullets: trimmedBullets, takeaway }
+}
+
+/** @deprecated Use buildInsightSummary */
+export function generateInsights(
+  rows: StatsDayRow[],
+  period: 'week' | 'month' | 'custom',
+  _range: { start: string; end: string },
+  goalMode: GoalMode = 'maintain',
+): string[] {
+  const summary = buildInsightSummary(rows, period, goalMode, {})
+  if (!summary) return ['Log foods on the Daily tab to unlock insights for this period.']
+  return [summary.headline, ...summary.bullets.map((b) => b.text), summary.takeaway]
 }
 
 export function rollingAverage(values: number[], window: number): (number | null)[] {

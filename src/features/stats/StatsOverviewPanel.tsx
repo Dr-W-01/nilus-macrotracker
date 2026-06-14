@@ -4,6 +4,7 @@ import { BarChart3 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { DailyEnergyBalanceChart } from '@/components/stats/DailyEnergyBalanceChart'
 
+import { InsightsCard } from '@/components/stats/InsightsCard'
 import { PeriodComparisonCard } from '@/components/stats/PeriodComparisonCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import {
@@ -11,7 +12,7 @@ import {
   type AdherenceKey,
   buildStatsDayRows,
   computeAdherenceBreakdown,
-  generateInsights,
+  buildInsightSummary,
   getPreviousRange,
   previousPeriodLabel,
   sumDayRows,
@@ -72,7 +73,12 @@ export function StatsOverviewPanel({
       : null
 
   const adherence = computeAdherenceBreakdown(dayRows)
-  const insights = generateInsights(dayRows, statsPeriod, range, goalMode)
+  const insightSummary = buildInsightSummary(
+    dayRows,
+    statsPeriod,
+    goalMode,
+    dailyLogs,
+  )
   const balanceChartData = dayRows.map((d) => ({
     label: format(parseISO(d.date), 'M/d'),
     net: roundMacro(d.net, 0),
@@ -202,18 +208,7 @@ export function StatsOverviewPanel({
         goalMode={goalMode}
       />
 
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="pt-4 pb-3 space-y-2">
-          <p className="text-sm font-semibold">Insights</p>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            {insights.map((line, i) => (
-              <li key={i} className="leading-snug">
-                {line}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      {insightSummary && <InsightsCard summary={insightSummary} />}
 
       <Card>
         <CardContent className="pt-4 pb-3">
