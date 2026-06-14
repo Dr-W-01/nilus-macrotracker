@@ -163,6 +163,36 @@ export function stableCalorieYDomain(values: number[], minSpan = 600): [number, 
   return [low, high]
 }
 
+function niceCalorieTickStep(span: number, targetTickCount = 6): number {
+  const rough = span / targetTickCount
+  const magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(rough, 1))))
+  const normalized = rough / magnitude
+  let nice = 1
+  if (normalized > 5) nice = 10
+  else if (normalized > 2) nice = 5
+  else if (normalized > 1) nice = 2
+  return Math.max(50, Math.round((nice * magnitude) / 50) * 50)
+}
+
+/** Y-axis ticks for calorie charts — always includes 0 when the domain spans it. */
+export function calorieYTicks([low, high]: [number, number]): number[] {
+  if (!Number.isFinite(low) || !Number.isFinite(high) || low >= high) return [0]
+
+  const step = niceCalorieTickStep(high - low)
+  const ticks = new Set<number>()
+
+  if (low <= 0 && high >= 0) ticks.add(0)
+
+  for (let v = step; v <= high + step * 0.001; v += step) {
+    ticks.add(Math.round(v))
+  }
+  for (let v = -step; v >= low - step * 0.001; v -= step) {
+    ticks.add(Math.round(v))
+  }
+
+  return [...ticks].sort((a, b) => a - b)
+}
+
 export function getPreviousRange(range: { start: string; end: string }): {
   start: string
   end: string

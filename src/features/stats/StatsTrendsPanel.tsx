@@ -19,6 +19,7 @@ import {
   buildTrendMetricSeries,
   computeTrendGoalLines,
   rollingAverageCalendarWindow,
+  calorieYTicks,
   stableCalorieYDomain,
   stableMacroYDomain,
   type TrendMetricKey,
@@ -37,7 +38,6 @@ import {
   CHART_GOAL_INTAKE,
   CHART_GOAL_NET,
   CHART_GRID_STROKE,
-  CHART_REFERENCE_STROKE,
   chartTooltipStyle,
 } from '@/lib/chartTheme'
 
@@ -153,6 +153,8 @@ function TrendsLineChart({
   rollingWindow,
   showRolling,
   yDomain,
+  yTicks,
+  showZeroReference = false,
   goalLines,
   compactDots = false,
   onDayClick,
@@ -165,6 +167,8 @@ function TrendsLineChart({
   rollingWindow: 7 | 14
   showRolling: boolean
   yDomain?: [number, number]
+  yTicks?: number[]
+  showZeroReference?: boolean
   goalLines?: GoalLine[]
   compactDots?: boolean
   onDayClick: (date: string) => void
@@ -179,7 +183,7 @@ function TrendsLineChart({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
-            margin={{ top: 4, right: 8, left: 0, bottom: 4 }}
+            margin={{ top: 4, right: 8, left: 4, bottom: showZeroReference ? 8 : 4 }}
             onClick={(state) => {
               const idx =
                 typeof state?.activeTooltipIndex === 'number'
@@ -191,8 +195,22 @@ function TrendsLineChart({
           >
             <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
             <XAxis dataKey="date" stroke={CHART_AXIS_STROKE} fontSize={11} tickLine={false} />
-            <YAxis stroke={CHART_AXIS_STROKE} fontSize={11} tickLine={false} domain={yDomain ?? ['auto', 'auto']} />
-            {yDomain && <ReferenceLine y={0} stroke={CHART_REFERENCE_STROKE} strokeWidth={1} />}
+            <YAxis
+              stroke={CHART_AXIS_STROKE}
+              fontSize={11}
+              tickLine={false}
+              width={44}
+              domain={yDomain ?? ['auto', 'auto']}
+              ticks={yTicks}
+            />
+            {showZeroReference && yDomain && (
+              <ReferenceLine
+                y={0}
+                stroke={CHART_AXIS_STROKE}
+                strokeWidth={1.5}
+                ifOverflow="visible"
+              />
+            )}
             {goalLines?.map((goal) => (
               <ReferenceLine
                 key={goal.label}
@@ -358,6 +376,11 @@ export function StatsTrendsPanel({
     return stableCalorieYDomain(values)
   }, [chartData, showRollingLines, calorieGoalLines, trackBurnedCalories])
 
+  const calorieChartTicks = useMemo(
+    () => (calorieYDomain ? calorieYTicks(calorieYDomain) : undefined),
+    [calorieYDomain],
+  )
+
   const macroYDomain = useMemo(() => {
     const values: number[] = []
     chartData.forEach((row) => {
@@ -398,6 +421,8 @@ export function StatsTrendsPanel({
             rollingWindow={rollingWindow}
             showRolling={showRollingLines}
             yDomain={calorieYDomain}
+            yTicks={calorieChartTicks}
+            showZeroReference
             goalLines={calorieChartGoalLines}
             onDayClick={onDayClick}
           />
