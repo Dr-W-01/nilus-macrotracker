@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { LoggedFoodEntryRow } from '@/components/daily/LoggedFoodEntryRow'
-import { computeDayMacros, formatMealGroupTotals } from '@/lib/macros'
+import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
+import { computeDayMacros, formatMealGroupTotals, roundMacro } from '@/lib/macros'
 import type { FoodItem, LoggedFood } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
@@ -85,9 +86,18 @@ export function DailyMealSections({
                     </span>
                   </span>
                   {totals && entries.length > 0 && (
-                    <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
-                      {formatMealGroupTotals(totals)}
-                    </span>
+                    mealExpanded ? (
+                      <span className="block text-[10px] text-muted-foreground tabular-nums leading-snug">
+                        {formatMealGroupTotals(totals)}
+                      </span>
+                    ) : (
+                      <span className="block space-y-0.5">
+                        <span className="text-xs font-semibold tabular-nums text-foreground">
+                          {roundMacro(totals.calories, 0)} cal
+                        </span>
+                        <LoggedMacroPreview macros={totals} size="lg" />
+                      </span>
+                    )
                   )}
                 </span>
                 <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground tabular-nums">

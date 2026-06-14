@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 interface LoggedMacroPreviewProps {
   macros: MacroTotals
   className?: string
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
 }
 
 export function LoggedMacroPreview({
@@ -18,7 +18,8 @@ export function LoggedMacroPreview({
   className,
   size = 'sm',
 }: LoggedMacroPreviewProps) {
-  const valueClass = size === 'sm' ? 'text-[11px]' : 'text-sm'
+  const valueClass =
+    size === 'sm' ? 'text-[11px]' : size === 'lg' ? 'text-base' : 'text-sm'
 
   return (
     <p

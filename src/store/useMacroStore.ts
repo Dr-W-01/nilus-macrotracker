@@ -232,6 +232,8 @@ interface MacroStore {
   librarySearchEngaged: boolean
   /** Hide bottom nav while any text input is focused (keyboard open) */
   inputFocusEngaged: boolean
+  /** Transient: Library "Add to Today" hands off to Daily add flow */
+  pendingLibraryFoodId: string | null
   /** Food library item IDs marked as favorites for quick add */
   favoriteFoodIds: string[]
   /** Recent search queries for Library and Food Picker */
@@ -241,6 +243,7 @@ interface MacroStore {
   setCurrentTab: (tab: AppTab) => void
   setLibrarySearchEngaged: (v: boolean) => void
   setInputFocusEngaged: (v: boolean) => void
+  setPendingLibraryFoodId: (id: string | null) => void
   setCurrentDate: (date: string) => void
   setEditDayMode: (v: boolean) => void
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
@@ -319,6 +322,7 @@ export const useMacroStore = create<MacroStore>()(
       statsAnchorDate: todayString(),
       librarySearchEngaged: false,
       inputFocusEngaged: false,
+      pendingLibraryFoodId: null,
       favoriteFoodIds: [],
       recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
 
@@ -331,6 +335,7 @@ export const useMacroStore = create<MacroStore>()(
         }),
       setLibrarySearchEngaged: (v) => set({ librarySearchEngaged: v }),
       setInputFocusEngaged: (v) => set({ inputFocusEngaged: v }),
+      setPendingLibraryFoodId: (id) => set({ pendingLibraryFoodId: id }),
       setCurrentDate: (date) => set({ currentDate: date }),
       setEditDayMode: (v) => set({ editDayMode: v }),
       setLibrarySegment: (s) => set({ librarySegment: s }),

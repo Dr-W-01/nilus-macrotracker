@@ -97,6 +97,18 @@ export function formatCompactMacroLine(m: MacroTotals): string {
   )
 }
 
+/** Per-serving macros for a library food item. */
+export function foodItemMacros(food: FoodItem): MacroTotals {
+  return {
+    calories: food.caloriesPerServing,
+    protein: food.protein,
+    carbs: food.carbs,
+    fat: food.fat,
+    fiber: food.fiber,
+    sugars: food.sugars,
+  }
+}
+
 /** Meal group header totals, e.g. Cal 620 • P 45g • C 60g • F 22g • Fib 8g • S 12g */
 export function formatMealGroupTotals(m: MacroTotals): string {
   return `Cal ${roundMacro(m.calories, 0)} • ${formatMacroSequence(

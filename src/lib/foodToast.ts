@@ -1,7 +1,11 @@
 import { toast } from 'sonner'
 
 const FOOD_TOAST_OPTIONS = {
-  duration: 2500,
+  duration: 2200,
+  classNames: {
+    toast: 'text-sm',
+    title: 'text-sm font-medium',
+  },
 } as const
 
 export function toastFoodAdded(name: string): void {
@@ -14,4 +18,11 @@ export function toastFoodUpdated(name?: string): void {
 
 export function toastFoodRemoved(name?: string): void {
   toast.success(name ? `Removed ${name}` : 'Food removed', FOOD_TOAST_OPTIONS)
+}
+
+export function toastMealAssigned(meal: string, foodName?: string): void {
+  toast.success(
+    foodName ? `${foodName} → ${meal}` : `Assigned to ${meal}`,
+    FOOD_TOAST_OPTIONS,
+  )
 }

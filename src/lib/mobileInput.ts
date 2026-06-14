@@ -5,12 +5,21 @@ export const mobileFriendlyInputProps = {
   autoCapitalize: 'off',
   spellCheck: false,
   enterKeyHint: 'done' as const,
+  autoSave: 'off',
   'data-lpignore': 'true',
   'data-1p-ignore': 'true',
   'data-bwignore': 'true',
   'data-form-type': 'other',
   'data-autofill': 'off',
   'aria-autocomplete': 'none' as const,
+} as const
+
+/** Decimal/numeric fields — lean keyboard without autofill accessory UI. */
+export const mobileDecimalInputProps = {
+  ...mobileFriendlyInputProps,
+  inputMode: 'decimal' as const,
+  pattern: '[0-9]*',
+  name: 'numeric-field',
 } as const
 
 /** Lean props for short label/name fields (e.g. meal names in Settings). */
@@ -44,6 +53,6 @@ const SKIP_MOBILE_DEFAULTS = new Set([
 ])
 
 export function shouldApplyMobileInputDefaults(type?: string): boolean {
-  if (!type || type === 'text' || type === 'search') return true
+  if (!type || type === 'text' || type === 'search' || type === 'number') return true
   return !SKIP_MOBILE_DEFAULTS.has(type)
 }

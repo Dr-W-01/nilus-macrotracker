@@ -14,7 +14,7 @@ import {
   UtensilsCrossed,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { toastFoodAdded, toastFoodRemoved, toastFoodUpdated } from '@/lib/foodToast'
+import { toastFoodAdded, toastFoodRemoved, toastFoodUpdated, toastMealAssigned } from '@/lib/foodToast'
 import { AddFoodSheet } from '@/components/daily/AddFoodSheet'
 import { EditLoggedRecipeSheet } from '@/components/daily/EditLoggedRecipeSheet'
 import { FoodPickerSheet } from '@/components/daily/FoodPickerSheet'
@@ -211,6 +211,20 @@ export function DailyTab() {
       setAddSheetOpen(true)
     }
   }
+
+  const pendingLibraryFoodId = useMacroStore((s) => s.pendingLibraryFoodId)
+  const setPendingLibraryFoodId = useMacroStore((s) => s.setPendingLibraryFoodId)
+
+  useEffect(() => {
+    if (!pendingLibraryFoodId) return
+    const food = foodLibrary.find((f) => f.id === pendingLibraryFoodId)
+    setPendingLibraryFoodId(null)
+    if (!food) return
+    setPickerOpen(false)
+    setSelectedFood(food)
+    if (food.isRecipe) setPreviewOpen(true)
+    else setAddSheetOpen(true)
+  }, [pendingLibraryFoodId, foodLibrary, setPendingLibraryFoodId])
 
   const resetFoodFlow = () => {
     setSelectedFood(null)
@@ -639,14 +653,16 @@ export function DailyTab() {
                         editDayMode={editDayMode}
                         selectFoodsMode={selectFoodsMode}
                         selected={selectedLogIds.has(entry.id)}
+                        isUncategorized
                         onToggleSelect={() => toggleLogSelection(entry.id)}
                         onOpenEdit={() => {
                           if (food?.isRecipe) setEditRecipeLogged(entry)
                           else setEditLogged(entry)
                         }}
-                        onAssignMeal={(m) =>
+                        onAssignMeal={(m) => {
                           updateLoggedFood(entry.id, { meal: m })
-                        }
+                          if (m) toastMealAssigned(m, food?.name)
+                        }}
                       />
                     )
                   })}
@@ -668,7 +684,15 @@ export function DailyTab() {
                   if (isRecipe) setEditRecipeLogged(entry)
                   else setEditLogged(entry)
                 }}
-                onAssignMeal={(entryId, m) => updateLoggedFood(entryId, { meal: m })}
+                onAssignMeal={(entryId, m) => {
+                  updateLoggedFood(entryId, { meal: m })
+                  if (m) {
+                    const foodName = foodLibrary.find(
+                      (f) => f.id === log.foods.find((e) => e.id === entryId)?.foodId,
+                    )?.name
+                    toastMealAssigned(m, foodName)
+                  }
+                }}
               />
             </div>
           )}

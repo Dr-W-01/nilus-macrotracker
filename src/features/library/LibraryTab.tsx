@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   BookOpen,
+  CalendarPlus,
   ChefHat,
   ChevronLeft,
   ChevronRight,
@@ -25,8 +26,11 @@ import {
   ScrollDialogHeader,
   scrollDialogContentClass,
 } from '@/components/ui/scroll-modal'
+import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { FoodSearchField } from '@/components/library/FoodSearchField'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
+import { navigateToDailyWithFood } from '@/lib/navigateToDaily'
+import { foodItemMacros } from '@/lib/macros'
 import { fuzzyScore, parseFoodSearchQuery, searchFoodItems } from '@/lib/foodSearch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SEED_LIBRARY_COUNT } from '@/data/seedLibrary'
@@ -436,6 +440,7 @@ export function LibraryTab() {
                   selected={selected}
                   onToggle={toggleSelect}
                   onOpenItem={(food) => setEditingFood(food)}
+                  onAddToToday={(food) => navigateToDailyWithFood(food.id)}
                 />
               )}
             </section>
@@ -471,6 +476,7 @@ export function LibraryTab() {
                   selected={selected}
                   onToggle={toggleSelect}
                   onOpenItem={(food) => setEditingFood(food)}
+                  onAddToToday={(food) => navigateToDailyWithFood(food.id)}
                   showFavorite={librarySegment === 'items'}
                 />
               </section>
@@ -643,6 +649,7 @@ function FoodList({
   selected,
   onToggle,
   onOpenItem,
+  onAddToToday,
   showFavorite = false,
 }: {
   items: FoodItem[]
@@ -650,6 +657,7 @@ function FoodList({
   selected: Set<string>
   onToggle: (id: string) => void
   onOpenItem: (food: FoodItem) => void
+  onAddToToday: (food: FoodItem) => void
   showFavorite?: boolean
 }) {
   return (
@@ -657,18 +665,20 @@ function FoodList({
       {items.map((food) => (
         <li key={food.id}>
           {editMode ? (
-            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-3 active:bg-secondary/50">
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-3 active:bg-secondary/50">
               <Checkbox
                 checked={selected.has(food.id)}
                 onChange={() => onToggle(food.id)}
               />
-              <FoodRowContent food={food} showFavorite={showFavorite} />
+              <div className="min-w-0 flex-1">
+                <FoodRowContent food={food} showFavorite={showFavorite} />
+              </div>
             </label>
           ) : (
             <div className="flex items-stretch gap-1 rounded-lg border border-border">
               <button
                 type="button"
-                className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3 text-left active:bg-secondary/50"
+                className="flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3 text-left active:bg-secondary/50"
                 onClick={() => onOpenItem(food)}
               >
                 <FoodRowContent food={food} showFavorite={false} />
@@ -676,13 +686,17 @@ function FoodList({
               {showFavorite && !food.isRecipe && (
                 <FavoriteFoodButton foodId={food.id} className="self-center" />
               )}
-              <EditIconButton
-                variant="ghost"
-                size="icon"
-                className="mr-1 self-center h-8 w-8"
-                label={`Edit ${food.name}`}
-                onClick={() => onOpenItem(food)}
-              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mr-1 shrink-0 self-center h-9 gap-1 px-2.5 text-xs"
+                onClick={() => onAddToToday(food)}
+              >
+                <CalendarPlus className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                <span className="hidden min-[380px]:inline">Add to Today</span>
+                <span className="min-[380px]:hidden">Today</span>
+              </Button>
             </div>
           )}
         </li>
@@ -700,19 +714,22 @@ function FoodRowContent({
 }) {
   return (
     <>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">
-          {food.name} {food.isRecipe && '🍱'}
-        </p>
-        <p className="text-xs text-muted-foreground truncate">
-          {food.scaleType === 'scale'
-            ? `Base: ${formatBaseServing(food)} · ${food.servingDesc}`
-            : food.servingDesc}
-        </p>
+      <div className="flex w-full items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium truncate">
+            {food.name} {food.isRecipe && '🍱'}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">
+            {food.scaleType === 'scale'
+              ? `Base: ${formatBaseServing(food)} · ${food.servingDesc}`
+              : food.servingDesc}
+          </p>
+        </div>
+        <span className="shrink-0 text-sm font-medium tabular-nums">
+          {Math.round(food.caloriesPerServing)} cal
+        </span>
       </div>
-      <span className="text-sm text-muted-foreground shrink-0">
-        {Math.round(food.caloriesPerServing)} cal
-      </span>
+      <LoggedMacroPreview macros={foodItemMacros(food)} size="sm" />
     </>
   )
 }

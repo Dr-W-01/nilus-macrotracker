@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input'
+import { mobilePlainTextInputProps } from '@/lib/mobileInput'
 import { Label } from '@/components/ui/label'
 import { normalizeHexColor } from '@/lib/theme'
 
@@ -39,12 +40,12 @@ export function ColorPickerField({
           aria-label={`${label} picker`}
         />
         <Input
-          type="text"
+          {...mobilePlainTextInputProps}
           value={safe}
           onChange={(e) => onChange(normalizeHexColor(e.target.value, fallback))}
           className="font-mono text-sm uppercase"
           maxLength={7}
-          spellCheck={false}
+          autoCapitalize="characters"
         />
       </div>
     </div>

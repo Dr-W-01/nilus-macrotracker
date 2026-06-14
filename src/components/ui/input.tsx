@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {
+  mobileDecimalInputProps,
   mobileFriendlyInputProps,
   shouldApplyMobileInputDefaults,
 } from '@/lib/mobileInput'
@@ -8,6 +9,8 @@ import { cn } from '@/lib/utils'
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
   ({ className, type, ...props }, ref) => {
     const useMobile = shouldApplyMobileInputDefaults(type)
+    const mobileProps =
+      type === 'number' ? mobileDecimalInputProps : mobileFriendlyInputProps
 
     return (
       <input
@@ -17,7 +20,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
           className,
         )}
         ref={ref}
-        {...(useMobile ? mobileFriendlyInputProps : {})}
+        {...(useMobile ? mobileProps : {})}
         {...props}
       />
     )
