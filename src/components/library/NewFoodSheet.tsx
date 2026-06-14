@@ -60,7 +60,7 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
+        <ScrollSheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-primary" aria-hidden />
             New food

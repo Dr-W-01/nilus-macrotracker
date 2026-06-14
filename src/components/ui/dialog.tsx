@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
+import { SURFACE_GRADIENT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 const Dialog = DialogPrimitive.Root
@@ -29,7 +30,8 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-card p-6 text-card-foreground shadow-lg duration-200 sm:rounded-xl',
+        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border p-6 text-card-foreground shadow-lg duration-200 sm:rounded-xl',
+        SURFACE_GRADIENT,
         className,
       )}
       {...props}

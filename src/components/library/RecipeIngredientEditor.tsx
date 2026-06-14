@@ -15,6 +15,8 @@ import {
   getFoodBaseAmount,
 } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
+import { cn } from '@/lib/utils'
 
 export function useEditableRecipeComponents(
   open: boolean,
@@ -338,7 +340,7 @@ export function RecipeAddIngredientPanel({
 
   if (adding) {
     return (
-      <div className="space-y-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card p-4">
+      <div className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <p className="text-sm font-medium">Add {adding.name}</p>
         <QuantityInput
           food={adding}

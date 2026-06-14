@@ -186,8 +186,12 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  background-color: var(--background);
-  border-bottom: 1px solid var(--border);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--primary) 8%, var(--card)),
+    var(--background)
+  );
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 20%, var(--border));
 }
 
 .safe-top {

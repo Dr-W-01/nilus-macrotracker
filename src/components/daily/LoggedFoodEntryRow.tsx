@@ -5,6 +5,7 @@ import { formatLoggedFoodQuantity } from '@/lib/scale'
 import { getLoggedFoodMacros, roundMacro } from '@/lib/macros'
 import { isConfiguredMeal, resolveLoggedMeal } from '@/lib/meals'
 import type { FoodItem, LoggedFood } from '@/lib/types'
+import { SURFACE_INNER } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 interface LoggedFoodEntryRowProps {
@@ -47,10 +48,9 @@ export function LoggedFoodEntryRow({
     <li>
       <div
         className={cn(
-          'flex w-full flex-col gap-1.5 rounded-lg border bg-card px-3 py-2.5',
-          selectFoodsMode && selected
-            ? 'border-primary bg-primary/10'
-            : 'border-border',
+          'flex w-full flex-col gap-1.5 px-3 py-2.5',
+          SURFACE_INNER,
+          selectFoodsMode && selected && 'border-primary bg-primary/10',
           isUncategorized && editDayMode && 'border-dashed border-primary/35',
         )}
       >

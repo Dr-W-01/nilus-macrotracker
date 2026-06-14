@@ -13,6 +13,7 @@ import {
   normalizeScaleFoodItem,
 } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
+import { SURFACE_INNER } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 export interface FoodFormValues {
@@ -251,7 +252,7 @@ function FormField({
   required?: boolean
 }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+    <div className={cn(SURFACE_INNER, 'px-3 py-2.5')}>
       <Label className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-primary"> *</span>}
@@ -273,7 +274,7 @@ function MacroField({
   readOnly?: boolean
 }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
+    <div className={cn(SURFACE_INNER, 'px-3 py-2.5')}>
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       <Input
         type="number"

@@ -2,9 +2,6 @@ import type { ReactNode } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-export const STATS_SECTION_CARD_CLASS =
-  'border-primary/20 bg-gradient-to-b from-primary/8 to-card'
-
 export const STATS_SECTION_CONTENT_CLASS = 'space-y-4 pt-4 pb-4'
 
 interface StatsSectionCardProps {
@@ -19,7 +16,7 @@ export function StatsSectionCard({
   contentClassName,
 }: StatsSectionCardProps) {
   return (
-    <Card className={cn(STATS_SECTION_CARD_CLASS, className)}>
+    <Card className={className}>
       <CardContent className={cn(STATS_SECTION_CONTENT_CLASS, contentClassName)}>
         {children}
       </CardContent>

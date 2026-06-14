@@ -106,7 +106,7 @@ export function AddFoodSheet({
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
+        <ScrollSheetHeader>
           <SheetTitle>{food.name}</SheetTitle>
           <p className="text-xs font-normal text-muted-foreground">
             Add to {dateLabel}

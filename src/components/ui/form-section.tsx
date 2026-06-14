@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
-export const FORM_SECTION_CLASS =
-  'rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card p-4 space-y-3'
+export const FORM_SECTION_CLASS = cn(SURFACE_GRADIENT_ROUNDED, 'p-4 space-y-3')
 
 interface FormSectionProps {
   title?: string

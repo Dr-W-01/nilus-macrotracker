@@ -7,6 +7,8 @@ import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Input } from '@/components/ui/input'
 import { countLoggedFoodsForMeal } from '@/lib/meals'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
+import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
+import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
 const actionBtnClass = 'h-11 w-11 shrink-0'
@@ -103,7 +105,7 @@ export function MealListEditor() {
           return (
             <li
               key={meal}
-              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1.5"
+              className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-2 py-1.5')}
             >
               {isEditing ? (
                 <Input

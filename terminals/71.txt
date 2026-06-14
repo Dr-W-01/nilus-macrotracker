@@ -3,7 +3,7 @@ pid: 27508
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-14T01:45:50.150Z
-running_for_ms: 905001   
+running_for_ms: 1285001  
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -43,3 +43,51 @@ running_for_ms: 905001
 10:00:23 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
 10:00:23 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
 10:00:34 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
+10:05:52 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/card.tsx
+10:05:56 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/sheet.tsx
+10:05:56 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/scroll-modal.tsx
+10:05:56 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/dialog.tsx
+10:05:56 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/scroll-modal.tsx
+10:05:56 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/sheet.tsx
+10:05:56 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/scroll-modal.tsx
+10:06:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/dialog.tsx
+10:06:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/StatsPeriodBar.tsx
+10:06:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/EmptyState.tsx
+10:06:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/stats/StatsSectionCard.tsx
+10:06:02 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/EmptyState.tsx
+10:06:09 PM [vite] (client) hmr update /src/styles/globals.css
+10:06:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/DailyMealSections.tsx
+10:06:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+10:06:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+10:06:09 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/daily/DailyTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/library/LibraryTab.tsx
+10:06:16 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/settings/SettingsTab.tsx
+10:06:21 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+10:06:21 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/FoodFormFields.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/NewFoodSheet.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/CreateRecipeSheet.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditRecipeSheet.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/settings/TrackingToggle.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditFoodSheet.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/settings/ColorPickerField.tsx
+10:06:26 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/AddFoodSheet.tsx
+10:06:27 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/settings/TrackingToggle.tsx
+10:06:27 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/settings/ColorPickerField.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditFoodSheet.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/LoggedFoodEntryRow.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditRecipeSheet.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/settings/MealListEditor.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditRecipeSheet.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/LoggedFoodEntryRow.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/EditFoodSheet.tsx
+10:06:33 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/library/RecipeIngredientEditor.tsx
+10:06:42 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/settings/MealListEditor.tsx
+10:06:42 PM [vite] (client) hmr update /src/styles/globals.css, /src/features/stats/StatsOverviewPanel.tsx
+10:06:42 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/FoodPickerSheet.tsx
+10:06:47 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/daily/FoodPickerSheet.tsx

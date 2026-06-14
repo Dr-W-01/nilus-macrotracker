@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
+import { SURFACE_GRADIENT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 const Sheet = DialogPrimitive.Root
@@ -34,7 +35,8 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed z-50 flex flex-col gap-4 border border-border bg-card text-card-foreground shadow-lg transition ease-in-out',
+        'fixed z-50 flex flex-col gap-4 border text-card-foreground shadow-lg transition ease-in-out',
+        SURFACE_GRADIENT,
         side === 'bottom' &&
           'inset-x-0 bottom-0 max-h-[92dvh] rounded-t-2xl p-4 pb-6 data-[state=open]:animate-in data-[state=closed]:animate-out',
         side === 'right' &&

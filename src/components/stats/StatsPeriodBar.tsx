@@ -2,10 +2,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  STATS_SECTION_CARD_CLASS,
-  StatsSectionHeader,
-} from '@/components/stats/StatsSectionCard'
+import { StatsSectionHeader } from '@/components/stats/StatsSectionCard'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import {
   getMonthRange,
   getWeekRange,
@@ -46,10 +44,7 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
 
   return (
     <section
-      className={cn(
-        'space-y-2 rounded-xl border p-3 shadow-sm',
-        STATS_SECTION_CARD_CLASS,
-      )}
+      className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-2 p-3')}
     >
       <StatsSectionHeader title="Period" />
       <Tabs

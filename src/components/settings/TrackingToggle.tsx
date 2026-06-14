@@ -1,3 +1,4 @@
+import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 interface TrackingToggleProps {
@@ -14,7 +15,7 @@ export function TrackingToggle({
   onCheckedChange,
 }: TrackingToggleProps) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card/50 p-3">
+    <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center justify-between gap-3 p-3')}>
       <div className="min-w-0 space-y-0.5">
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>

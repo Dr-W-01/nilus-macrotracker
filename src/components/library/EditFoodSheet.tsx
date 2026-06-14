@@ -24,6 +24,8 @@ import {
 } from '@/components/library/FoodFormFields'
 import type { FoodItem } from '@/lib/types'
 import { collectAllCategories } from '@/lib/categories'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
+import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
 interface EditFoodSheetProps {
@@ -79,7 +81,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
           className={scrollSheetContentClass}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
+          <ScrollSheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <UtensilsCrossed className="h-5 w-5 text-primary" aria-hidden />
               Edit library food
@@ -90,7 +92,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
             </p>
           </ScrollSheetHeader>
           <ScrollSheetBody>
-            <div className="mb-4 flex gap-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card px-3 py-2.5">
+            <div className={cn(SURFACE_GRADIENT_ROUNDED, 'mb-4 flex gap-3 px-3 py-2.5')}>
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
               <p className="text-xs leading-relaxed text-muted-foreground">
                 Editing <span className="font-medium text-foreground">{food.name}</span> in your
@@ -131,7 +133,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
             <DialogTitle>Delete {food.name}?</DialogTitle>
           </ScrollDialogHeader>
           <ScrollDialogBody className="space-y-3 py-2">
-            <div className="flex gap-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card px-3 py-3">
+            <div className={cn(SURFACE_GRADIENT_ROUNDED, 'flex gap-3 px-3 py-3')}>
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
               <div className="space-y-2 text-sm leading-relaxed">
                 <p className="text-foreground">

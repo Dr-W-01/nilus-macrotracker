@@ -26,6 +26,8 @@ import {
   useEditableRecipeComponents,
 } from '@/components/library/RecipeIngredientEditor'
 import type { FoodItem } from '@/lib/types'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
+import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
 interface EditRecipeSheetProps {
@@ -99,7 +101,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
           className={scrollSheetContentClass}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <ScrollSheetHeader className="border-primary/20 bg-gradient-to-b from-primary/8 to-card">
+          <ScrollSheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <ChefHat className="h-5 w-5 text-primary" aria-hidden />
               Edit recipe
@@ -109,7 +111,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
             </p>
           </ScrollSheetHeader>
           <ScrollSheetBody className="space-y-4">
-            <div className="flex gap-3 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/8 to-card px-3 py-2.5">
+            <div className={cn(SURFACE_GRADIENT_ROUNDED, 'flex gap-3 px-3 py-2.5')}>
               <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
               <p className="text-xs leading-relaxed text-muted-foreground">
                 You are editing the <span className="font-medium text-foreground">recipe contents</span>{' '}

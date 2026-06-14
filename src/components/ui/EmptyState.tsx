@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 interface EmptyStateProps {
@@ -29,7 +30,8 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'rounded-xl border border-dashed border-border/70 bg-card px-6 py-10 text-center shadow-sm',
+        SURFACE_GRADIENT_ROUNDED,
+        'border-dashed px-6 py-10 text-center',
         className,
       )}
     >

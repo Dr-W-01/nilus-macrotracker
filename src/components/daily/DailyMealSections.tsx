@@ -3,6 +3,7 @@ import { LoggedFoodEntryRow } from '@/components/daily/LoggedFoodEntryRow'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { computeDayMacros, formatMealGroupTotals, roundMacro } from '@/lib/macros'
 import type { FoodItem, LoggedFood } from '@/lib/types'
+import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -61,7 +62,7 @@ export function DailyMealSections({
         return (
           <section
             key={meal}
-            className="rounded-md border border-border/70 bg-card/40 transition-shadow"
+            className={cn(SURFACE_GRADIENT_COMPACT, 'transition-shadow')}
           >
             <div className="flex min-h-9 items-center gap-1 px-0.5 py-0.5">
               <button

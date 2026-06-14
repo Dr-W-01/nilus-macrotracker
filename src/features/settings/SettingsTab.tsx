@@ -37,6 +37,7 @@ import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
 import { useAppUpdateState } from '@/hooks/useAppUpdateState'
 import { runManualUpdateCheck } from '@/lib/pwaUpdate'
+import { SURFACE_GRADIENT_COMPACT, SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 const ACCENT_PRESETS = ['#B22222', '#8B0000', '#CD5C5C', '#2563EB', '#16A34A']
@@ -119,8 +120,8 @@ export function SettingsTab() {
       </header>
 
       <div className="space-y-6 p-4">
-      <section>
-        <h2 className="font-semibold mb-3">Goals & Templates</h2>
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'p-4')}>
+        <h2 className="mb-3 font-semibold">Goals & Templates</h2>
         <ul className="space-y-2 mb-3">
           {settings.goalTemplates.map((g) => {
             const isDefault = g.id === settings.defaultTemplateId
@@ -129,7 +130,7 @@ export function SettingsTab() {
             return (
               <li
                 key={g.id}
-                className="flex items-start gap-2 rounded-lg border border-border p-3"
+                className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-start gap-2 p-3')}
               >
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <p className="font-medium leading-snug">
@@ -228,7 +229,7 @@ export function SettingsTab() {
       </section>
 
       {isTrackCurrentWeightEnabled(settings) && (
-      <section className="space-y-3">
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <div>
           <h2 className="font-semibold">Units</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -255,7 +256,7 @@ export function SettingsTab() {
       )}
 
       {isTrackCurrentWeightEnabled(settings) && (
-      <section className="space-y-3">
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <div>
           <h2 className="font-semibold">Target weight</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -299,12 +300,12 @@ export function SettingsTab() {
       </section>
       )}
 
-      <section className="space-y-3">
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <h2 className="font-semibold">Daily meals</h2>
         <MealListEditor />
       </section>
 
-      <section className="space-y-4">
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-4 p-4')}>
         <div>
           <h2 className="font-semibold">Appearance</h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -397,7 +398,7 @@ export function SettingsTab() {
         </Button>
       </section>
 
-      <Card className="border-primary/40">
+      <Card>
         <CardHeader className="pb-3">
           <CardTitle>Data</CardTitle>
           <p className="text-sm text-muted-foreground font-normal">

@@ -21,6 +21,7 @@ import {
   sumDayRows,
 } from '@/lib/stats'
 import { inferGoalModeFromDayRows, inferGoalModeFromTemplate } from '@/lib/goalMode'
+import { SURFACE_INNER } from '@/lib/surfaceStyles'
 import { roundMacro } from '@/lib/macros'
 import type { FoodItem, Settings } from '@/lib/types'
 import type { DailyLog } from '@/lib/types'
@@ -234,7 +235,7 @@ function AdherenceCell({
   const partial = percent >= 40 && percent < 70
   return (
     <div
-      className={`rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5 ${
+      className={`${SURFACE_INNER} px-3 py-2.5 ${
         prominent ? 'ring-1 ring-primary/25' : ''
       }`}
     >

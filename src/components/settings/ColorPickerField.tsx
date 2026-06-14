@@ -2,6 +2,8 @@ import { Input } from '@/components/ui/input'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
 import { Label } from '@/components/ui/label'
 import { normalizeHexColor } from '@/lib/theme'
+import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
+import { cn } from '@/lib/utils'
 
 interface ColorPickerFieldProps {
   id: string
@@ -23,7 +25,7 @@ export function ColorPickerField({
   const safe = normalizeHexColor(value, fallback)
 
   return (
-    <div className="rounded-lg border border-border bg-card/50 p-3">
+    <div className={cn(SURFACE_GRADIENT_COMPACT, 'p-3')}>
       <Label htmlFor={id} className="text-sm font-medium">
         {label}
       </Label>

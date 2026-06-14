@@ -50,6 +50,8 @@ import { CategoryManageSheet } from '@/components/library/CategoryManageSheet'
 import { DeleteCategoryDialog } from '@/components/library/DeleteCategoryDialog'
 import { FavoriteFoodButton } from '@/components/library/FavoriteFoodButton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
+import { cn } from '@/lib/utils'
 
 type BulkDeleteKind = 'items' | 'categories' | 'recipes'
 
@@ -603,7 +605,7 @@ function CategoryList({
       {groups.map(([cat, items]) => (
         <li key={cat}>
           {editMode ? (
-            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-3 active:bg-secondary/50">
+            <label className={cn(SURFACE_GRADIENT_COMPACT, 'flex cursor-pointer items-center gap-3 px-3 py-3 active:bg-secondary/50')}>
               <Checkbox
                 checked={selected.has(cat)}
                 onChange={() => onToggle(cat)}
@@ -613,7 +615,7 @@ function CategoryList({
           ) : (
             <button
               type="button"
-              className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left active:bg-secondary/50"
+              className={cn(SURFACE_GRADIENT_COMPACT, 'flex w-full items-center gap-3 px-3 py-3 text-left active:bg-secondary/50')}
               onClick={() => onOpenCategory(cat)}
             >
               <CategoryRowContent name={cat} itemCount={items.length} />
@@ -665,7 +667,7 @@ function FoodList({
       {items.map((food) => (
         <li key={food.id}>
           {editMode ? (
-            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-3 active:bg-secondary/50">
+            <label className={cn(SURFACE_GRADIENT_COMPACT, 'flex cursor-pointer items-start gap-3 px-3 py-3 active:bg-secondary/50')}>
               <Checkbox
                 checked={selected.has(food.id)}
                 onChange={() => onToggle(food.id)}
@@ -675,7 +677,7 @@ function FoodList({
               </div>
             </label>
           ) : (
-            <div className="flex items-stretch gap-1 rounded-lg border border-border">
+            <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-stretch gap-1')}>
               <button
                 type="button"
                 className="flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3 text-left active:bg-secondary/50"

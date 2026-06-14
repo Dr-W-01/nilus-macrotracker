@@ -1,11 +1,16 @@
 import * as React from 'react'
+import { SURFACE_GRADIENT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('rounded-xl border border-border bg-card text-card-foreground shadow-sm', className)}
+      className={cn(
+        'rounded-xl border text-card-foreground shadow-sm',
+        SURFACE_GRADIENT,
+        className,
+      )}
       {...props}
     />
   ),

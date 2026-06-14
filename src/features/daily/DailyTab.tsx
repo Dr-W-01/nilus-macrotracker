@@ -75,6 +75,7 @@ import {
   isTrackBurnedCaloriesEnabled,
   isTrackCurrentWeightEnabled,
 } from '@/lib/trackingSettings'
+import { SURFACE_GRADIENT_COMPACT, SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -400,8 +401,7 @@ export function DailyTab() {
         <div
           className={cn(
             'text-center py-2',
-            !editDayMode &&
-              'rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 shadow-sm',
+            !editDayMode && cn(SURFACE_GRADIENT_ROUNDED, 'px-4 py-5'),
           )}
         >
           <p
@@ -462,7 +462,7 @@ export function DailyTab() {
         </Card>
 
         {trackBurnedCalories && (
-        <div className="flex items-center gap-2 rounded-lg border border-border px-4 py-3">
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
           <button
             type="button"
             className="flex min-w-0 flex-1 items-center justify-between disabled:opacity-60"
@@ -495,7 +495,7 @@ export function DailyTab() {
         )}
 
         {trackCurrentWeight && (
-        <div className="flex items-center gap-2 rounded-lg border border-border px-4 py-3">
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
           <button
             type="button"
             className="flex min-w-0 flex-1 items-center justify-between disabled:opacity-60"
@@ -539,7 +539,7 @@ export function DailyTab() {
         </div>
         )}
 
-        <div className="rounded-lg border border-border">
+        <div className={SURFACE_GRADIENT_COMPACT}>
           <button
             type="button"
             className="flex w-full items-center justify-between px-4 py-3"
