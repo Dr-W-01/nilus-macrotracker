@@ -257,6 +257,7 @@ interface MacroStore {
   addLoggedFood: (logged: Omit<LoggedFood, 'id'>, date?: string) => void
   updateLoggedFood: (loggedId: string, patch: Partial<LoggedFood>, date?: string) => void
   bulkUpdateLoggedFoodMeal: (loggedIds: string[], meal: string, date?: string) => void
+  bulkRemoveLoggedFood: (loggedIds: string[], date?: string) => void
   removeLoggedFood: (loggedId: string, date?: string) => void
   setBurnedCalories: (value: number, date?: string) => void
   setDailyWeight: (weightKg: number | undefined, date?: string) => void
@@ -434,6 +435,15 @@ export const useMacroStore = create<MacroStore>()(
           ? current.filter((id) => id !== foodId)
           : [...current, foodId]
         set({ favoriteFoodIds: next })
+      },
+
+      bulkRemoveLoggedFood: (loggedIds, date) => {
+        const d = date ?? get().currentDate
+        const log = get().getDailyLog(d)
+        const idSet = new Set(loggedIds)
+        get().updateDailyLog(d, {
+          foods: log.foods.filter((f) => !idSet.has(f.id)),
+        })
       },
 
       removeLoggedFood: (loggedId, date) => {

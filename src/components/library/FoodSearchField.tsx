@@ -25,7 +25,7 @@ export function FoodSearchField({
   onSearchFocus,
   onSearchBlur,
 }: FoodSearchFieldProps) {
-  const recentSearches = useMacroStore((s) => s.recentFoodSearches[scope])
+  const recentSearches = useMacroStore((s) => s.recentFoodSearches[scope]).slice(0, 5)
   const recordFoodSearch = useMacroStore((s) => s.recordFoodSearch)
   const clearRecentFoodSearches = useMacroStore((s) => s.clearRecentFoodSearches)
   const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)

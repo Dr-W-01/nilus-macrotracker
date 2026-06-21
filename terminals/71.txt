@@ -3,7 +3,7 @@ pid: 27508
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
 started_at: 2026-06-14T01:45:50.150Z
-running_for_ms: 1780007  
+running_for_ms: 121328903
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -95,3 +95,9 @@ running_for_ms: 1780007
 10:14:59 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/sheet.tsx
 10:14:59 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/dialog.tsx
 10:14:59 PM [vite] (client) hmr update /src/styles/globals.css, /src/components/ui/scroll-modal.tsx
+
+---
+exit_code: -1
+elapsed_ms: 121328903
+ended_at: 2026-06-15T11:27:44.728Z
+---

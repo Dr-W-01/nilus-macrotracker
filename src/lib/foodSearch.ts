@@ -1,7 +1,7 @@
 import { foodCategories, itemHasCategory } from '@/lib/categories'
 import type { FoodItem } from '@/lib/types'
 
-const RECENT_SEARCH_MAX = 8
+const RECENT_SEARCH_MAX = 5
 
 export type FoodSearchScope = 'library' | 'picker'
 

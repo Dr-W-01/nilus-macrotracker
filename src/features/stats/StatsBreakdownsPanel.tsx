@@ -125,7 +125,9 @@ export function StatsBreakdownsPanel({
 
   const headerClass =
     'sticky top-0 z-10 cursor-pointer whitespace-nowrap bg-background px-2 py-2 text-[10px] font-semibold uppercase tracking-wide sm:text-xs sm:normal-case sm:tracking-normal shadow-[0_1px_0_var(--border)]'
+  const dateHeaderClass = `${headerClass} sticky left-0 z-20 min-w-[4.5rem]`
   const cellClass = 'whitespace-nowrap px-2 py-1.5 tabular-nums text-[11px] sm:text-sm'
+  const dateCellClass = `${cellClass} sticky left-0 z-[1] bg-background min-w-[4.5rem]`
 
   if (dayRows.length === 0) {
     return (
@@ -243,13 +245,14 @@ export function StatsBreakdownsPanel({
           </p>
         </div>
         <div className="-mx-4 sm:mx-0">
+          <div className="overflow-x-auto overscroll-x-contain touch-pan-x rounded-lg border border-border [-webkit-overflow-scrolling:touch]">
+            <div className="max-h-[min(60dvh,32rem)] overflow-y-auto overscroll-y-contain">
           <Table
-            scrollable
-            containerClassName="max-h-[min(52dvh,28rem)] overflow-y-auto rounded-lg border border-border"
-            className="min-w-[40rem]"
+            containerClassName="overflow-visible"
+            className="min-w-[40rem] w-full table-auto"
           >
             <colgroup>
-              <col className="min-w-[3.5rem]" />
+              <col className="min-w-[4.5rem]" />
               <col className="min-w-[4.5rem]" />
               <col className="min-w-[4rem]" />
               <col className="min-w-[4rem]" />
@@ -261,7 +264,7 @@ export function StatsBreakdownsPanel({
             </colgroup>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className={headerClass} onClick={() => toggleSort('date')}>
+                <TableHead className={dateHeaderClass} onClick={() => toggleSort('date')}>
                   Date{sortIndicator('date')}
                 </TableHead>
                 <TableHead className={headerClass} onClick={() => toggleSort('calories')}>
@@ -297,7 +300,7 @@ export function StatsBreakdownsPanel({
                   className="cursor-pointer active:bg-secondary/80"
                   onClick={() => onDayClick(row.date)}
                 >
-                  <TableCell className={cellClass}>
+                  <TableCell className={dateCellClass}>
                     {format(parseISO(row.date), 'MM/dd')}
                   </TableCell>
                   <TableCell className={cellClass}>
@@ -336,6 +339,8 @@ export function StatsBreakdownsPanel({
               ))}
             </TableBody>
           </Table>
+            </div>
+          </div>
         </div>
       </StatsSectionCard>
     </div>

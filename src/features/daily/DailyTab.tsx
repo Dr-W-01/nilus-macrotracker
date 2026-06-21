@@ -27,6 +27,7 @@ import { RecipeCustomizeSheet } from '@/components/daily/RecipeCustomizeSheet'
 import { RecipePreviewSheet } from '@/components/daily/RecipePreviewSheet'
 import { QuantityInput } from '@/components/daily/QuantityInput'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
@@ -35,6 +36,10 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  scrollDialogContentClass,
   ScrollSheetBody,
   ScrollSheetFooter,
   ScrollSheetHeader,
@@ -101,6 +106,7 @@ export function DailyTab() {
   const addLoggedFood = useMacroStore((s) => s.addLoggedFood)
   const updateLoggedFood = useMacroStore((s) => s.updateLoggedFood)
   const bulkUpdateLoggedFoodMeal = useMacroStore((s) => s.bulkUpdateLoggedFoodMeal)
+  const bulkRemoveLoggedFood = useMacroStore((s) => s.bulkRemoveLoggedFood)
   const removeLoggedFood = useMacroStore((s) => s.removeLoggedFood)
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
   const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
@@ -202,6 +208,8 @@ export function DailyTab() {
   const [weightInput, setWeightInput] = useState(
     log.weightKg != null ? String(weightFromKg(log.weightKg, weightUnit)) : '',
   )
+  const [copyYesterdayConfirmOpen, setCopyYesterdayConfirmOpen] = useState(false)
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
 
   const handleSelectFood = (food: FoodItem) => {
     setPickerOpen(false)
@@ -257,6 +265,15 @@ export function DailyTab() {
     exitSelectMode()
   }
 
+  const handleBulkDelete = () => {
+    const count = selectedLogIds.size
+    if (count === 0) return
+    bulkRemoveLoggedFood([...selectedLogIds])
+    setBulkDeleteConfirmOpen(false)
+    toast.success(`Removed ${count} ${count === 1 ? 'item' : 'items'} from today's log`)
+    exitSelectMode()
+  }
+
   const addRecipe = (
     meal?: string,
     overrides?: { foodId: string; quantity: number }[],
@@ -272,8 +289,9 @@ export function DailyTab() {
     resetFoodFlow()
   }
 
-  const handleDuplicateYesterday = () => {
+  const applyDuplicateYesterday = () => {
     const copied = duplicatePreviousDayLog(currentDate)
+    setCopyYesterdayConfirmOpen(false)
     if (copied == null) {
       toast.error('Yesterday has no logged foods to copy')
       return
@@ -367,7 +385,7 @@ export function DailyTab() {
             <Button
               variant="outline"
               className="h-11 w-full gap-1.5"
-              onClick={handleDuplicateYesterday}
+              onClick={() => setCopyYesterdayConfirmOpen(true)}
             >
               <Copy className="h-4 w-4 shrink-0" aria-hidden />
               <span className="truncate">Copy Yesterday</span>
@@ -607,6 +625,7 @@ export function DailyTab() {
                 assignMeal={bulkAssignMeal}
                 onAssignMealChange={setBulkAssignMeal}
                 onAssign={handleBulkAssignMeal}
+                onDelete={() => setBulkDeleteConfirmOpen(true)}
                 onClear={() => setSelectedLogIds(new Set())}
                 onDone={exitSelectMode}
               />
@@ -852,6 +871,65 @@ export function DailyTab() {
         </SheetContent>
       </Sheet>
       )}
+
+      <Dialog open={copyYesterdayConfirmOpen} onOpenChange={setCopyYesterdayConfirmOpen}>
+        <ModalViewport active={copyYesterdayConfirmOpen} />
+        <DialogContent className={scrollDialogContentClass}>
+          <ScrollDialogHeader>
+            <DialogTitle>Copy yesterday&apos;s log?</DialogTitle>
+          </ScrollDialogHeader>
+          <ScrollDialogBody className="py-2">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to copy yesterday&apos;s log? This will replace today&apos;s
+              current entries.
+            </p>
+          </ScrollDialogBody>
+          <ScrollDialogFooter>
+            <Button size="lg" className="w-full" onClick={applyDuplicateYesterday}>
+              Copy yesterday
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setCopyYesterdayConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ScrollDialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+        <ModalViewport active={bulkDeleteConfirmOpen} />
+        <DialogContent className={scrollDialogContentClass}>
+          <ScrollDialogHeader>
+            <DialogTitle>
+              Delete {selectedLogIds.size}{' '}
+              {selectedLogIds.size === 1 ? 'item' : 'items'}?
+            </DialogTitle>
+          </ScrollDialogHeader>
+          <ScrollDialogBody className="py-2">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete these {selectedLogIds.size}{' '}
+              {selectedLogIds.size === 1 ? 'item' : 'items'}? This cannot be undone.
+            </p>
+          </ScrollDialogBody>
+          <ScrollDialogFooter>
+            <Button size="lg" variant="destructive" className="w-full" onClick={handleBulkDelete}>
+              Delete permanently
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setBulkDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ScrollDialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {trackCurrentWeight && (
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>

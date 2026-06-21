@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MealPicker } from '@/components/daily/MealPicker'
 
@@ -7,6 +8,7 @@ interface BulkMealAssignBarProps {
   assignMeal: string
   onAssignMealChange: (meal: string) => void
   onAssign: () => void
+  onDelete: () => void
   onClear: () => void
   onDone: () => void
 }
@@ -17,6 +19,7 @@ export function BulkMealAssignBar({
   assignMeal,
   onAssignMealChange,
   onAssign,
+  onDelete,
   onClear,
   onDone,
 }: BulkMealAssignBarProps) {
@@ -49,6 +52,15 @@ export function BulkMealAssignBar({
       />
       <Button className="w-full h-10" disabled={count === 0} onClick={onAssign}>
         {count > 0 ? `Assign to ${assignMeal}` : 'Select items to assign'}
+      </Button>
+      <Button
+        variant="destructive"
+        className="w-full h-10 gap-1.5"
+        disabled={count === 0}
+        onClick={onDelete}
+      >
+        <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
+        Delete Selected
       </Button>
     </div>
   )

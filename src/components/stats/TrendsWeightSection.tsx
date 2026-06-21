@@ -170,7 +170,8 @@ export function TrendsWeightSection({
                   stroke={CHART_AXIS_STROKE}
                   fontSize={11}
                   domain={yDomain}
-                  tickFormatter={(v) => `${v}`}
+                  allowDecimals={false}
+                  tickFormatter={(v) => `${Math.round(Number(v))}`}
                 />
                 <Tooltip
                   contentStyle={chartTooltipStyle}
@@ -238,5 +239,5 @@ export function TrendsWeightSection({
 }
 
 function roundY(value: number): number {
-  return Math.round(value * 10) / 10
+  return Math.round(value)
 }
