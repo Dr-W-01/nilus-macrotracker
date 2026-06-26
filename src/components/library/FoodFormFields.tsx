@@ -13,7 +13,6 @@ import {
   normalizeScaleFoodItem,
 } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
-import { SURFACE_INNER } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 export interface FoodFormValues {
@@ -115,20 +114,20 @@ export function FoodFormFields({
       : 'Values per serving, like a nutrition facts label.'
 
   return (
-    <div className="space-y-4">
-      <FormSection title="Basics">
-        <FormField label="Name" required>
-          <Input
-            value={values.name}
-            onChange={(e) => patch({ name: e.target.value })}
-            placeholder="Food name"
-          />
-        </FormField>
-      </FormSection>
+    <div className="space-y-5">
+      <FormField label="Name" htmlFor="food-name" required>
+        <Input
+          id="food-name"
+          value={values.name}
+          onChange={(e) => patch({ name: e.target.value })}
+          placeholder="Food name"
+        />
+      </FormField>
 
-      <FormSection title="Nutrition facts" description={nutritionDescription}>
-        <FormField label="Calories">
+      <FormSection variant="flat" title="Nutrition facts" description={nutritionDescription}>
+        <FormField label="Calories" htmlFor="food-calories">
           <Input
+            id="food-calories"
             type="number"
             inputMode="decimal"
             value={values.calories}
@@ -138,15 +137,23 @@ export function FoodFormFields({
           />
         </FormField>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {FORM_MACRO_NUTRIENT_ORDER.map((key) => (
-            <MacroField
+            <FormField
               key={key}
               label={`${MACRO_DISPLAY_LABELS[key]} (g)`}
-              value={values[key]}
-              readOnly={macrosReadOnly}
-              onChange={(v) => patch({ [key]: v })}
-            />
+              htmlFor={`food-${key}`}
+            >
+              <Input
+                id={`food-${key}`}
+                type="number"
+                inputMode="decimal"
+                className="tabular-nums"
+                value={values[key]}
+                disabled={macrosReadOnly}
+                onChange={(e) => patch({ [key]: e.target.value })}
+              />
+            </FormField>
           ))}
         </div>
 
@@ -159,6 +166,7 @@ export function FoodFormFields({
 
       {!scaleReadOnly && (
         <FormSection
+          variant="flat"
           title="Serving type"
           description="Count for discrete items; scale for weight-based foods."
         >
@@ -188,50 +196,52 @@ export function FoodFormFields({
           </div>
 
           {values.scaleType === 'scale' && (
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <FormField label="Base amount">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    min={0.01}
-                    step={0.01}
-                    value={values.baseAmount}
-                    onChange={(e) => patch({ baseAmount: e.target.value })}
-                    placeholder="e.g. 4"
-                  />
-                </FormField>
-                <FormField label="Base unit">
-                  <select
-                    id="base-unit"
-                    aria-label="Base unit"
-                    value={values.baseUnit}
-                    onChange={(e) =>
-                      patch({ baseUnit: e.target.value === 'oz' ? 'oz' : 'g' })
-                    }
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <option value="g">g</option>
-                    <option value="oz">oz</option>
-                  </select>
-                </FormField>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Base amount" htmlFor="food-base-amount">
+                <Input
+                  id="food-base-amount"
+                  type="number"
+                  inputMode="decimal"
+                  min={0.01}
+                  step={0.01}
+                  value={values.baseAmount}
+                  onChange={(e) => patch({ baseAmount: e.target.value })}
+                  placeholder="e.g. 4"
+                />
+              </FormField>
+              <FormField label="Base unit" htmlFor="base-unit">
+                <select
+                  id="base-unit"
+                  aria-label="Base unit"
+                  value={values.baseUnit}
+                  onChange={(e) =>
+                    patch({ baseUnit: e.target.value === 'oz' ? 'oz' : 'g' })
+                  }
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="g">g</option>
+                  <option value="oz">oz</option>
+                </select>
+              </FormField>
             </div>
           )}
         </FormSection>
       )}
 
-      <FormSection title="Serving description">
-        <FormField label="How you describe one serving">
-          <Input
-            value={values.servingDesc}
-            onChange={(e) => patch({ servingDesc: e.target.value })}
-            placeholder="e.g. 1 medium apple, per 28g"
-          />
-        </FormField>
-      </FormSection>
+      <FormField
+        label="Serving description"
+        htmlFor="food-serving-desc"
+        hint="How you describe one serving"
+      >
+        <Input
+          id="food-serving-desc"
+          value={values.servingDesc}
+          onChange={(e) => patch({ servingDesc: e.target.value })}
+          placeholder="e.g. 1 medium apple, per 28g"
+        />
+      </FormField>
 
-      <FormSection title="Categories">
+      <FormSection variant="flat" title="Categories">
         <CategoryPicker
           selected={values.categories}
           allCategories={allCategories}
@@ -246,44 +256,25 @@ function FormField({
   label,
   children,
   required,
+  hint,
+  htmlFor,
 }: {
   label: string
   children: React.ReactNode
   required?: boolean
+  hint?: string
+  htmlFor?: string
 }) {
   return (
-    <div className={cn(SURFACE_INNER, 'px-3 py-2.5')}>
-      <Label className="text-xs font-medium text-muted-foreground">
+    <div className="space-y-1.5">
+      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-primary"> *</span>}
       </Label>
-      <div className="mt-1.5">{children}</div>
-    </div>
-  )
-}
-
-function MacroField({
-  label,
-  value,
-  onChange,
-  readOnly,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  readOnly?: boolean
-}) {
-  return (
-    <div className={cn(SURFACE_INNER, 'px-3 py-2.5')}>
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      <Input
-        type="number"
-        inputMode="decimal"
-        className="mt-1.5 tabular-nums"
-        value={value}
-        disabled={readOnly}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      {hint && (
+        <p className="text-xs leading-snug text-muted-foreground/90">{hint}</p>
+      )}
+      {children}
     </div>
   )
 }

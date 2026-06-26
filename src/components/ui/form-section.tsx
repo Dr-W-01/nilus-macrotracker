@@ -9,6 +9,8 @@ interface FormSectionProps {
   description?: string
   children: ReactNode
   className?: string
+  /** `card` = bordered gradient panel; `flat` = title + content only */
+  variant?: 'card' | 'flat'
 }
 
 export function FormSection({
@@ -16,9 +18,15 @@ export function FormSection({
   description,
   children,
   className,
+  variant = 'card',
 }: FormSectionProps) {
   return (
-    <section className={cn(FORM_SECTION_CLASS, className)}>
+    <section
+      className={cn(
+        variant === 'card' ? FORM_SECTION_CLASS : 'space-y-2.5',
+        className,
+      )}
+    >
       {title && (
         <div>
           <p className="text-sm font-semibold text-foreground">{title}</p>

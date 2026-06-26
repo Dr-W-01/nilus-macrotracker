@@ -26,8 +26,7 @@ import {
   useEditableRecipeComponents,
 } from '@/components/library/RecipeIngredientEditor'
 import type { FoodItem } from '@/lib/types'
-import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
-import { cn } from '@/lib/utils'
+
 import { useMacroStore } from '@/store/useMacroStore'
 
 interface EditRecipeSheetProps {
@@ -110,39 +109,38 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
               Manage ingredients and quantities for this library recipe.
             </p>
           </ScrollSheetHeader>
-          <ScrollSheetBody className="space-y-4">
-            <div className={cn(SURFACE_GRADIENT_ROUNDED, 'flex gap-3 px-3 py-2.5')}>
+          <ScrollSheetBody className="space-y-5">
+            <p className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
               <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                You are editing the <span className="font-medium text-foreground">recipe contents</span>{' '}
-                in your Library. Changes apply to this recipe everywhere and update its total macros
-                automatically. To adjust a single day&apos;s log, use the Daily tab.
-              </p>
+              <span>
+                You are editing the{' '}
+                <span className="font-medium text-foreground">recipe contents</span> in your Library.
+                Changes apply everywhere and update total macros automatically. To adjust a single
+                day&apos;s log, use the Daily tab.
+              </span>
+            </p>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="recipe-name" className="text-xs font-medium text-muted-foreground">
+                Recipe name
+              </Label>
+              <Input
+                id="recipe-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="My meal..."
+              />
             </div>
 
-            <FormSection title="Basics">
-              <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
-                <Label htmlFor="recipe-name" className="text-xs font-medium text-muted-foreground">
-                  Recipe name
-                </Label>
-                <Input
-                  id="recipe-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="My meal..."
-                  className="mt-1.5"
-                />
-              </div>
-            </FormSection>
-
             <FormSection
+              variant="flat"
               title="Recipe totals"
               description="Calculated automatically from ingredients."
             >
               <RecipeMacroSummary macros={previewMacros} />
             </FormSection>
 
-            <FormSection title={`Ingredients (${orderedIds.length})`}>
+            <FormSection variant="flat" title={`Ingredients (${orderedIds.length})`}>
               <RecipeIngredientList
                 library={foodLibrary}
                 orderedIds={orderedIds}
@@ -152,7 +150,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
               />
             </FormSection>
 
-            <FormSection title="Add ingredient">
+            <FormSection variant="flat" title="Add ingredient">
               <RecipeAddIngredientPanel
                 library={foodLibrary}
                 excludeIds={excludeIds}

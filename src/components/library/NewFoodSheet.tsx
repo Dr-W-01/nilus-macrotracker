@@ -69,7 +69,7 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
             Add a food to your library with nutrition facts per serving.
           </p>
         </ScrollSheetHeader>
-        <ScrollSheetBody>
+        <ScrollSheetBody className="space-y-1">
           <FoodFormFields
             values={values}
             onChange={setValues}

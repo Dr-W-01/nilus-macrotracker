@@ -15,8 +15,7 @@ import {
   getFoodBaseAmount,
 } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
-import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
-import { cn } from '@/lib/utils'
+
 
 export function useEditableRecipeComponents(
   open: boolean,
@@ -189,14 +188,14 @@ export function RecipeIngredientList({
 }: RecipeIngredientListProps) {
   if (orderedIds.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
+      <p className="py-4 text-center text-sm text-muted-foreground">
         {emptyMessage}
       </p>
     )
   }
 
   return (
-    <div className="divide-y divide-border rounded-lg border border-border/60 bg-secondary/20">
+    <div className="divide-y divide-border">
       {orderedIds.map((foodId) => {
         const food = library.find((f) => f.id === foodId)
         if (!food) {
@@ -225,7 +224,7 @@ export function RecipeIngredientList({
             : undefined)
 
         return (
-          <div key={foodId} className="px-3 py-3">
+          <div key={foodId} className="py-3 first:pt-0 last:pb-0">
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-sm font-medium">{food.name}</p>
@@ -340,7 +339,7 @@ export function RecipeAddIngredientPanel({
 
   if (adding) {
     return (
-      <div className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
+      <div className="space-y-3">
         <p className="text-sm font-medium">Add {adding.name}</p>
         <QuantityInput
           food={adding}
@@ -385,7 +384,7 @@ export function RecipeAddIngredientPanel({
             <li key={f.id}>
               <button
                 type="button"
-                className="w-full rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-secondary active:bg-secondary/80"
+                className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-secondary/70 active:bg-secondary"
                 onClick={() => {
                   setAdding(f)
                   setAddQty(1)
@@ -409,7 +408,7 @@ interface RecipeMacroSummaryProps {
 export function RecipeMacroSummary({ macros }: RecipeMacroSummaryProps) {
   if (!macros) {
     return (
-      <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
+      <p className="py-2 text-center text-sm text-muted-foreground">
         Add ingredients to see recipe totals.
       </p>
     )

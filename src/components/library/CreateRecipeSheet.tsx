@@ -98,30 +98,28 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
             Combine foods from your library into a reusable recipe.
           </p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-4">
-          <FormSection title="Basics">
-            <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5">
-              <Label htmlFor="new-recipe-name" className="text-xs font-medium text-muted-foreground">
-                Recipe name
-              </Label>
-              <Input
-                id="new-recipe-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="My meal..."
-                className="mt-1.5"
-              />
-            </div>
-          </FormSection>
+        <ScrollSheetBody className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="new-recipe-name" className="text-xs font-medium text-muted-foreground">
+              Recipe name
+            </Label>
+            <Input
+              id="new-recipe-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="My meal..."
+            />
+          </div>
 
           <FormSection
+            variant="flat"
             title="Recipe totals"
             description="Calculated automatically from ingredients."
           >
             <RecipeMacroSummary macros={previewMacros} />
           </FormSection>
 
-          <FormSection title={`Ingredients (${orderedIds.length})`}>
+          <FormSection variant="flat" title={`Ingredients (${orderedIds.length})`}>
             <RecipeIngredientList
               library={foodLibrary}
               orderedIds={orderedIds}
@@ -131,7 +129,7 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
             />
           </FormSection>
 
-          <FormSection title="Add ingredient">
+          <FormSection variant="flat" title="Add ingredient">
             <RecipeAddIngredientPanel
               library={foodLibrary}
               excludeIds={excludeIds}
