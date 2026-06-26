@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
 import { Pencil } from 'lucide-react'
 import { MealPicker } from '@/components/daily/MealPicker'
-import { RecipeInstanceMacroBar } from '@/components/daily/RecipeInstanceEditor'
+import {
+  RecipeInstanceMacroBar,
+  RecipeServingQuantity,
+  scaleRecipePreviewMacros,
+} from '@/components/daily/RecipeInstanceEditor'
 import { Button } from '@/components/ui/button'
 import {
   ModalViewport,
@@ -21,7 +25,7 @@ interface RecipePreviewSheetProps {
   food: FoodItem | null
   meals: string[]
   onOpenChange: (open: boolean) => void
-  onAdd: (meal?: string) => void
+  onAdd: (meal?: string, quantity?: number) => void
   onEdit: () => void
   onCancel: () => void
 }
@@ -37,15 +41,20 @@ export function RecipePreviewSheet({
 }: RecipePreviewSheetProps) {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const [meal, setMeal] = useState('')
+  const [servings, setServings] = useState(1)
 
   useEffect(() => {
-    if (open) setMeal('')
+    if (open) {
+      setMeal('')
+      setServings(1)
+    }
   }, [open, meals])
 
   const totals = useMemo(() => {
     if (!food?.recipeComponents) return null
-    return computeComponentMacros(foodLibrary, food.recipeComponents)
-  }, [food, foodLibrary])
+    const base = computeComponentMacros(foodLibrary, food.recipeComponents)
+    return scaleRecipePreviewMacros(base, servings)
+  }, [food, foodLibrary, servings])
 
   if (!food) return null
 
@@ -62,17 +71,27 @@ export function RecipePreviewSheet({
             <span>🍱</span> {food.name}
           </SheetTitle>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-4">
+        <ScrollSheetBody className="space-y-3">
+          <RecipeServingQuantity
+            quantity={servings}
+            onQuantityChange={setServings}
+            servingDesc={food.servingDesc}
+          />
           {totals && <RecipeInstanceMacroBar macros={totals} />}
           <MealPicker
             label="Meal"
             meals={meals}
             value={meal}
             onChange={setMeal}
+            showEmptyHint={false}
           />
         </ScrollSheetBody>
         <ScrollSheetFooter>
-          <Button size="lg" className="w-full" onClick={() => onAdd(meal || undefined)}>
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={() => onAdd(meal || undefined, servings)}
+          >
             Add
           </Button>
           <Button size="lg" variant="outline" className="w-full gap-2" onClick={onEdit}>

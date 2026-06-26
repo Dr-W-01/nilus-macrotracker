@@ -14,6 +14,7 @@ import {
 } from '@/lib/scale'
 import type { GoalMode } from '@/lib/goalMode'
 import { computeLoggingStreak } from '@/lib/loggingStreak'
+import { resolveGoalForLog } from '@/lib/goals'
 import type { DailyLog, FoodItem, GoalTemplate, LoggedFood, Settings } from '@/lib/types'
 
 export type StatsDayRow = {
@@ -41,13 +42,6 @@ export type TrendMetricKey =
   | 'fiber'
   | 'sugars'
 
-function resolveDefaultGoal(settings: Settings): GoalTemplate {
-  return (
-    settings.goalTemplates.find((g) => g.id === settings.defaultTemplateId) ??
-    settings.goalTemplates[0]
-  )
-}
-
 export function getStatsDayRowForDate(
   date: string,
   dailyLogs: Record<string, DailyLog>,
@@ -56,11 +50,9 @@ export function getStatsDayRowForDate(
 ): StatsDayRow | null {
   const log = dailyLogs[date]
   if (!log || log.foods.length === 0) return null
-  const defaultGoal = resolveDefaultGoal(settings)
   const macros = computeDayMacros(foodLibrary, log.foods)
   const net = macros.calories - log.burnedCalories
-  const goal =
-    settings.goalTemplates.find((g) => g.id === log.goalTemplateId) ?? defaultGoal
+  const goal = resolveGoalForLog(log, settings)
   const vsGoal = net - goal.calories
   return { date, ...macros, net, burned: log.burnedCalories, vsGoal, goal }
 }
@@ -666,7 +658,10 @@ export function computeTopFoods(
 }
 
 function formatLoggedQuantityTotal(food: FoodItem, entry: LoggedFood): string {
-  if (food.isRecipe) return '1 recipe'
+  if (food.isRecipe) {
+    const qty = Math.max(1, Math.round(entry.quantity) || 1)
+    return qty === 1 ? '1 recipe' : `${qty} recipes`
+  }
   if (food.scaleType === 'scale') {
     const unit = getFoodBaseUnit(food)
     const amount =

@@ -112,40 +112,35 @@ export function AddFoodSheet({
             Add to {dateLabel}
           </p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-4">
-          <FormSection title="Quantity">
-            <QuantityInput
-              food={food}
-              note={note}
-              onNoteChange={setNote}
-              countQuantity={countQty}
-              onCountQuantityChange={setCountQty}
-              amountEaten={amountEaten}
-              onAmountEatenChange={setAmountEaten}
-              showNote={false}
-              showInlineMacroPreview={false}
-            />
-          </FormSection>
+        <ScrollSheetBody className="space-y-3">
+          <QuantityInput
+            food={food}
+            note={note}
+            onNoteChange={setNote}
+            countQuantity={countQty}
+            onCountQuantityChange={setCountQty}
+            amountEaten={amountEaten}
+            onAmountEatenChange={setAmountEaten}
+            showNote={false}
+            showInlineMacroPreview={false}
+          />
           {macros && (
-            <FormSection title="This entry">
-              <div className="rounded-lg border border-border/60 bg-secondary/30 px-3 py-2.5 text-center">
-                <p className="text-lg font-bold text-primary tabular-nums">
-                  {roundMacro(macros.calories, 0)} cal
-                </p>
-                <LoggedMacroPreview macros={macros} size="md" className="mt-1" />
-              </div>
-            </FormSection>
-          )}
-          <FormSection title="Details">
-            <div className="space-y-3">
-              <MealPicker
-                label="Meal"
-                meals={meals}
-                value={meal}
-                onChange={setMeal}
-              />
-              <FoodNoteField note={note} onNoteChange={setNote} />
+            <div className="text-center">
+              <p className="text-lg font-bold text-primary tabular-nums">
+                {roundMacro(macros.calories, 0)} cal
+              </p>
+              <LoggedMacroPreview macros={macros} size="md" className="mt-0.5" />
             </div>
+          )}
+          <FormSection title="Details" className="p-3 space-y-2.5">
+            <MealPicker
+              label="Meal"
+              meals={meals}
+              value={meal}
+              onChange={setMeal}
+              showEmptyHint={false}
+            />
+            <FoodNoteField note={note} onNoteChange={setNote} />
           </FormSection>
         </ScrollSheetBody>
         <ScrollSheetFooter>

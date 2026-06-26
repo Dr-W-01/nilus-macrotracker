@@ -31,6 +31,17 @@ export function scaleMacros(
   }
 }
 
+export function scaleMacroTotals(m: MacroTotals, factor: number): MacroTotals {
+  return {
+    calories: m.calories * factor,
+    protein: m.protein * factor,
+    carbs: m.carbs * factor,
+    fat: m.fat * factor,
+    fiber: m.fiber * factor,
+    sugars: m.sugars * factor,
+  }
+}
+
 export function addMacros(a: MacroTotals, b: MacroTotals): MacroTotals {
   return {
     calories: a.calories + b.calories,
@@ -63,7 +74,9 @@ export function getLoggedFoodMacros(
   if (food.isRecipe && food.recipeComponents) {
     const components =
       logged.overriddenComponents ?? food.recipeComponents
-    return computeComponentMacros(library, components)
+    const base = computeComponentMacros(library, components)
+    const servings = Math.max(1, Math.round(logged.quantity) || 1)
+    return scaleMacroTotals(base, servings)
   }
 
   return scaleMacros(food, getLoggedServingMultiplier(food, logged))

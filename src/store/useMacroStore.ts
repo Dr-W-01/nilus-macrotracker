@@ -35,6 +35,12 @@ import {
 } from '@/lib/meals'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
 import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
+import {
+  ensureGoalSnapshot,
+  findGoalTemplateById,
+  snapshotGoalTemplate,
+  snapshotLogsGoalTemplates,
+} from '@/lib/goals'
 import { generateId } from '@/lib/utils'
 
 const defaultGoal: GoalTemplate = {
@@ -86,7 +92,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 10
+const PERSIST_VERSION = 11
 
 const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
@@ -149,9 +155,7 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
     ...(persisted.settings ?? {}),
   } as Settings & { goalMode?: string }
 
-  return {
-    ...persisted,
-    settings: {
+  const settings = {
       ...defaultSettings,
       ...persistedSettings,
       goalTemplates:
@@ -181,8 +185,12 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
           : undefined,
       trackCurrentWeight: persisted.settings?.trackCurrentWeight !== false,
       trackBurnedCalories: persisted.settings?.trackBurnedCalories !== false,
-    },
-    dailyLogs,
+    } as Settings
+
+  return {
+    ...persisted,
+    settings,
+    dailyLogs: snapshotLogsGoalTemplates(dailyLogs, settings),
     customCategories: Array.isArray(persisted.customCategories)
       ? persisted.customCategories
       : [],
@@ -355,11 +363,22 @@ export const useMacroStore = create<MacroStore>()(
       },
 
       updateDailyLog: (date, patch) => {
+        const settings = get().settings
         const logs = { ...get().dailyLogs }
         const base =
-          logs[date] ??
-          createEmptyLog(date, get().settings.defaultTemplateId)
-        logs[date] = { ...base, ...patch, date }
+          logs[date] ?? createEmptyLog(date, settings.defaultTemplateId)
+        let next: DailyLog = { ...base, ...patch, date }
+
+        if ('goalTemplateId' in patch && patch.goalTemplateId) {
+          const template = findGoalTemplateById(settings, patch.goalTemplateId)
+          if (template) {
+            next.goalSnapshot = snapshotGoalTemplate(template)
+          }
+        } else if (!next.goalSnapshot) {
+          next = ensureGoalSnapshot(next, settings)
+        }
+
+        logs[date] = next
         set({ dailyLogs: logs })
       },
 
@@ -891,6 +910,13 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 11) {
+          const settings = {
+            ...defaultSettings,
+            ...(raw.settings ?? {}),
+          } as Settings
+          raw.dailyLogs = snapshotLogsGoalTemplates(raw.dailyLogs ?? {}, settings)
+        }
         if (version < 10) {
           const meals = normalizeMeals(raw.settings?.meals)
           raw.dailyLogs = sanitizeOrphanedMealAssignments(raw.dailyLogs ?? {}, meals)

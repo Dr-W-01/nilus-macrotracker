@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
-import { BookOpen, CalendarDays } from 'lucide-react'
+import { BookOpen, CalendarDays, Minus, Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { QuantityInput } from '@/components/daily/QuantityInput'
-import { computeComponentMacros } from '@/lib/macros'
+import { computeComponentMacros, scaleMacroTotals } from '@/lib/macros'
 import {
   amountEatenFromServings,
   buildScaleLogPayload,
@@ -82,6 +83,57 @@ export function RecipeInstanceScopeBanner({
       </div>
     </div>
   )
+}
+
+export function RecipeServingQuantity({
+  quantity,
+  onQuantityChange,
+  servingDesc,
+}: {
+  quantity: number
+  onQuantityChange: (q: number) => void
+  servingDesc?: string
+}) {
+  const qty = Math.max(1, Math.round(quantity) || 1)
+
+  return (
+    <div className="space-y-2">
+      {servingDesc && (
+        <p className="text-center text-sm text-muted-foreground">{servingDesc}</p>
+      )}
+      <div className="flex items-center justify-center gap-6">
+        <Button
+          type="button"
+          variant="stepper"
+          size="icon"
+          className="h-14 w-14 rounded-full text-2xl"
+          disabled={qty <= 1}
+          onClick={() => onQuantityChange(Math.max(1, qty - 1))}
+        >
+          <Minus className="h-6 w-6" aria-hidden />
+        </Button>
+        <span className="min-w-[4rem] text-center text-5xl font-bold tabular-nums">
+          {qty}
+        </span>
+        <Button
+          type="button"
+          variant="stepper"
+          size="icon"
+          className="h-14 w-14 rounded-full text-2xl"
+          onClick={() => onQuantityChange(qty + 1)}
+        >
+          <Plus className="h-6 w-6" aria-hidden />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export function scaleRecipePreviewMacros(
+  macros: ReturnType<typeof computeComponentMacros>,
+  servings: number,
+) {
+  return scaleMacroTotals(macros, Math.max(1, Math.round(servings) || 1))
 }
 
 export function RecipeInstanceMacroBar({

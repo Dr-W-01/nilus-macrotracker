@@ -88,7 +88,9 @@ export function formatScaleEatenSummary(
 /** Daily log line, e.g. "Realgood Chicken — 8 oz" */
 export function formatLoggedFoodQuantity(food: FoodItem, logged: LoggedFood): string {
   if (food.isRecipe) {
-    return logged.overriddenComponents ? 'Customized recipe' : food.servingDesc
+    const qty = Math.max(1, Math.round(logged.quantity) || 1)
+    const desc = logged.overriddenComponents ? 'Customized recipe' : food.servingDesc
+    return qty === 1 ? desc : `${qty} × ${desc}`
   }
 
   if (food.scaleType === 'scale') {

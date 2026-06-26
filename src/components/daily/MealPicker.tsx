@@ -10,6 +10,8 @@ interface MealPickerProps {
   className?: string
   /** Allow leaving no meal selected (toggle active meal off). Default true. */
   optional?: boolean
+  /** Show hint when no meal is selected. Default true. */
+  showEmptyHint?: boolean
 }
 
 export function MealPicker({
@@ -20,6 +22,7 @@ export function MealPicker({
   compact,
   className,
   optional = true,
+  showEmptyHint = true,
 }: MealPickerProps) {
   const hasSelection = value.trim().length > 0
 
@@ -33,7 +36,7 @@ export function MealPicker({
           )}
         </p>
       )}
-      {optional && !hasSelection && (
+      {optional && showEmptyHint && !hasSelection && (
         <p className="text-xs text-muted-foreground/90 italic">
           No meal selected — food will be logged without a meal category.
         </p>

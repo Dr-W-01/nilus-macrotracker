@@ -82,6 +82,7 @@ import {
 } from '@/lib/trackingSettings'
 import { SURFACE_GRADIENT_COMPACT, SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
+import { resolveGoalForLog } from '@/lib/goals'
 import { useMacroStore } from '@/store/useMacroStore'
 
 const METRICS = [
@@ -119,10 +120,7 @@ export function DailyTab() {
 
   const log = getDailyLog(currentDate)
   const templates = settings?.goalTemplates ?? []
-  const goal =
-    templates.find((g) => g.id === log.goalTemplateId) ??
-    templates.find((g) => g.id === settings?.defaultTemplateId) ??
-    templates[0]
+  const goal = settings ? resolveGoalForLog(log, settings) : templates[0]
 
   const activeTemplateId = log.goalTemplateId || settings?.defaultTemplateId || 'default'
 
@@ -277,11 +275,12 @@ export function DailyTab() {
   const addRecipe = (
     meal?: string,
     overrides?: { foodId: string; quantity: number }[],
+    quantity = 1,
   ) => {
     if (!selectedFood) return
     addLoggedFood({
       foodId: selectedFood.id,
-      quantity: 1,
+      quantity: Math.max(1, Math.round(quantity)),
       meal: meal || undefined,
       overriddenComponents: overrides,
     })
@@ -382,15 +381,6 @@ export function DailyTab() {
       >
         {editDayMode && (
           <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="h-11 w-full gap-1.5"
-              onClick={() => setCopyYesterdayConfirmOpen(true)}
-            >
-              <Copy className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="truncate">Copy Yesterday</span>
-            </Button>
-
             {templates.length > 0 && (
               <div className="space-y-1">
                 <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
@@ -413,6 +403,17 @@ export function DailyTab() {
                 </select>
               </div>
             )}
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 px-2 text-xs text-muted-foreground"
+                onClick={() => setCopyYesterdayConfirmOpen(true)}
+              >
+                <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                Copy yesterday
+              </Button>
+            </div>
           </div>
         )}
 
@@ -761,7 +762,7 @@ export function DailyTab() {
         food={selectedFood}
         meals={meals}
         onOpenChange={setPreviewOpen}
-        onAdd={(meal) => addRecipe(meal)}
+        onAdd={(meal, quantity) => addRecipe(meal, undefined, quantity)}
         onEdit={() => {
           setPreviewOpen(false)
           setCustomizeOpen(true)
@@ -779,7 +780,7 @@ export function DailyTab() {
         meals={meals}
         defaultMeal={settings.defaultMeal}
         onOpenChange={setCustomizeOpen}
-        onConfirm={(meal, overrides) => addRecipe(meal, overrides)}
+        onConfirm={(meal, overrides, quantity) => addRecipe(meal, overrides, quantity)}
         onCancel={() => {
           setCustomizeOpen(false)
           setPreviewOpen(true)

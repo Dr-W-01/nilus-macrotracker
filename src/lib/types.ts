@@ -36,6 +36,8 @@ export interface LoggedFood {
 export interface DailyLog {
   date: string
   goalTemplateId: string
+  /** Frozen goal values from when this day was logged or its template was last set. */
+  goalSnapshot?: GoalTemplate
   foods: LoggedFood[]
   burnedCalories: number
   /** Body weight stored in kilograms (optional). */

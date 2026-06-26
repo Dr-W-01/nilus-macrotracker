@@ -12,6 +12,8 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import {
   RecipeIngredientsEditor,
   RecipeInstanceMacroBar,
+  RecipeServingQuantity,
+  scaleRecipePreviewMacros,
   useRecipeOverrideState,
 } from '@/components/daily/RecipeInstanceEditor'
 import type { FoodItem } from '@/lib/types'
@@ -26,6 +28,7 @@ interface RecipeCustomizeSheetProps {
   onConfirm: (
     meal: string | undefined,
     overrides: { foodId: string; quantity: number }[],
+    quantity: number,
   ) => void
   onCancel: () => void
 }
@@ -53,16 +56,22 @@ export function RecipeCustomizeSheet({
   )
 
   const [meal, setMeal] = useState('')
+  const [servings, setServings] = useState(1)
 
   useEffect(() => {
     if (!open) return
     setMeal(defaultMeal ?? '')
+    setServings(1)
   }, [open, defaultMeal, meals])
 
   if (!recipe?.recipeComponents) return null
 
+  const scaledMacros = previewMacros
+    ? scaleRecipePreviewMacros(previewMacros, servings)
+    : null
+
   const handleConfirm = () => {
-    onConfirm(meal || undefined, components)
+    onConfirm(meal || undefined, components, servings)
   }
 
   return (
@@ -83,15 +92,26 @@ export function RecipeCustomizeSheet({
           <SheetTitle>{recipe.name}</SheetTitle>
           <p className="text-sm text-muted-foreground">Customize for today</p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-4">
-          {previewMacros && <RecipeInstanceMacroBar macros={previewMacros} />}
+        <ScrollSheetBody className="space-y-3">
+          <RecipeServingQuantity
+            quantity={servings}
+            onQuantityChange={setServings}
+            servingDesc={recipe.servingDesc}
+          />
+          {scaledMacros && <RecipeInstanceMacroBar macros={scaledMacros} />}
           <RecipeIngredientsEditor
             recipe={recipe}
             library={library}
             overrides={overrides}
             setOverrides={setOverrides}
           />
-          <MealPicker label="Meal" meals={meals} value={meal} onChange={setMeal} />
+          <MealPicker
+            label="Meal"
+            meals={meals}
+            value={meal}
+            onChange={setMeal}
+            showEmptyHint={false}
+          />
         </ScrollSheetBody>
         <ScrollSheetFooter>
           <Button size="lg" className="w-full" onClick={handleConfirm}>

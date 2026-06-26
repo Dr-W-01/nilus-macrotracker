@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   ModalViewport,
@@ -12,7 +12,9 @@ import {
   RecipeIngredientsEditor,
   RecipeInstanceMacroBar,
   RecipeInstanceScopeBanner,
+  RecipeServingQuantity,
   buildRecipeOverridePayload,
+  scaleRecipePreviewMacros,
   useRecipeOverrideState,
 } from '@/components/daily/RecipeInstanceEditor'
 import type { FoodItem, LoggedFood } from '@/lib/types'
@@ -49,11 +51,22 @@ export function EditLoggedRecipeSheet({
     library,
     baseComponents,
   )
+  const [servings, setServings] = useState(1)
+
+  useEffect(() => {
+    if (!open || !entry) return
+    setServings(Math.max(1, Math.round(entry.quantity) || 1))
+  }, [open, entry])
 
   if (!entry || !recipe?.recipeComponents) return null
 
+  const scaledMacros = previewMacros
+    ? scaleRecipePreviewMacros(previewMacros, servings)
+    : null
+
   const handleSave = () => {
     onSave({
+      quantity: Math.max(1, Math.round(servings)),
       overriddenComponents: buildRecipeOverridePayload(recipe, components),
     })
   }
@@ -70,9 +83,14 @@ export function EditLoggedRecipeSheet({
           <SheetTitle>{recipe.name}</SheetTitle>
           <p className="text-sm text-muted-foreground">Edit today&apos;s portions</p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-4">
+        <ScrollSheetBody className="space-y-3">
           <RecipeInstanceScopeBanner mode="edit" dateLabel={dateLabel} recipeName={recipe.name} />
-          {previewMacros && <RecipeInstanceMacroBar macros={previewMacros} />}
+          <RecipeServingQuantity
+            quantity={servings}
+            onQuantityChange={setServings}
+            servingDesc={recipe.servingDesc}
+          />
+          {scaledMacros && <RecipeInstanceMacroBar macros={scaledMacros} />}
           <RecipeIngredientsEditor
             recipe={recipe}
             library={library}
