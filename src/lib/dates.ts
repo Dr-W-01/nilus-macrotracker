@@ -44,6 +44,21 @@ export function formatDisplayDate(dateStr: string): string {
   return format(d, 'EEE, MMM d')
 }
 
+const DAILY_VIEW_DAY_LABELS = ['SUN', 'MON', 'TUES', 'WED', 'THRS', 'FRI', 'SAT'] as const
+
+/** Two-line Daily tab header in view mode: ALL-CAPS weekday + short date. */
+export function formatDailyViewHeaderDate(dateStr: string): {
+  dayLabel: string
+  dateLabel: string
+} {
+  const d = parseISO(dateStr)
+  if (!isValid(d)) return { dayLabel: '', dateLabel: dateStr }
+  return {
+    dayLabel: DAILY_VIEW_DAY_LABELS[d.getDay()],
+    dateLabel: format(d, 'MMM d'),
+  }
+}
+
 export function shiftDate(dateStr: string, days: number): string {
   return format(addDays(parseISO(dateStr), days), 'yyyy-MM-dd')
 }

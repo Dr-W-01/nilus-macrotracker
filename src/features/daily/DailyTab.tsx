@@ -46,7 +46,7 @@ import {
   scrollSheetContentClass,
 } from '@/components/ui/scroll-modal'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
-import { formatDisplayDate, shiftDate } from '@/lib/dates'
+import { formatDailyViewHeaderDate, formatDisplayDate, shiftDate } from '@/lib/dates'
 import {
   formatWeight,
   parseWeightInput,
@@ -123,6 +123,7 @@ export function DailyTab() {
   const goal = settings ? resolveGoalForLog(log, settings) : templates[0]
 
   const activeTemplateId = log.goalTemplateId || settings?.defaultTemplateId || 'default'
+  const viewHeaderDate = formatDailyViewHeaderDate(currentDate)
 
   const consumed = useMemo(
     () => computeDayMacros(foodLibrary, log.foods),
@@ -325,18 +326,32 @@ export function DailyTab() {
             />
           </div>
 
-          <div className="flex flex-col items-center gap-1 px-3">
-            <p className="text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
-              {formatDisplayDate(currentDate)}
-            </p>
-            <div className="min-h-[18px]">
-              {editDayMode && (
+          <div
+            className={cn(
+              'flex flex-col items-center px-3',
+              editDayMode ? 'gap-1' : 'justify-center leading-none',
+            )}
+          >
+            {editDayMode ? (
+              <>
+                <p className="text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
+                  {formatDisplayDate(currentDate)}
+                </p>
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                   <Pencil className="h-3 w-3" aria-hidden />
                   Editing
                 </span>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <p className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
+                  {viewHeaderDate.dayLabel}
+                </p>
+                <p className="mt-0.5 text-[17px] font-semibold sm:text-lg">
+                  {viewHeaderDate.dateLabel}
+                </p>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5 justify-self-end">
@@ -403,17 +418,6 @@ export function DailyTab() {
                 </select>
               </div>
             )}
-            <div className="flex justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-1 px-2 text-xs text-muted-foreground"
-                onClick={() => setCopyYesterdayConfirmOpen(true)}
-              >
-                <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Copy yesterday
-              </Button>
-            </div>
           </div>
         )}
 
@@ -431,12 +435,7 @@ export function DailyTab() {
           >
             {trackBurnedCalories ? 'Net Calories' : 'Calories'}
           </p>
-          <p
-            className={cn(
-              'font-bold tracking-tight text-primary tabular-nums',
-              editDayMode ? 'text-5xl' : 'text-6xl sm:text-7xl',
-            )}
-          >
+          <p className="text-6xl font-bold tracking-tight text-primary tabular-nums sm:text-7xl">
             {roundMacro(trackBurnedCalories ? netCalories : consumed.calories, 0)}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -585,6 +584,20 @@ export function DailyTab() {
             </div>
           )}
         </div>
+
+        {editDayMode && (
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 px-2 text-xs text-muted-foreground"
+              onClick={() => setCopyYesterdayConfirmOpen(true)}
+            >
+              <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              Copy yesterday
+            </Button>
+          </div>
+        )}
 
         <div>
           <div className="flex items-center justify-between gap-2 mb-2">
