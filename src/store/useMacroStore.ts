@@ -41,7 +41,47 @@ import {
   snapshotGoalTemplate,
   snapshotLogsGoalTemplates,
 } from '@/lib/goals'
+import {
+  applyBadgeAwards,
+  createEmptyBadgeState,
+  scanAllBadgeInstances,
+} from '@/lib/badges/evaluate'
+import { toastBadgesUnlocked } from '@/lib/badges/badgeToast'
+import type { BadgeId, BadgeState } from '@/lib/badges/types'
 import { generateId } from '@/lib/utils'
+
+function normalizeBadgeState(raw?: BadgeState): BadgeState {
+  if (!raw || typeof raw !== 'object') return createEmptyBadgeState()
+  return {
+    initialized: raw.initialized === true,
+    progress: raw.progress && typeof raw.progress === 'object' ? raw.progress : {},
+  }
+}
+
+function runBadgeEvaluation(
+  get: () => MacroStore,
+  set: (partial: Partial<MacroStore>) => void,
+  options: { silent?: boolean } = {},
+) {
+  const state = get()
+  if (!state.badgeState.initialized) return
+
+  const awards = scanAllBadgeInstances({
+    dailyLogs: state.dailyLogs,
+    foodLibrary: state.foodLibrary,
+    settings: state.settings,
+    badgeState: state.badgeState,
+  })
+
+  const { nextState, newAwards } = applyBadgeAwards(state.badgeState, awards)
+  const newIds = Object.keys(newAwards) as BadgeId[]
+  if (newIds.length === 0) return
+
+  set({ badgeState: nextState })
+  if (!options.silent) {
+    toastBadgesUnlocked(newIds)
+  }
+}
 
 const defaultGoal: GoalTemplate = {
   id: 'default',
@@ -92,7 +132,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 11
+const PERSIST_VERSION = 12
 
 const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
@@ -116,6 +156,7 @@ type PersistedSlice = {
   statsAnchorDate?: string
   favoriteFoodIds?: string[]
   recentFoodSearches?: { library?: string[]; picker?: string[] }
+  badgeState?: BadgeState
 }
 
 function normalizeMealCollapseByDate(
@@ -201,6 +242,15 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
 
     statsRangeStart: persisted.statsRangeStart ?? week.start,
     statsRangeEnd: persisted.statsRangeEnd ?? week.end,
+    badgeState: normalizeBadgeState(persisted.badgeState),
+    currentTab:
+      persisted.currentTab === 'daily' ||
+      persisted.currentTab === 'library' ||
+      persisted.currentTab === 'stats' ||
+      persisted.currentTab === 'badges' ||
+      persisted.currentTab === 'settings'
+        ? persisted.currentTab
+        : 'daily',
   }
 }
 
@@ -246,8 +296,15 @@ interface MacroStore {
   favoriteFoodIds: string[]
   /** Recent search queries for Library and Food Picker */
   recentFoodSearches: { library: string[]; picker: string[] }
+  badgeState: BadgeState
+  highlightedBadgeId: BadgeId | null
+  openBadgeDetailId: BadgeId | null
 
   setHasHydrated: (v: boolean) => void
+  setHighlightedBadgeId: (id: BadgeId | null) => void
+  setOpenBadgeDetailId: (id: BadgeId | null) => void
+  initializeBadges: () => void
+  evaluateBadges: (silent?: boolean) => void
   setCurrentTab: (tab: AppTab) => void
   setLibrarySearchEngaged: (v: boolean) => void
   setInputFocusEngaged: (v: boolean) => void
@@ -307,6 +364,7 @@ interface MacroStore {
     foodLibrary?: FoodItem[]
     dailyLogs?: Record<string, DailyLog>
     customCategories?: string[]
+    badgeState?: BadgeState
   }) => void
   factoryReset: () => void
 }
@@ -334,8 +392,30 @@ export const useMacroStore = create<MacroStore>()(
       pendingLibraryFoodId: null,
       favoriteFoodIds: [],
       recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
+      badgeState: createEmptyBadgeState(),
+      highlightedBadgeId: null,
+      openBadgeDetailId: null,
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
+      setHighlightedBadgeId: (id) => set({ highlightedBadgeId: id }),
+      setOpenBadgeDetailId: (id) => set({ openBadgeDetailId: id }),
+
+      initializeBadges: () => {
+        const state = get()
+        if (state.badgeState.initialized) return
+        const awards = scanAllBadgeInstances({
+          dailyLogs: state.dailyLogs,
+          foodLibrary: state.foodLibrary,
+          settings: state.settings,
+          badgeState: state.badgeState,
+        })
+        const { nextState } = applyBadgeAwards(state.badgeState, awards)
+        set({ badgeState: { ...nextState, initialized: true } })
+      },
+
+      evaluateBadges: (silent = false) => {
+        runBadgeEvaluation(get, set, { silent })
+      },
       setCurrentTab: (tab) =>
         set({
           currentTab: tab,
@@ -380,6 +460,7 @@ export const useMacroStore = create<MacroStore>()(
 
         logs[date] = next
         set({ dailyLogs: logs })
+        get().evaluateBadges()
       },
 
       addLoggedFood: (logged, date) => {
@@ -517,6 +598,7 @@ export const useMacroStore = create<MacroStore>()(
             : normalizeScaleFoodItem(item),
         )
         set({ foodLibrary: lib })
+        get().evaluateBadges()
       },
 
       mergeFoodLibrary: (items, replace = false) => {
@@ -535,6 +617,7 @@ export const useMacroStore = create<MacroStore>()(
               : item,
           )
           set({ foodLibrary: lib })
+          get().evaluateBadges()
           return
         }
         const map = new Map(get().foodLibrary.map((f) => [f.id, f]))
@@ -546,6 +629,7 @@ export const useMacroStore = create<MacroStore>()(
           map.set(enriched.id, enriched)
         })
         set({ foodLibrary: [...map.values()] })
+        get().evaluateBadges()
       },
 
       addFoodItem: (item) => {
@@ -564,6 +648,7 @@ export const useMacroStore = create<MacroStore>()(
         set({
           foodLibrary: lib.map((f) => (f.id === id ? enriched : f)),
         })
+        get().evaluateBadges()
         return id
       },
 
@@ -855,6 +940,7 @@ export const useMacroStore = create<MacroStore>()(
           foodLibrary: backup.foodLibrary,
           dailyLogs: backup.dailyLogs,
           customCategories: backup.customCategories,
+          badgeState: backup.badgeState,
         })
         const lib = normalized.foodLibrary ?? []
         set({
@@ -862,6 +948,7 @@ export const useMacroStore = create<MacroStore>()(
           foodLibrary: lib,
           customCategories: normalized.customCategories ?? [],
           dailyLogs: normalized.dailyLogs ?? {},
+          badgeState: normalized.badgeState ?? createEmptyBadgeState(),
         })
       },
 
@@ -874,6 +961,9 @@ export const useMacroStore = create<MacroStore>()(
           mealCollapseByDate: {},
           favoriteFoodIds: [],
           recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
+          badgeState: { initialized: true, progress: {} },
+          highlightedBadgeId: null,
+          openBadgeDetailId: null,
           currentDate: todayString(),
           currentTab: 'daily',
           editDayMode: false,
@@ -907,9 +997,13 @@ export const useMacroStore = create<MacroStore>()(
         statsAnchorDate: state.statsAnchorDate,
         favoriteFoodIds: state.favoriteFoodIds,
         recentFoodSearches: state.recentFoodSearches,
+        badgeState: state.badgeState,
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 12) {
+          raw.badgeState = normalizeBadgeState(raw.badgeState)
+        }
         if (version < 11) {
           const settings = {
             ...defaultSettings,
@@ -983,6 +1077,7 @@ export const useMacroStore = create<MacroStore>()(
           foodLibrary: state.foodLibrary,
           customCategories: state.customCategories,
           dailyLogs: state.dailyLogs,
+          badgeState: state.badgeState,
           currentDate: state.currentDate,
           currentTab: state.currentTab,
           editDayMode: state.editDayMode,
@@ -997,6 +1092,7 @@ export const useMacroStore = create<MacroStore>()(
         state.foodLibrary = normalized.foodLibrary ?? []
         state.settings = normalized.settings ?? defaultSettings
         state.dailyLogs = normalized.dailyLogs ?? {}
+        state.badgeState = normalized.badgeState ?? createEmptyBadgeState()
         if (normalized.statsRangeStart) state.statsRangeStart = normalized.statsRangeStart
         if (normalized.statsRangeEnd) state.statsRangeEnd = normalized.statsRangeEnd
         const view = state.statsView as string

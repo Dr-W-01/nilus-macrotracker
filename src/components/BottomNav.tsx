@@ -1,4 +1,4 @@
-import { CalendarDays, BarChart3, BookOpen, Settings } from 'lucide-react'
+import { Award, CalendarDays, BarChart3, BookOpen, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { todayString } from '@/lib/dates'
 import type { AppTab } from '@/lib/types'
@@ -8,6 +8,7 @@ const TABS: { id: AppTab; label: string; icon: typeof CalendarDays }[] = [
   { id: 'daily', label: 'Daily', icon: CalendarDays },
   { id: 'library', label: 'Library', icon: BookOpen },
   { id: 'stats', label: 'Stats', icon: BarChart3 },
+  { id: 'badges', label: 'Badges', icon: Award },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
@@ -38,7 +39,7 @@ export function BottomNav() {
               key={id}
               type="button"
               className={cn(
-                'flex min-h-[56px] min-w-[72px] flex-col items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors',
+                'flex min-h-[56px] min-w-[60px] flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium transition-colors sm:min-w-[68px] sm:text-xs',
                 active ? 'text-primary' : 'text-foreground/55',
               )}
               onClick={() => {

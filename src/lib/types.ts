@@ -86,7 +86,7 @@ export interface Settings {
   secondaryTextColor: string
 }
 
-export type AppTab = 'daily' | 'library' | 'stats' | 'settings'
+export type AppTab = 'daily' | 'library' | 'stats' | 'badges' | 'settings'
 
 export interface MacroTotals {
   calories: number
