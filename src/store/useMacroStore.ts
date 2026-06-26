@@ -42,6 +42,10 @@ import {
   snapshotLogsGoalTemplates,
 } from '@/lib/goals'
 import {
+  ALL_BADGE_IDS,
+} from '@/lib/badges/definitions'
+import {
+  appendUnviewedBadges,
   applyBadgeAwards,
   createEmptyBadgeState,
   scanAllBadgeInstances,
@@ -52,9 +56,14 @@ import { generateId } from '@/lib/utils'
 
 function normalizeBadgeState(raw?: BadgeState): BadgeState {
   if (!raw || typeof raw !== 'object') return createEmptyBadgeState()
+  const validIds = new Set(ALL_BADGE_IDS)
+  const unviewed = Array.isArray(raw.unviewedBadgeIds)
+    ? raw.unviewedBadgeIds.filter((id): id is BadgeId => validIds.has(id as BadgeId))
+    : []
   return {
     initialized: raw.initialized === true,
     progress: raw.progress && typeof raw.progress === 'object' ? raw.progress : {},
+    unviewedBadgeIds: unviewed,
   }
 }
 
@@ -71,15 +80,16 @@ function runBadgeEvaluation(
     foodLibrary: state.foodLibrary,
     settings: state.settings,
     badgeState: state.badgeState,
+    favoriteFoodIds: state.favoriteFoodIds,
   })
 
-  const { nextState, newAwards } = applyBadgeAwards(state.badgeState, awards)
-  const newIds = Object.keys(newAwards) as BadgeId[]
-  if (newIds.length === 0) return
+  const { nextState, newBadgeIds } = applyBadgeAwards(state.badgeState, awards)
+  if (newBadgeIds.length === 0) return
 
-  set({ badgeState: nextState })
+  const badgeState = appendUnviewedBadges(nextState, newBadgeIds)
+  set({ badgeState })
   if (!options.silent) {
-    toastBadgesUnlocked(newIds)
+    toastBadgesUnlocked(newBadgeIds)
   }
 }
 
@@ -132,7 +142,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 12
+const PERSIST_VERSION = 13
 
 const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
@@ -305,6 +315,7 @@ interface MacroStore {
   setOpenBadgeDetailId: (id: BadgeId | null) => void
   initializeBadges: () => void
   evaluateBadges: (silent?: boolean) => void
+  markBadgesViewed: () => void
   setCurrentTab: (tab: AppTab) => void
   setLibrarySearchEngaged: (v: boolean) => void
   setInputFocusEngaged: (v: boolean) => void
@@ -408,13 +419,26 @@ export const useMacroStore = create<MacroStore>()(
           foodLibrary: state.foodLibrary,
           settings: state.settings,
           badgeState: state.badgeState,
+          favoriteFoodIds: state.favoriteFoodIds,
         })
-        const { nextState } = applyBadgeAwards(state.badgeState, awards)
-        set({ badgeState: { ...nextState, initialized: true } })
+        const { nextState, newBadgeIds } = applyBadgeAwards(state.badgeState, awards)
+        const withUnviewed = appendUnviewedBadges(
+          { ...nextState, initialized: true },
+          newBadgeIds,
+        )
+        set({ badgeState: withUnviewed })
       },
 
       evaluateBadges: (silent = false) => {
         runBadgeEvaluation(get, set, { silent })
+      },
+
+      markBadgesViewed: () => {
+        const { badgeState } = get()
+        if (badgeState.unviewedBadgeIds.length === 0) return
+        set({
+          badgeState: { ...badgeState, unviewedBadgeIds: [] },
+        })
       },
       setCurrentTab: (tab) =>
         set({
@@ -535,6 +559,7 @@ export const useMacroStore = create<MacroStore>()(
           ? current.filter((id) => id !== foodId)
           : [...current, foodId]
         set({ favoriteFoodIds: next })
+        get().evaluateBadges()
       },
 
       bulkRemoveLoggedFood: (loggedIds, date) => {
@@ -961,7 +986,7 @@ export const useMacroStore = create<MacroStore>()(
           mealCollapseByDate: {},
           favoriteFoodIds: [],
           recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
-          badgeState: { initialized: true, progress: {} },
+          badgeState: { initialized: true, progress: {}, unviewedBadgeIds: [] },
           highlightedBadgeId: null,
           openBadgeDetailId: null,
           currentDate: todayString(),
@@ -1001,7 +1026,7 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
-        if (version < 12) {
+        if (version < 13) {
           raw.badgeState = normalizeBadgeState(raw.badgeState)
         }
         if (version < 11) {

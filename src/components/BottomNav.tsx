@@ -2,6 +2,7 @@ import { Award, CalendarDays, BarChart3, BookOpen, Settings } from 'lucide-react
 import { cn } from '@/lib/utils'
 import { todayString } from '@/lib/dates'
 import type { AppTab } from '@/lib/types'
+import { getUnviewedBadgeCount } from '@/lib/badges/evaluate'
 import { useMacroStore } from '@/store/useMacroStore'
 
 const TABS: { id: AppTab; label: string; icon: typeof CalendarDays }[] = [
@@ -18,6 +19,8 @@ export function BottomNav() {
   const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
   const setCurrentTab = useMacroStore((s) => s.setCurrentTab)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
+  const badgeState = useMacroStore((s) => s.badgeState)
+  const unviewedBadgeCount = getUnviewedBadgeCount(badgeState)
 
   const hideForKeyboard =
     inputFocusEngaged || (currentTab === 'library' && librarySearchEngaged)
@@ -53,7 +56,17 @@ export function BottomNav() {
                 }
               }}
             >
-              <Icon className={cn('h-6 w-6', active && 'stroke-[2.5]')} />
+              <span className="relative inline-flex">
+                <Icon className={cn('h-6 w-6', active && 'stroke-[2.5]')} />
+                {id === 'badges' && unviewedBadgeCount > 0 && (
+                  <span
+                    className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground"
+                    aria-label={`${unviewedBadgeCount} new badge${unviewedBadgeCount === 1 ? '' : 's'}`}
+                  >
+                    {unviewedBadgeCount > 9 ? '9+' : unviewedBadgeCount}
+                  </span>
+                )}
+              </span>
               {label}
             </button>
           )

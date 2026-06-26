@@ -1,6 +1,7 @@
 import type { BadgeDefinition, BadgeId } from '@/lib/badges/types'
 
 export const BADGE_DEFINITIONS: BadgeDefinition[] = [
+  // —— First-time & special ——
   {
     id: 'first_food',
     name: 'First Bite',
@@ -10,71 +11,12 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     recurring: false,
   },
   {
-    id: 'library_ten',
-    name: 'Pantry Builder',
-    description: 'Your food library is growing.',
-    howToEarn: 'Add 10 foods to your Library.',
-    icon: '📚',
+    id: 'first_favorite',
+    name: 'Favorite Finder',
+    description: 'You marked a go-to food for quick logging.',
+    howToEarn: 'Add your first favorite food from the Library or food picker.',
+    icon: '⭐',
     recurring: false,
-  },
-  {
-    id: 'first_recipe',
-    name: 'Recipe Creator',
-    description: 'You built a reusable meal from ingredients.',
-    howToEarn: 'Create your first recipe in the Library.',
-    icon: '🍱',
-    recurring: false,
-  },
-  {
-    id: 'streak_7',
-    name: 'Week Warrior',
-    description: 'Seven days of consistent logging.',
-    howToEarn: 'Log food on 7 consecutive days.',
-    icon: '🔥',
-    recurring: true,
-  },
-  {
-    id: 'streak_30',
-    name: 'Monthly Machine',
-    description: 'A full month of daily tracking.',
-    howToEarn: 'Log food on 30 consecutive days.',
-    icon: '💪',
-    recurring: true,
-  },
-  {
-    id: 'protein_week',
-    name: 'Protein Pro',
-    description: 'You nailed your protein targets all week.',
-    howToEarn:
-      'Hit your protein goal on every logged day in a calendar week (Sun–Sat), with at least 5 logged days.',
-    icon: '🥩',
-    recurring: true,
-  },
-  {
-    id: 'calorie_week',
-    name: 'Calorie Commander',
-    description: 'Calorie targets met across the board.',
-    howToEarn:
-      'Hit your calorie goal on every logged day in a calendar week (Sun–Sat), with at least 5 logged days.',
-    icon: '🎯',
-    recurring: true,
-  },
-  {
-    id: 'balance_week',
-    name: 'Energy Expert',
-    description: 'Net calories on target all week.',
-    howToEarn:
-      'Hit your energy balance (net calorie) goal on every logged day in a calendar week, with at least 5 logged days.',
-    icon: '⚡',
-    recurring: true,
-  },
-  {
-    id: 'meal_complete',
-    name: 'Full Plate',
-    description: 'Every meal category filled in one day.',
-    howToEarn: 'Log at least one food in every configured meal on a single day.',
-    icon: '🥗',
-    recurring: true,
   },
   {
     id: 'note_writer',
@@ -92,6 +34,229 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     icon: '🔥',
     recurring: false,
   },
+  {
+    id: 'custom_recipe',
+    name: 'Recipe Tweaker',
+    description: 'You customized a recipe for one day.',
+    howToEarn: 'Log a recipe with customized ingredient portions.',
+    icon: '🛠️',
+    recurring: false,
+  },
+
+  // —— Library & recipes ——
+  {
+    id: 'library_ten',
+    name: 'Pantry Builder',
+    description: 'Your food library is growing.',
+    howToEarn: 'Add 10 foods to your Library.',
+    icon: '📚',
+    recurring: false,
+  },
+  {
+    id: 'library_twentyfive',
+    name: 'Shelf Stacker',
+    description: 'A well-stocked personal food database.',
+    howToEarn: 'Add 25 foods to your Library.',
+    icon: '🗄️',
+    recurring: false,
+  },
+  {
+    id: 'library_fifty',
+    name: 'Pantry Pro',
+    description: 'Your library is seriously comprehensive.',
+    howToEarn: 'Add 50 foods to your Library.',
+    icon: '🏪',
+    recurring: false,
+  },
+  {
+    id: 'first_recipe',
+    name: 'Recipe Creator',
+    description: 'You built a reusable meal from ingredients.',
+    howToEarn: 'Create your first recipe in the Library.',
+    icon: '🍱',
+    recurring: false,
+  },
+  {
+    id: 'recipe_logged',
+    name: 'Recipe Meal',
+    description: 'You logged a recipe to your daily log.',
+    howToEarn: 'Add a recipe from your library to the Daily tab.',
+    icon: '🥙',
+    recurring: false,
+  },
+  {
+    id: 'recipe_logs_10',
+    name: 'Recipe Regular',
+    description: 'Recipes are part of your routine.',
+    howToEarn: 'Log recipes 10 times total (repeats every 10).',
+    icon: '🍲',
+    recurring: true,
+  },
+
+  // —— Logging streaks ——
+  {
+    id: 'streak_3',
+    name: 'Spark Starter',
+    description: 'Three days in a row — momentum building.',
+    howToEarn: 'Log food on 3 consecutive days.',
+    icon: '✨',
+    recurring: true,
+  },
+  {
+    id: 'streak_7',
+    name: 'Week Warrior',
+    description: 'Seven days of consistent logging.',
+    howToEarn: 'Log food on 7 consecutive days.',
+    icon: '🔥',
+    recurring: true,
+  },
+  {
+    id: 'streak_14',
+    name: 'Fortnight Focus',
+    description: 'Two full weeks without missing a day.',
+    howToEarn: 'Log food on 14 consecutive days.',
+    icon: '📅',
+    recurring: true,
+  },
+  {
+    id: 'streak_30',
+    name: 'Monthly Machine',
+    description: 'A full month of daily tracking.',
+    howToEarn: 'Log food on 30 consecutive days.',
+    icon: '💪',
+    recurring: true,
+  },
+  {
+    id: 'streak_60',
+    name: 'Iron Logger',
+    description: 'Sixty days straight — serious dedication.',
+    howToEarn: 'Log food on 60 consecutive days.',
+    icon: '🦾',
+    recurring: true,
+  },
+  {
+    id: 'streak_100',
+    name: 'Centennial Streak',
+    description: 'One hundred consecutive days logged.',
+    howToEarn: 'Log food on 100 consecutive days.',
+    icon: '🏆',
+    recurring: true,
+  },
+
+  // —— Daily goal hits ——
+  {
+    id: 'protein_day',
+    name: 'Protein Hit',
+    description: 'Protein goal crushed for the day.',
+    howToEarn: 'Hit your protein goal on a logged day.',
+    icon: '🥩',
+    recurring: true,
+  },
+  {
+    id: 'calorie_day',
+    name: 'On Target',
+    description: 'Calories right where you aimed.',
+    howToEarn: 'Hit your calorie goal on a logged day.',
+    icon: '🎯',
+    recurring: true,
+  },
+  {
+    id: 'balance_day',
+    name: 'Balanced Energy',
+    description: 'Net calories matched your energy goal.',
+    howToEarn: 'Hit your energy balance (net calorie) goal on a logged day.',
+    icon: '⚡',
+    recurring: true,
+  },
+  {
+    id: 'fiber_day',
+    name: 'Fiber Focus',
+    description: 'Fiber goal met for the day.',
+    howToEarn: 'Hit your fiber goal on a logged day.',
+    icon: '🥦',
+    recurring: true,
+  },
+
+  // —— Weekly consistency ——
+  {
+    id: 'protein_week',
+    name: 'Protein Pro',
+    description: 'You nailed your protein targets all week.',
+    howToEarn:
+      'Hit your protein goal on every logged day in a calendar week (Sun–Sat), with at least 5 logged days.',
+    icon: '💎',
+    recurring: true,
+  },
+  {
+    id: 'calorie_week',
+    name: 'Calorie Commander',
+    description: 'Calorie targets met across the board.',
+    howToEarn:
+      'Hit your calorie goal on every logged day in a calendar week (Sun–Sat), with at least 5 logged days.',
+    icon: '📊',
+    recurring: true,
+  },
+  {
+    id: 'balance_week',
+    name: 'Energy Expert',
+    description: 'Net calories on target all week.',
+    howToEarn:
+      'Hit your energy balance goal on every logged day in a calendar week, with at least 5 logged days.',
+    icon: '🔋',
+    recurring: true,
+  },
+  {
+    id: 'burn_week',
+    name: 'Burn Week',
+    description: 'You tracked burned calories all week.',
+    howToEarn: 'Log burned calories on at least 5 days in a calendar week.',
+    icon: '🌡️',
+    recurring: true,
+  },
+  {
+    id: 'weekend_logger',
+    name: 'Weekend Warrior',
+    description: 'Saturday and Sunday both logged.',
+    howToEarn: 'Log food on both Saturday and Sunday in the same week.',
+    icon: '🌴',
+    recurring: true,
+  },
+
+  // —— Meal & logging behavior ——
+  {
+    id: 'meal_complete',
+    name: 'Full Plate',
+    description: 'Every meal category filled in one day.',
+    howToEarn: 'Log at least one food in every configured meal on a single day.',
+    icon: '🥗',
+    recurring: true,
+  },
+  {
+    id: 'big_day_10',
+    name: 'Big Day',
+    description: 'A packed day of detailed tracking.',
+    howToEarn: 'Log 10 or more food entries on a single day.',
+    icon: '🍔',
+    recurring: true,
+  },
+  {
+    id: 'breakfast_streak_7',
+    name: 'Breakfast Boss',
+    description: 'A week of breakfast logging.',
+    howToEarn: 'Log food at breakfast on 7 consecutive days.',
+    icon: '🌅',
+    recurring: true,
+  },
+  {
+    id: 'note_streak_3',
+    name: 'Note Streak',
+    description: 'Three days of journaling in a row.',
+    howToEarn: 'Write a daily note on 3 consecutive days.',
+    icon: '📓',
+    recurring: true,
+  },
+
+  // —— Weight (weight tracking) ——
   {
     id: 'first_weight',
     name: 'Scale Starter',
@@ -111,12 +276,71 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     weightBased: true,
   },
   {
+    id: 'weight_streak_30',
+    name: 'Scale Streak',
+    description: 'A month of consistent weigh-ins.',
+    howToEarn: 'Log your weight on 30 consecutive days.',
+    icon: '📈',
+    recurring: true,
+    weightBased: true,
+  },
+
+  // —— Volume & milestones ——
+  {
+    id: 'logs_50',
+    name: 'Fifty Entries',
+    description: 'Fifty foods logged — nice momentum.',
+    howToEarn: 'Log 50 total food entries across all days.',
+    icon: '5️⃣',
+    recurring: false,
+  },
+  {
     id: 'logs_100',
     name: 'Century Logger',
     description: 'One hundred foods logged — keep going!',
-    howToEarn: 'Log 100 total food entries across all days (repeats every 100).',
+    howToEarn: 'Log 100 total food entries (repeats every 100).',
     icon: '💯',
     recurring: true,
+  },
+  {
+    id: 'logs_500',
+    name: 'High Volume',
+    description: 'Five hundred entries — elite consistency.',
+    howToEarn: 'Log 500 total food entries across all days.',
+    icon: '🚀',
+    recurring: false,
+  },
+  {
+    id: 'logs_1000',
+    name: 'Thousand Club',
+    description: 'One thousand logged entries. Legendary.',
+    howToEarn: 'Log 1,000 total food entries across all days.',
+    icon: '👑',
+    recurring: false,
+  },
+  {
+    id: 'days_logged_10',
+    name: 'Regular Tracker',
+    description: 'Ten different days with logs.',
+    howToEarn: 'Log food on 10 different calendar days.',
+    icon: '📆',
+    recurring: false,
+  },
+  {
+    id: 'days_logged_50',
+    name: 'Steady Habits',
+    description: 'Fifty days of showing up.',
+    howToEarn: 'Log food on 50 different calendar days.',
+    icon: '🎖️',
+    recurring: false,
+  },
+  {
+    id: 'days_logged_100',
+    name: 'Lifetime Logger',
+    description: 'One hundred days logged over time.',
+    howToEarn: 'Log food on 100 different calendar days.',
+    icon: '🌟',
+    recurring: false,
   },
 ]
 
@@ -124,4 +348,4 @@ export const BADGE_BY_ID: Record<BadgeId, BadgeDefinition> = Object.fromEntries(
   BADGE_DEFINITIONS.map((b) => [b.id, b]),
 ) as Record<BadgeId, BadgeDefinition>
 
-export const ALL_BADGE_IDS = BADGE_DEFINITIONS.map((b) => b.id)
+export const ALL_BADGE_IDS = BADGE_DEFINITIONS.map((b) => b.id) as BadgeId[]

@@ -8,6 +8,7 @@ interface BadgeCardProps {
   progress?: BadgeProgress
   weightTrackingEnabled: boolean
   highlighted?: boolean
+  isUnviewed?: boolean
   onClick: () => void
 }
 
@@ -16,6 +17,7 @@ export function BadgeCard({
   progress,
   weightTrackingEnabled,
   highlighted,
+  isUnviewed,
   onClick,
 }: BadgeCardProps) {
   const def = BADGE_BY_ID[badgeId]
@@ -39,6 +41,9 @@ export function BadgeCard({
         highlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
+      {isUnviewed && (
+        <span className="absolute left-2 top-2 h-2 w-2 rounded-full bg-destructive" aria-hidden />
+      )}
       {count > 1 && (
         <span className="absolute right-2 top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
           ×{count}

@@ -15,6 +15,8 @@ export function BadgesTab() {
   const openBadgeDetailId = useMacroStore((s) => s.openBadgeDetailId)
   const setHighlightedBadgeId = useMacroStore((s) => s.setHighlightedBadgeId)
   const setOpenBadgeDetailId = useMacroStore((s) => s.setOpenBadgeDetailId)
+  const markBadgesViewed = useMacroStore((s) => s.markBadgesViewed)
+  const unviewedIds = useMacroStore((s) => s.badgeState.unviewedBadgeIds)
 
   const [detailId, setDetailId] = useState<BadgeId | null>(null)
   const highlightRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -26,6 +28,10 @@ export function BadgesTab() {
       BADGE_DEFINITIONS.filter((b) => getBadgeCount(badgeState.progress[b.id]) > 0).length,
     [badgeState.progress],
   )
+
+  useEffect(() => {
+    markBadgesViewed()
+  }, [markBadgesViewed])
 
   useEffect(() => {
     if (openBadgeDetailId) {
@@ -75,6 +81,7 @@ export function BadgesTab() {
               progress={badgeState.progress[badge.id]}
               weightTrackingEnabled={weightTrackingEnabled}
               highlighted={highlightedBadgeId === badge.id}
+              isUnviewed={unviewedIds.includes(badge.id)}
               onClick={() => setDetailId(badge.id)}
             />
           ))}
