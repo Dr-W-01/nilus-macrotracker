@@ -64,9 +64,12 @@ export function NewBadgesSection({
             '[-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
-          <div className="flex w-max gap-3">
+          <div className="flex w-max items-stretch gap-3">
             {newBadges.map(({ id }) => (
-              <div key={id} className="w-[calc((100vw-2rem-1.5rem)/3)] max-w-[7.5rem] shrink-0">
+              <div
+                key={id}
+                className="w-[calc((100vw-2rem-1.5rem)/3)] max-w-[7.5rem] shrink-0 self-stretch"
+              >
                 <BadgeCard
                   badgeId={id}
                   progress={progress[id]}
@@ -80,7 +83,7 @@ export function NewBadgesSection({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-3 items-stretch gap-3 sm:grid-cols-3">
           {newBadges.map(({ id }) => (
             <BadgeCard
               key={id}

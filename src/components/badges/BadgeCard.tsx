@@ -29,13 +29,19 @@ export function BadgeCard({
   const burnLocked = def.burnBased && !burnTrackingEnabled && !earned
   const featureLocked = weightLocked || burnLocked
 
+  const lockHint = weightLocked
+    ? 'Enable weight tracking to unlock'
+    : burnLocked
+      ? 'Enable burned calories to unlock'
+      : null
+
   return (
     <button
       type="button"
       data-badge-id={badgeId}
       onClick={onClick}
       className={cn(
-        'relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all',
+        'relative flex h-full w-full flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all',
         'min-h-[108px] active:scale-[0.98]',
         earned && !featureLocked
           ? 'border-primary/40 bg-primary/10 shadow-sm'
@@ -58,33 +64,30 @@ export function BadgeCard({
           ×{count}
         </span>
       )}
-      <span
-        className={cn(
-          'text-3xl leading-none',
-          earned && !featureLocked ? 'drop-shadow-sm' : 'opacity-80',
-        )}
-        aria-hidden
-      >
-        {def.icon}
-      </span>
-      <span
-        className={cn(
-          'text-xs font-semibold leading-tight',
-          earned && !featureLocked ? 'text-foreground' : 'text-muted-foreground',
-        )}
-      >
-        {def.name}
-      </span>
-      {weightLocked && (
-        <span className="text-[10px] leading-snug text-muted-foreground">
-          Enable weight tracking to unlock
+      <div className="flex w-full flex-col items-center justify-center gap-1.5 px-0.5">
+        <span
+          className={cn(
+            'flex h-9 shrink-0 items-center justify-center text-3xl leading-none',
+            earned && !featureLocked ? 'drop-shadow-sm' : 'opacity-80',
+          )}
+          aria-hidden
+        >
+          {def.icon}
         </span>
-      )}
-      {burnLocked && (
-        <span className="text-[10px] leading-snug text-muted-foreground">
-          Enable burned calories to unlock
+        <span
+          className={cn(
+            'line-clamp-2 w-full text-xs font-semibold leading-tight',
+            earned && !featureLocked ? 'text-foreground' : 'text-muted-foreground',
+          )}
+        >
+          {def.name}
         </span>
-      )}
+        {lockHint && (
+          <span className="line-clamp-2 w-full text-[10px] leading-snug text-muted-foreground">
+            {lockHint}
+          </span>
+        )}
+      </div>
     </button>
   )
 }

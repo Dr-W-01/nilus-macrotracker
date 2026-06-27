@@ -38,7 +38,7 @@ export function BadgeCategorySection({
         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{meta.description}</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-3 items-stretch gap-3 sm:grid-cols-4">
         {badges.map((badge) => (
           <BadgeCard
             key={badge.id}
