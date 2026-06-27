@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, RefreshCw, Trash2, Upload } from 'lucide-react'
+import { Download, RefreshCw, Settings, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
@@ -116,7 +116,10 @@ export function SettingsTab() {
   return (
     <div className="settings-tab pb-below-nav">
       <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
-        <h1 className="text-xl font-bold">Settings</h1>
+        <div className="flex items-center gap-2">
+          <Settings className="h-5 w-5 text-primary" aria-hidden />
+          <h1 className="text-xl font-bold">Settings</h1>
+        </div>
       </header>
 
       <div className="space-y-6 p-4">

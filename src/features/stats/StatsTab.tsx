@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { parseISO } from 'date-fns'
+import { BarChart3 } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatsPeriodBar } from '@/components/stats/StatsPeriodBar'
 import { StatsOverviewPanel } from '@/features/stats/StatsOverviewPanel'
@@ -56,7 +57,10 @@ export function StatsTab() {
   return (
     <div className="stats-tab pb-below-nav">
       <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
-        <h1 className="text-xl font-bold">Stats</h1>
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
+          <h1 className="text-xl font-bold">Stats</h1>
+        </div>
       </header>
 
       <div className="space-y-4 p-4">

@@ -283,7 +283,10 @@ export function LibraryTab() {
       <div className="tab-sticky-header">
         <div className="space-y-3 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="text-xl font-bold">Library</h1>
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" aria-hidden />
+              <h1 className="text-xl font-bold">Library</h1>
+            </div>
             {librarySegment === 'categories' && activeCategory ? (
               <EditIconButton
                 variant="outline"
