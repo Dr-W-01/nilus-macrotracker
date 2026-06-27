@@ -49,6 +49,19 @@ export function getUnviewedBadgeCount(badgeState: BadgeState): number {
   return badgeState.unviewedBadgeIds?.length ?? 0
 }
 
+/** Badges in the "New Badges" section, sorted by most recent award (incl. recurring). */
+export function getRecentlyAwardedBadges(
+  badgeState: BadgeState,
+): { id: BadgeId; earnedAt: string }[] {
+  return (badgeState.newSectionBadgeIds ?? [])
+    .filter((id) => getBadgeCount(badgeState.progress[id]) > 0)
+    .map((id) => ({
+      id,
+      earnedAt: badgeState.progress[id]!.instances.at(-1)?.earnedAt ?? '',
+    }))
+    .sort((a, b) => b.earnedAt.localeCompare(a.earnedAt))
+}
+
 export function mergeBadgeInstances(
   existing: BadgeEarnedInstance[],
   found: BadgeEarnedInstance[],

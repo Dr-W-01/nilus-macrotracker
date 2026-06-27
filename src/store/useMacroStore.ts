@@ -424,12 +424,9 @@ export const useMacroStore = create<MacroStore>()(
           favoriteFoodIds: state.favoriteFoodIds,
           customCategories: state.customCategories,
         })
-        const { nextState, newBadgeIds } = applyBadgeAwards(state.badgeState, awards)
-        const withUnviewed = appendUnviewedBadges(
-          { ...nextState, initialized: true },
-          newBadgeIds,
-        )
-        set({ badgeState: withUnviewed })
+        const { nextState } = applyBadgeAwards(state.badgeState, awards)
+        // Retroactive init backfills progress only; "New Badges" is for awards after init.
+        set({ badgeState: { ...nextState, initialized: true } })
       },
 
       evaluateBadges: (silent = false) => {

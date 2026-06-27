@@ -133,7 +133,7 @@ export interface BadgeState {
   progress: Partial<Record<BadgeId, BadgeProgress>>
   /** Drives NEW pills in category grids and the bottom-nav badge count. */
   unviewedBadgeIds: BadgeId[]
-  /** Badges shown in the top "New Badges" section until cleared explicitly. */
+  /** Recently awarded badges in the top "New Badges" section (first earn or recurring). */
   newSectionBadgeIds: BadgeId[]
 }
 

@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
 import { BadgeCard } from '@/components/badges/BadgeCard'
 import { Button } from '@/components/ui/button'
-import { getBadgeCount } from '@/lib/badges/evaluate'
-import type { BadgeId, BadgeProgress } from '@/lib/badges/types'
+import { getRecentlyAwardedBadges } from '@/lib/badges/evaluate'
+import type { BadgeId, BadgeProgress, BadgeState } from '@/lib/badges/types'
 import { cn } from '@/lib/utils'
 
 interface NewBadgesSectionProps {
-  newSectionIds: BadgeId[]
+  badgeState: BadgeState
+  unviewedIds: BadgeId[]
   progress: Partial<Record<BadgeId, BadgeProgress>>
   weightTrackingEnabled: boolean
   burnTrackingEnabled: boolean
@@ -15,23 +16,18 @@ interface NewBadgesSectionProps {
 }
 
 export function NewBadgesSection({
-  newSectionIds,
+  badgeState,
+  unviewedIds,
   progress,
   weightTrackingEnabled,
   burnTrackingEnabled,
   onBadgeClick,
   onClearAll,
 }: NewBadgesSectionProps) {
-  const newBadges = useMemo(() => {
-    return newSectionIds
-      .filter((id) => getBadgeCount(progress[id]) > 0)
-      .map((id) => ({
-        id,
-        earnedAt:
-          progress[id]?.instances[progress[id]!.instances.length - 1]?.earnedAt ?? '',
-      }))
-      .sort((a, b) => b.earnedAt.localeCompare(a.earnedAt))
-  }, [newSectionIds, progress])
+  const newBadges = useMemo(
+    () => getRecentlyAwardedBadges(badgeState),
+    [badgeState],
+  )
 
   if (newBadges.length === 0) return null
 
@@ -43,7 +39,7 @@ export function NewBadgesSection({
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-foreground">New Badges</h2>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            Recently earned — tap to view details
+            Recently awarded — tap to view details
           </p>
         </div>
         <Button
@@ -75,7 +71,7 @@ export function NewBadgesSection({
                   progress={progress[id]}
                   weightTrackingEnabled={weightTrackingEnabled}
                   burnTrackingEnabled={burnTrackingEnabled}
-                  isUnviewed
+                  isUnviewed={unviewedIds.includes(id)}
                   onClick={() => onBadgeClick(id)}
                 />
               </div>
@@ -91,7 +87,7 @@ export function NewBadgesSection({
               progress={progress[id]}
               weightTrackingEnabled={weightTrackingEnabled}
               burnTrackingEnabled={burnTrackingEnabled}
-              isUnviewed
+              isUnviewed={unviewedIds.includes(id)}
               onClick={() => onBadgeClick(id)}
             />
           ))}

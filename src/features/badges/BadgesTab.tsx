@@ -23,7 +23,7 @@ export function BadgesTab() {
   const markBadgeViewed = useMacroStore((s) => s.markBadgeViewed)
   const markAllNewBadgesViewed = useMacroStore((s) => s.markAllNewBadgesViewed)
   const unviewedIds = useMacroStore((s) => s.badgeState.unviewedBadgeIds)
-  const newSectionIds = useMacroStore((s) => s.badgeState.newSectionBadgeIds)
+
 
   const [detailId, setDetailId] = useState<BadgeId | null>(null)
   const highlightRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -82,7 +82,8 @@ export function BadgesTab() {
 
       <div className="space-y-8 p-4">
         <NewBadgesSection
-          newSectionIds={newSectionIds}
+          badgeState={badgeState}
+          unviewedIds={unviewedIds}
           progress={badgeState.progress}
           weightTrackingEnabled={weightTrackingEnabled}
           burnTrackingEnabled={burnTrackingEnabled}
