@@ -70,7 +70,7 @@ export function BadgesTab() {
   }
 
   return (
-    <div className="badges-tab pb-below-nav">
+    <div className="badges-tab">
       <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <Award className="h-5 w-5 shrink-0 text-primary" aria-hidden />

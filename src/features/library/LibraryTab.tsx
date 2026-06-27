@@ -65,7 +65,6 @@ export function LibraryTab() {
   const deleteFoodItems = useMacroStore((s) => s.deleteFoodItems)
   const removeLibraryCategory = useMacroStore((s) => s.removeLibraryCategory)
   const deleteLibraryCategory = useMacroStore((s) => s.deleteLibraryCategory)
-  const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
   const setLibrarySearchEngaged = useMacroStore((s) => s.setLibrarySearchEngaged)
 
   const [query, setQuery] = useState('')
@@ -264,7 +263,7 @@ export function LibraryTab() {
 
   if (foodLibrary.length === 0) {
     return (
-      <div className="library-tab p-6 pb-below-nav">
+      <div className="library-tab p-6">
         <EmptyState
           icon={BookOpen}
           title="Your food library is empty"
@@ -287,7 +286,7 @@ export function LibraryTab() {
 
   return (
     <div
-      className={`library-tab ${librarySearchEngaged ? 'pb-below-nav-search' : 'pb-below-nav'}`}
+      className="library-tab"
     >
       <div className="tab-sticky-header">
         <div className="space-y-3 px-4 py-3">

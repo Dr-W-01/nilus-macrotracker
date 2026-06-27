@@ -354,7 +354,7 @@ export function DailyTab() {
   }
 
   return (
-    <div className="daily-tab pb-below-nav">
+    <div className="daily-tab">
       <header className="tab-sticky-header px-4 py-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center gap-1.5 justify-self-start">

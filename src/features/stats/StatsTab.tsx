@@ -55,7 +55,7 @@ export function StatsTab() {
       : 'overview'
 
   return (
-    <div className="stats-tab pb-below-nav">
+    <div className="stats-tab">
       <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
