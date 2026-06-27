@@ -15,8 +15,6 @@ interface MealSection {
 
 interface DailyMealSectionsProps {
   sections: MealSection[]
-  allMeals: string[]
-  editDayMode: boolean
   currentDate: string
   foodLibrary: FoodItem[]
   meals: string[]
@@ -30,8 +28,6 @@ interface DailyMealSectionsProps {
 
 export function DailyMealSections({
   sections,
-  allMeals,
-  editDayMode,
   currentDate,
   foodLibrary,
   meals,
@@ -44,17 +40,14 @@ export function DailyMealSections({
 }: DailyMealSectionsProps) {
   const toggleMealCollapsed = useMacroStore((s) => s.toggleMealCollapsed)
 
-  const sectionByMeal = new Map(sections.map((s) => [s.meal.toLowerCase(), s]))
-  const displayMeals = editDayMode
-    ? allMeals
-    : sections.map((s) => s.meal)
+  const displayMeals = sections.map((s) => s.meal)
 
   if (displayMeals.length === 0) return null
 
   return (
-    <div className={cn('space-y-2', editDayMode && 'space-y-1.5')}>
+    <div className="space-y-2">
       {displayMeals.map((meal) => {
-        const section = sectionByMeal.get(meal.toLowerCase())
+        const section = sections.find((s) => s.meal.toLowerCase() === meal.toLowerCase())
         const entries = section?.entries ?? []
         const totals = section?.totals
         const mealExpanded = !collapsedMeals.has(meal)
@@ -135,7 +128,6 @@ export function DailyMealSections({
                       food={food}
                       foodLibrary={foodLibrary}
                       meals={meals}
-                      editDayMode={editDayMode}
                       selectFoodsMode={selectFoodsMode}
                       selected={selectedLogIds.has(entry.id)}
                       onToggleSelect={() => onToggleSelect(entry.id)}
@@ -145,11 +137,6 @@ export function DailyMealSections({
                   )
                 })}
               </ul>
-            )}
-            {mealExpanded && entries.length === 0 && editDayMode && (
-              <p className="border-t border-border/50 px-2 py-1 text-xs text-muted-foreground">
-                No items
-              </p>
             )}
           </section>
         )

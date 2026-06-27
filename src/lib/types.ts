@@ -103,7 +103,6 @@ export interface PersistedState {
   dailyLogs: Record<string, DailyLog>
   currentDate: string
   currentTab: AppTab
-  editDayMode: boolean
   librarySegment: 'items' | 'categories' | 'recipes'
   statsPeriod: 'week' | 'month' | 'custom'
   statsCustomStart: string

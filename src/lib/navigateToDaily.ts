@@ -1,11 +1,10 @@
 import { todayString } from '@/lib/dates'
 import { useMacroStore } from '@/store/useMacroStore'
 
-/** Jump to Daily tab in edit mode, ready to log food. */
+/** Jump to Daily tab, ready to log food. */
 export function navigateToDailyLogging() {
   const store = useMacroStore.getState()
   store.setCurrentDate(todayString())
-  store.setEditDayMode(true)
   store.setCurrentTab('daily')
 }
 
@@ -13,7 +12,6 @@ export function navigateToDailyLogging() {
 export function navigateToDailyWithFood(foodId: string) {
   const store = useMacroStore.getState()
   store.setCurrentDate(todayString())
-  store.setEditDayMode(true)
   store.setPendingLibraryFoodId(foodId)
   store.setCurrentTab('daily')
 }

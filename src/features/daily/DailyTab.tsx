@@ -8,7 +8,6 @@ import {
   ChevronUp,
   Flame,
   Copy,
-  Pencil,
   Plus,
   Scale,
   UtensilsCrossed,
@@ -99,8 +98,6 @@ const NO_COLLAPSED_MEALS: string[] = []
 export function DailyTab() {
   const currentDate = useMacroStore((s) => s.currentDate)
   const setCurrentDate = useMacroStore((s) => s.setCurrentDate)
-  const editDayMode = useMacroStore((s) => s.editDayMode)
-  const setEditDayMode = useMacroStore((s) => s.setEditDayMode)
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const settings = useMacroStore((s) => s.settings)
   const getDailyLog = useMacroStore((s) => s.getDailyLog)
@@ -161,7 +158,7 @@ export function DailyTab() {
   useEffect(() => {
     setSelectFoodsMode(false)
     setSelectedLogIds(new Set())
-  }, [currentDate, editDayMode])
+  }, [currentDate])
 
   const { unassignedFoods, foodsByMeal } = useMemo(() => {
     const unassigned: LoggedFood[] = []
@@ -296,7 +293,6 @@ export function DailyTab() {
       toast.error('Yesterday has no logged foods to copy')
       return
     }
-    if (!editDayMode) setEditDayMode(true)
     toast.success(
       `Copied ${copied} ${copied === 1 ? 'item' : 'items'} from yesterday — review and edit as needed`,
     )
@@ -316,42 +312,16 @@ export function DailyTab() {
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
-            <EditIconButton
-              variant={editDayMode ? 'default' : 'outline'}
-              size="icon"
-              className="h-12 w-12 shrink-0"
-              iconClassName="h-6 w-6"
-              label={editDayMode ? 'Exit edit mode' : 'Edit day'}
-              onClick={() => setEditDayMode(!editDayMode)}
-            />
+            <span className="h-12 w-12 shrink-0" aria-hidden />
           </div>
 
-          <div
-            className={cn(
-              'flex flex-col items-center px-3',
-              editDayMode ? 'gap-1' : 'justify-center leading-none',
-            )}
-          >
-            {editDayMode ? (
-              <>
-                <p className="text-center font-semibold text-[15px] whitespace-nowrap sm:text-base">
-                  {formatDisplayDate(currentDate)}
-                </p>
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                  <Pencil className="h-3 w-3" aria-hidden />
-                  Editing
-                </span>
-              </>
-            ) : (
-              <>
-                <p className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
-                  {viewHeaderDate.dayLabel}
-                </p>
-                <p className="mt-0.5 text-[17px] font-semibold sm:text-lg">
-                  {viewHeaderDate.dateLabel}
-                </p>
-              </>
-            )}
+          <div className="flex flex-col items-center px-3 justify-center leading-none">
+            <p className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground">
+              {viewHeaderDate.dayLabel}
+            </p>
+            <p className="mt-0.5 text-[17px] font-semibold sm:text-lg">
+              {viewHeaderDate.dateLabel}
+            </p>
           </div>
 
           <div className="flex items-center gap-1.5 justify-self-end">
@@ -388,51 +358,9 @@ export function DailyTab() {
         </div>
       </header>
 
-      <div
-        className={cn(
-          'space-y-4 p-4 transition-colors duration-200',
-          editDayMode && 'border-t-2 border-t-primary bg-daily-edit-surface',
-        )}
-      >
-        {editDayMode && (
-          <div className="space-y-3">
-            {templates.length > 0 && (
-              <div className="space-y-1">
-                <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
-                  Goal template for this day
-                </Label>
-                <select
-                  id="daily-goal-template"
-                  className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  autoComplete="off"
-                  value={activeTemplateId}
-                  onChange={(e) =>
-                    updateDailyLog(currentDate, { goalTemplateId: e.target.value })
-                  }
-                >
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} — {t.calories} cal
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div
-          className={cn(
-            'text-center py-2',
-            !editDayMode && cn(SURFACE_GRADIENT_ROUNDED, 'px-4 py-5'),
-          )}
-        >
-          <p
-            className={cn(
-              'text-muted-foreground',
-              editDayMode ? 'text-sm' : 'text-xs font-medium uppercase tracking-wide',
-            )}
-          >
+      <div className="space-y-4 p-4">
+        <div className={cn('text-center py-2', SURFACE_GRADIENT_ROUNDED, 'px-4 py-5')}>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {trackBurnedCalories ? 'Net Calories' : 'Calories'}
           </p>
           <p className="text-6xl font-bold tracking-tight text-primary tabular-nums sm:text-7xl">
@@ -483,10 +411,8 @@ export function DailyTab() {
         <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
           <button
             type="button"
-            className="flex min-w-0 flex-1 items-center justify-between disabled:opacity-60"
-            disabled={!editDayMode}
+            className="flex min-w-0 flex-1 items-center justify-between"
             onClick={() => {
-              if (!editDayMode) return
               setBurnInput(String(log.burnedCalories))
               setBurnEditOpen(true)
             }}
@@ -497,18 +423,16 @@ export function DailyTab() {
             </span>
             <span className="font-semibold">{log.burnedCalories} cal</span>
           </button>
-          {editDayMode && (
-            <EditIconButton
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              label="Edit burned calories"
-              onClick={() => {
-                setBurnInput(String(log.burnedCalories))
-                setBurnEditOpen(true)
-              }}
-            />
-          )}
+          <EditIconButton
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            label="Edit burned calories"
+            onClick={() => {
+              setBurnInput(String(log.burnedCalories))
+              setBurnEditOpen(true)
+            }}
+          />
         </div>
         )}
 
@@ -516,10 +440,8 @@ export function DailyTab() {
         <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
           <button
             type="button"
-            className="flex min-w-0 flex-1 items-center justify-between disabled:opacity-60"
-            disabled={!editDayMode}
+            className="flex min-w-0 flex-1 items-center justify-between"
             onClick={() => {
-              if (!editDayMode) return
               setWeightInput(
                 log.weightKg != null
                   ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
@@ -538,22 +460,20 @@ export function DailyTab() {
               )}
             </span>
           </button>
-          {editDayMode && (
-            <EditIconButton
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              label="Edit weight"
-              onClick={() => {
-                setWeightInput(
-                  log.weightKg != null
-                    ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
-                    : '',
-                )
-                setWeightEditOpen(true)
-              }}
-            />
-          )}
+          <EditIconButton
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            label="Edit weight"
+            onClick={() => {
+              setWeightInput(
+                log.weightKg != null
+                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+                  : '',
+              )
+              setWeightEditOpen(true)
+            }}
+          />
         </div>
         )}
 
@@ -568,41 +488,21 @@ export function DailyTab() {
           </button>
           {noteExpanded && (
             <div className="px-4 pb-4">
-              {editDayMode ? (
-                <textarea
-                  className="w-full min-h-[80px] rounded-lg border border-input bg-card p-3 text-sm"
-                  value={log.note}
-                  onChange={(e) => setDailyNote(e.target.value)}
-                  placeholder="Notes for this day..."
-                  {...mobileFriendlyInputProps}
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {log.note || 'No note'}
-                </p>
-              )}
+              <textarea
+                className="w-full min-h-[80px] rounded-lg border border-input bg-card p-3 text-sm"
+                value={log.note}
+                onChange={(e) => setDailyNote(e.target.value)}
+                placeholder="Notes for this day..."
+                {...mobileFriendlyInputProps}
+              />
             </div>
           )}
         </div>
 
-        {editDayMode && (
-          <div className="flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1 px-2 text-xs text-muted-foreground"
-              onClick={() => setCopyYesterdayConfirmOpen(true)}
-            >
-              <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              Copy yesterday
-            </Button>
-          </div>
-        )}
-
         <div>
           <div className="flex items-center justify-between gap-2 mb-2">
             <h3 className="font-semibold">Logged foods</h3>
-            {editDayMode && log.foods.length > 0 && (
+            {log.foods.length > 0 && (
               <div className="flex gap-2">
                 {selectFoodsMode && (
                   <Button
@@ -631,7 +531,7 @@ export function DailyTab() {
             )}
           </div>
 
-          {editDayMode && selectFoodsMode && log.foods.length > 0 && (
+          {selectFoodsMode && log.foods.length > 0 && (
             <div className="sticky top-0 z-10 -mx-1 mb-3 bg-background py-1">
               <BulkMealAssignBar
                 count={selectedLogIds.size}
@@ -650,21 +550,11 @@ export function DailyTab() {
             <EmptyState
               icon={UtensilsCrossed}
               title="No foods logged yet"
-              description={
-                editDayMode
-                  ? 'Add your first food from your library, copy yesterday\'s log, or use a favorite for quick logging.'
-                  : 'Turn on Edit Day to start logging meals for this date.'
-              }
-              actionLabel={editDayMode ? 'Add your first food' : 'Start logging'}
-              onAction={
-                editDayMode ? () => setPickerOpen(true) : () => setEditDayMode(true)
-              }
-              secondaryActionLabel={editDayMode ? 'Browse Library' : undefined}
-              onSecondaryAction={
-                editDayMode
-                  ? () => useMacroStore.getState().setCurrentTab('library')
-                  : undefined
-              }
+              description="Add your first food from your library, copy yesterday's log, or use a favorite for quick logging."
+              actionLabel="Add your first food"
+              onAction={() => setPickerOpen(true)}
+              secondaryActionLabel="Browse Library"
+              onSecondaryAction={() => useMacroStore.getState().setCurrentTab('library')}
             />
           ) : (
             <div className="space-y-4">
@@ -683,7 +573,6 @@ export function DailyTab() {
                         food={food}
                         foodLibrary={foodLibrary}
                         meals={meals}
-                        editDayMode={editDayMode}
                         selectFoodsMode={selectFoodsMode}
                         selected={selectedLogIds.has(entry.id)}
                         isUncategorized
@@ -704,8 +593,6 @@ export function DailyTab() {
               )}
               <DailyMealSections
                 sections={foodsByMeal}
-                allMeals={meals}
-                editDayMode={editDayMode}
                 currentDate={currentDate}
                 foodLibrary={foodLibrary}
                 meals={meals}
@@ -730,9 +617,44 @@ export function DailyTab() {
             </div>
           )}
         </div>
+
+        {templates.length > 0 && (
+          <div className="space-y-1">
+            <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
+              Goal template for this day
+            </Label>
+            <select
+              id="daily-goal-template"
+              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              autoComplete="off"
+              value={activeTemplateId}
+              onChange={(e) =>
+                updateDailyLog(currentDate, { goalTemplateId: e.target.value })
+              }
+            >
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} — {t.calories} cal
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs text-muted-foreground"
+            onClick={() => setCopyYesterdayConfirmOpen(true)}
+          >
+            <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Copy yesterday
+          </Button>
+        </div>
       </div>
 
-      {editDayMode && !selectFoodsMode && (
+      {!selectFoodsMode && (
         <Button
           size="lg"
           className="fixed right-4 z-30 h-14 w-14 rounded-full shadow-lg p-0"

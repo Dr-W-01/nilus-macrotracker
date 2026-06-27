@@ -157,7 +157,6 @@ type PersistedSlice = {
   mealCollapseByDate?: Record<string, string[]>
   currentDate?: string
   currentTab?: AppTab
-  editDayMode?: boolean
   librarySegment?: 'items' | 'categories' | 'recipes'
   statsPeriod?: 'week' | 'month' | 'custom'
   statsRangeStart?: string
@@ -289,7 +288,6 @@ interface MacroStore {
   mealCollapseByDate: Record<string, string[]>
   currentDate: string
   currentTab: AppTab
-  editDayMode: boolean
   librarySegment: 'items' | 'categories' | 'recipes'
   statsPeriod: 'week' | 'month' | 'custom'
   statsRangeStart: string
@@ -321,7 +319,6 @@ interface MacroStore {
   setInputFocusEngaged: (v: boolean) => void
   setPendingLibraryFoodId: (id: string | null) => void
   setCurrentDate: (date: string) => void
-  setEditDayMode: (v: boolean) => void
   setLibrarySegment: (s: 'items' | 'categories' | 'recipes') => void
   setStatsPeriod: (p: 'week' | 'month' | 'custom') => void
   setStatsRange: (start: string, end: string) => void
@@ -391,7 +388,6 @@ export const useMacroStore = create<MacroStore>()(
       mealCollapseByDate: {},
       currentDate: todayString(),
       currentTab: 'daily',
-      editDayMode: false,
       librarySegment: 'items',
       statsPeriod: 'week',
       statsRangeStart: getWeekRange().start,
@@ -450,7 +446,6 @@ export const useMacroStore = create<MacroStore>()(
       setInputFocusEngaged: (v) => set({ inputFocusEngaged: v }),
       setPendingLibraryFoodId: (id) => set({ pendingLibraryFoodId: id }),
       setCurrentDate: (date) => set({ currentDate: date }),
-      setEditDayMode: (v) => set({ editDayMode: v }),
       setLibrarySegment: (s) => set({ librarySegment: s }),
       setStatsPeriod: (p) => set({ statsPeriod: p }),
       setStatsRange: (start, end) =>
@@ -991,7 +986,6 @@ export const useMacroStore = create<MacroStore>()(
           openBadgeDetailId: null,
           currentDate: todayString(),
           currentTab: 'daily',
-          editDayMode: false,
         })
       },
     }),
@@ -1013,7 +1007,6 @@ export const useMacroStore = create<MacroStore>()(
         mealCollapseByDate: state.mealCollapseByDate,
         currentDate: state.currentDate,
         currentTab: state.currentTab,
-        editDayMode: state.editDayMode,
         librarySegment: state.librarySegment,
         statsPeriod: state.statsPeriod,
         statsRangeStart: state.statsRangeStart,
@@ -1105,7 +1098,6 @@ export const useMacroStore = create<MacroStore>()(
           badgeState: state.badgeState,
           currentDate: state.currentDate,
           currentTab: state.currentTab,
-          editDayMode: state.editDayMode,
           librarySegment: state.librarySegment,
           statsPeriod: state.statsPeriod,
           statsRangeStart: state.statsRangeStart,

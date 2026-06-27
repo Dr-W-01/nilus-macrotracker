@@ -13,7 +13,6 @@ interface LoggedFoodEntryRowProps {
   food: FoodItem | undefined
   foodLibrary: FoodItem[]
   meals: string[]
-  editDayMode: boolean
   selectFoodsMode: boolean
   selected: boolean
   isUncategorized?: boolean
@@ -27,7 +26,6 @@ export function LoggedFoodEntryRow({
   food,
   foodLibrary,
   meals,
-  editDayMode,
   selectFoodsMode,
   selected,
   isUncategorized = false,
@@ -41,7 +39,7 @@ export function LoggedFoodEntryRow({
       ? resolveLoggedMeal(entry.meal, meals) ?? null
       : null
 
-  const showMealAssign = editDayMode && !selectFoodsMode && meals.length > 0
+  const showMealAssign = !selectFoodsMode && meals.length > 0
   const quickAssignOnly = isUncategorized && showMealAssign
 
   return (
@@ -51,14 +49,13 @@ export function LoggedFoodEntryRow({
           'flex w-full flex-col gap-1.5 px-3 py-2.5',
           SURFACE_INNER,
           selectFoodsMode && selected && 'border-primary bg-primary/10',
-          isUncategorized && editDayMode && 'border-dashed border-primary/35',
+          isUncategorized && 'border-dashed border-primary/35',
         )}
       >
         <button
           type="button"
           className="flex w-full flex-col gap-1 text-left"
           onClick={() => {
-            if (!editDayMode) return
             if (selectFoodsMode) {
               onToggleSelect()
               return
@@ -93,7 +90,7 @@ export function LoggedFoodEntryRow({
               <span className="text-sm font-medium">
                 {roundMacro(macros.calories, 0)} cal
               </span>
-              {editDayMode && !selectFoodsMode && (
+              {!selectFoodsMode && (
                 <EditIconButton
                   variant="ghost"
                   size="icon"
