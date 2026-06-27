@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { Award, CalendarDays, BarChart3, BookOpen, Settings } from 'lucide-react'
+import { useBottomNavHeight } from '@/hooks/useBottomNavHeight'
 import { cn } from '@/lib/utils'
 import { todayString } from '@/lib/dates'
 import type { AppTab } from '@/lib/types'
@@ -25,12 +27,15 @@ export function BottomNav() {
   const hideForKeyboard =
     inputFocusEngaged || (currentTab === 'library' && librarySearchEngaged)
 
+  const navRef = useRef<HTMLElement>(null)
+  useBottomNavHeight(navRef, !hideForKeyboard)
+
   if (hideForKeyboard) {
     return null
   }
 
   return (
-    <nav className="bottom-nav border-t border-border bg-card">
+    <nav ref={navRef} className="bottom-nav border-t border-border bg-card">
       <div className="bottom-nav-inner mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2 pb-1">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = currentTab === id

@@ -8,6 +8,7 @@ import { StatsTab } from '@/features/stats/StatsTab'
 import { BadgesTab } from '@/features/badges/BadgesTab'
 import { SettingsTab } from '@/features/settings/SettingsTab'
 import { BadgeUnlockListener } from '@/components/BadgeUnlockListener'
+import { NavBottomClearance } from '@/components/NavBottomClearance'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
@@ -25,11 +26,14 @@ export default function AppPage() {
       <InputFocusTracker />
       <BadgeUnlockListener />
       <main className={cn('app-main', bottomNavHidden && 'app-main--nav-hidden')}>
-        {currentTab === 'daily' && <DailyTab />}
-        {currentTab === 'library' && <LibraryTab />}
-        {currentTab === 'stats' && <StatsTab />}
-        {currentTab === 'badges' && <BadgesTab />}
-        {currentTab === 'settings' && <SettingsTab />}
+        <div className="tab-scroll-region">
+          {currentTab === 'daily' && <DailyTab />}
+          {currentTab === 'library' && <LibraryTab />}
+          {currentTab === 'stats' && <StatsTab />}
+          {currentTab === 'badges' && <BadgesTab />}
+          {currentTab === 'settings' && <SettingsTab />}
+          <NavBottomClearance />
+        </div>
       </main>
       <BottomNav />
     </div>

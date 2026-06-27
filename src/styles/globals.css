@@ -29,11 +29,14 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  /* Nav inner row (icons + labels + padding); safe area is added separately on .bottom-nav */
+  /* Fallback nav height before JS measurement; includes iOS home-indicator inset */
   --bottom-nav-inner: 5.75rem;
-  --bottom-nav-total: calc(var(--bottom-nav-inner) + env(safe-area-inset-bottom, 0px));
-  /* Scroll inset below main content when the fixed bottom nav is visible */
-  --content-bottom-inset: calc(0.75rem + var(--bottom-nav-total));
+  --bottom-nav-fallback: calc(var(--bottom-nav-inner) + var(--safe-bottom));
+  /* Live height from BottomNav ResizeObserver; already includes safe-area padding */
+  --bottom-nav-total: var(--bottom-nav-measured, var(--bottom-nav-fallback));
+  /* Breathing room between last content item and the fixed nav */
+  --content-bottom-gutter: 0.75rem;
+  --content-bottom-inset: calc(var(--content-bottom-gutter) + var(--bottom-nav-total));
   --content-bottom-inset-keyboard: max(1rem, var(--safe-bottom));
   --daily-edit-surface: #12151c;
   --chart-grid: #2a2a2a;
@@ -168,13 +171,39 @@ body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
   padding-top: var(--safe-top);
-  /* Single global inset for the fixed bottom nav — do not rely on per-tab padding */
-  padding-bottom: var(--content-bottom-inset);
   scroll-padding-bottom: var(--content-bottom-inset);
 }
 
 .app-main--nav-hidden {
-  padding-bottom: var(--content-bottom-inset-keyboard);
+  scroll-padding-bottom: var(--content-bottom-inset-keyboard);
+}
+
+/* Shell-owned scroll column: tabs render inside this, not the other way around */
+.tab-scroll-region {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+/* Physical spacer — more reliable than padding on tabs or .app-main alone */
+.nav-bottom-spacer {
+  flex: 0 0 auto;
+  width: 100%;
+  height: var(--content-bottom-inset);
+  margin-top: auto;
+  pointer-events: none;
+}
+
+.app-main--nav-hidden .nav-bottom-spacer {
+  height: var(--content-bottom-inset-keyboard);
+}
+
+/* Nested scroll areas inside tabs inherit nav clearance for their last items */
+.app-main :where(.overflow-y-auto, .overflow-auto, [class*='overflow-y-auto']) {
+  scroll-padding-bottom: var(--content-bottom-inset);
+}
+
+.app-main--nav-hidden :where(.overflow-y-auto, .overflow-auto, [class*='overflow-y-auto']) {
   scroll-padding-bottom: var(--content-bottom-inset-keyboard);
 }
 
@@ -194,14 +223,14 @@ body {
 
 
 
-/* Daily/Library: natural content height — no flex stretch past the last item */
+/* Tab roots: natural height; bottom clearance is owned by .tab-scroll-region */
 .daily-tab,
 .library-tab,
 .stats-tab,
 .badges-tab,
 .settings-tab {
   display: block;
-  min-height: 100%;
+  flex: 0 0 auto;
 }
 
 .tab-sticky-header {
@@ -224,10 +253,10 @@ body {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
-/* Legacy alias — bottom inset is owned by .app-main */
+/* Legacy alias — bottom inset is owned by .tab-scroll-region / .nav-bottom-spacer */
 .pb-below-nav,
 .pb-below-nav-search {
-  padding-bottom: 0;
+  padding-bottom: 0 !important;
 }
 
 .accent-text {
