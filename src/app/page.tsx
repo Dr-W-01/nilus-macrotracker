@@ -7,17 +7,22 @@ import { StatsTab } from '@/features/stats/StatsTab'
 import { BadgesTab } from '@/features/badges/BadgesTab'
 import { SettingsTab } from '@/features/settings/SettingsTab'
 import { BadgeUnlockListener } from '@/components/BadgeUnlockListener'
+import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export default function AppPage() {
   const currentTab = useMacroStore((s) => s.currentTab)
+  const inputFocusEngaged = useMacroStore((s) => s.inputFocusEngaged)
+  const librarySearchEngaged = useMacroStore((s) => s.librarySearchEngaged)
+  const bottomNavHidden =
+    inputFocusEngaged || (currentTab === 'library' && librarySearchEngaged)
 
   return (
     <div className="app-viewport flex min-h-0 flex-1 flex-col">
       <PwaUpdateManager />
       <InputFocusTracker />
       <BadgeUnlockListener />
-      <main className="app-main">
+      <main className={cn('app-main', bottomNavHidden && 'app-main--nav-hidden')}>
         {currentTab === 'daily' && <DailyTab />}
         {currentTab === 'library' && <LibraryTab />}
         {currentTab === 'stats' && <StatsTab />}

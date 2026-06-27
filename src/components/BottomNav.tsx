@@ -30,10 +30,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav
-      className="bottom-nav z-50 shrink-0 border-t border-border bg-card"
-      style={{ paddingLeft: 'var(--safe-left)', paddingRight: 'var(--safe-right)' }}
-    >
+    <nav className="bottom-nav border-t border-border bg-card">
       <div className="bottom-nav-inner mx-auto flex max-w-lg items-stretch justify-around px-2 pt-2 pb-1">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = currentTab === id

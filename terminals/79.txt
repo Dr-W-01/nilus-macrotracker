@@ -3,7 +3,7 @@ pid: 8248
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npx --yes playwright@1.52.0 install chromium && node scripts\\verify-toast.mjs\""
 started_at: 2026-06-27T12:29:00.310Z
-running_for_ms: 9750011  
+running_for_ms: 13730002 
 ---
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║ WARNING: It looks like you are running 'npx playwright install' without first ║

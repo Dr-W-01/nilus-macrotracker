@@ -659,7 +659,7 @@ export function DailyTab() {
         <Button
           size="lg"
           className="fixed right-4 z-30 h-14 w-14 rounded-full shadow-lg p-0"
-          style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))' }}
+          style={{ bottom: 'calc(var(--bottom-nav-total) + 0.5rem)' }}
           onClick={() => setPickerOpen(true)}
         >
           <Plus className="h-7 w-7" />

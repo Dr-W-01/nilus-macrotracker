@@ -29,7 +29,8 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --bottom-nav-inner: 4.5rem;
+  --bottom-nav-inner: 5.5rem;
+  --bottom-nav-total: calc(var(--bottom-nav-inner) + env(safe-area-inset-bottom, 0px));
   --daily-edit-surface: #12151c;
   --chart-grid: #2a2a2a;
   --chart-axis: #9ca3af;
@@ -115,6 +116,8 @@ html {
   height: 100%;
   height: 100dvh;
   height: -webkit-fill-available;
+  /* Match bottom nav so iOS home-indicator zone is never pure black */
+  background-color: var(--card);
 }
 
 html,
@@ -161,15 +164,25 @@ body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
   padding-top: var(--safe-top);
+  padding-bottom: var(--bottom-nav-total);
+}
+
+.app-main--nav-hidden {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
-  position: relative;
-  flex-shrink: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
   width: 100%;
   background-color: var(--card);
   /* Extend nav background through the home-indicator safe area (iOS). */
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 
@@ -202,23 +215,22 @@ body {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
-/* Scroll padding above in-flow bottom nav + home indicator (iOS) */
+/* Extra scroll room at end of tab content (nav offset handled by .app-main) */
 .pb-below-nav {
-  padding-bottom: max(0.75rem, var(--safe-bottom));
+  padding-bottom: 0.75rem;
 }
 
 .pb-below-nav-search {
-  /* Keyboard open: bottom nav is hidden — only need minimal scroll padding */
-  padding-bottom: max(1rem, var(--safe-bottom));
+  padding-bottom: 0.75rem;
 }
 
 .library-tab:has(.library-search-input:focus) {
-  padding-bottom: max(1rem, var(--safe-bottom));
+  padding-bottom: 0.75rem;
 }
 
 /* Extra scroll room when keyboard is open and bottom nav is hidden */
 .settings-tab:has(input:focus, textarea:focus, select:focus) {
-  padding-bottom: max(1rem, var(--safe-bottom));
+  padding-bottom: 0.75rem;
 }
 
 .accent-text {
