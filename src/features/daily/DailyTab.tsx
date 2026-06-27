@@ -499,6 +499,18 @@ export function DailyTab() {
           )}
         </div>
 
+        <div className="flex justify-start">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs text-muted-foreground"
+            onClick={() => setCopyYesterdayConfirmOpen(true)}
+          >
+            <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Copy yesterday
+          </Button>
+        </div>
+
         <div>
           <div className="flex items-center justify-between gap-2 mb-2">
             <h3 className="font-semibold">Logged foods</h3>
@@ -640,18 +652,6 @@ export function DailyTab() {
             </select>
           </div>
         )}
-
-        <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1 px-2 text-xs text-muted-foreground"
-            onClick={() => setCopyYesterdayConfirmOpen(true)}
-          >
-            <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            Copy yesterday
-          </Button>
-        </div>
       </div>
 
       {!selectFoodsMode && (
