@@ -12,6 +12,7 @@ import {
   Plus,
   Scale,
   NotebookPen,
+  Target,
   UtensilsCrossed,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -33,7 +34,7 @@ import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   ModalViewport,
@@ -127,6 +128,10 @@ export function DailyTab() {
   const goal = settings ? resolveGoalForLog(log, settings) : templates[0]
 
   const activeTemplateId = log.goalTemplateId || settings?.defaultTemplateId || 'default'
+  const activeTemplate = useMemo(
+    () => templates.find((t) => t.id === activeTemplateId) ?? templates[0],
+    [templates, activeTemplateId],
+  )
   const viewHeaderDate = formatDailyViewHeaderDate(currentDate)
 
   const consumed = useMemo(
@@ -206,7 +211,7 @@ export function DailyTab() {
       })
     return { unassignedFoods: unassigned, foodsByMeal: byMeal }
   }, [log.foods, meals, foodLibrary])
-  const [noteExpanded, setNoteExpanded] = useState(!!dailyNote)
+  const [noteExpanded, setNoteExpanded] = useState(false)
   const [noteEditOpen, setNoteEditOpen] = useState(false)
   const [noteInput, setNoteInput] = useState(dailyNote)
   const [burnEditOpen, setBurnEditOpen] = useState(false)
@@ -220,8 +225,18 @@ export function DailyTab() {
   const [weightInput, setWeightInput] = useState(
     log.weightKg != null ? String(weightFromKg(log.weightKg, weightUnit)) : '',
   )
+  const [goalTemplateEditOpen, setGoalTemplateEditOpen] = useState(false)
+  const [goalTemplateInput, setGoalTemplateInput] = useState(activeTemplateId)
   const [copyYesterdayConfirmOpen, setCopyYesterdayConfirmOpen] = useState(false)
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
+
+  useEffect(() => {
+    setNoteExpanded(false)
+  }, [currentDate])
+
+  useEffect(() => {
+    setGoalTemplateInput(activeTemplateId)
+  }, [activeTemplateId])
 
   const handleSelectFood = (food: FoodItem) => {
     setPickerOpen(false)
@@ -305,6 +320,25 @@ export function DailyTab() {
   const openNoteEdit = () => {
     setNoteInput(dailyNote)
     setNoteEditOpen(true)
+  }
+
+  const openBurnEdit = () => {
+    setBurnInput(String(log.burnedCalories))
+    setBurnEditOpen(true)
+  }
+
+  const openWeightEdit = () => {
+    setWeightInput(
+      log.weightKg != null
+        ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+        : '',
+    )
+    setWeightEditOpen(true)
+  }
+
+  const openGoalTemplateEdit = () => {
+    setGoalTemplateInput(activeTemplateId)
+    setGoalTemplateEditOpen(true)
   }
 
   const applyDuplicateYesterday = () => {
@@ -547,7 +581,7 @@ export function DailyTab() {
           )}
         </div>
 
-        <div className="flex justify-start">
+        <div className="flex justify-center">
           <Button
             variant="ghost"
             size="sm"
@@ -561,47 +595,26 @@ export function DailyTab() {
 
         {trackBurnedCalories && (
         <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
-          <button
-            type="button"
-            className="flex min-w-0 flex-1 items-center justify-between"
-            onClick={() => {
-              setBurnInput(String(log.burnedCalories))
-              setBurnEditOpen(true)
-            }}
-          >
+          <div className="flex min-w-0 flex-1 items-center justify-between">
             <span className="flex items-center gap-2">
               <Flame className="h-5 w-5 text-primary" />
               Burned calories
             </span>
             <span className="font-semibold">{log.burnedCalories} cal</span>
-          </button>
+          </div>
           <EditIconButton
             size="icon"
             variant="ghost"
             className="h-8 w-8"
             label="Edit burned calories"
-            onClick={() => {
-              setBurnInput(String(log.burnedCalories))
-              setBurnEditOpen(true)
-            }}
+            onClick={openBurnEdit}
           />
         </div>
         )}
 
         {trackCurrentWeight && (
         <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
-          <button
-            type="button"
-            className="flex min-w-0 flex-1 items-center justify-between"
-            onClick={() => {
-              setWeightInput(
-                log.weightKg != null
-                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
-                  : '',
-              )
-              setWeightEditOpen(true)
-            }}
-          >
+          <div className="flex min-w-0 flex-1 items-center justify-between">
             <span className="flex items-center gap-2">
               <Scale className="h-5 w-5 text-primary" />
               Weight
@@ -611,20 +624,13 @@ export function DailyTab() {
                 <span className="text-muted-foreground font-normal">Not logged</span>
               )}
             </span>
-          </button>
+          </div>
           <EditIconButton
             size="icon"
             variant="ghost"
             className="h-8 w-8"
             label="Edit weight"
-            onClick={() => {
-              setWeightInput(
-                log.weightKg != null
-                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
-                  : '',
-              )
-              setWeightEditOpen(true)
-            }}
+            onClick={openWeightEdit}
           />
         </div>
         )}
@@ -655,40 +661,34 @@ export function DailyTab() {
             />
           </div>
           {noteExpanded && (
-            <button
-              type="button"
-              className="w-full border-t border-border/60 px-4 pb-4 pt-3 text-left"
-              onClick={openNoteEdit}
-            >
+            <div className="w-full border-t border-border/60 px-4 pb-4 pt-3 text-left">
               {dailyNote ? (
                 <p className="text-sm whitespace-pre-wrap text-foreground">{dailyNote}</p>
               ) : (
-                <p className="text-sm text-muted-foreground">No note for this day. Tap to add one.</p>
+                <p className="text-sm text-muted-foreground">No note for this day.</p>
               )}
-            </button>
+            </div>
           )}
         </div>
 
         {templates.length > 0 && (
-          <div className="space-y-1">
-            <Label htmlFor="daily-goal-template" className="text-xs text-muted-foreground">
-              Goal template for this day
-            </Label>
-            <select
-              id="daily-goal-template"
-              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              autoComplete="off"
-              value={activeTemplateId}
-              onChange={(e) =>
-                updateDailyLog(currentDate, { goalTemplateId: e.target.value })
-              }
-            >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} — {t.calories} cal
-                </option>
-              ))}
-            </select>
+          <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <Target className="h-5 w-5 shrink-0 text-primary" />
+                Goal template
+              </span>
+              <span className="truncate text-right font-semibold">
+                {activeTemplate?.name ?? '—'}
+              </span>
+            </div>
+            <EditIconButton
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              label="Edit goal template"
+              onClick={openGoalTemplateEdit}
+            />
           </div>
         )}
       </div>
@@ -962,6 +962,55 @@ export function DailyTab() {
           </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
+
+      {templates.length > 0 && (
+      <Sheet open={goalTemplateEditOpen} onOpenChange={setGoalTemplateEditOpen}>
+        <ModalViewport
+          active={goalTemplateEditOpen}
+          onRequestClose={() => setGoalTemplateEditOpen(false)}
+        />
+        <SheetContent side="bottom" className={scrollSheetContentClass}>
+          <ScrollSheetHeader>
+            <SheetTitle>Goal template</SheetTitle>
+          </ScrollSheetHeader>
+          <ScrollSheetBody>
+            <select
+              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              autoComplete="off"
+              value={goalTemplateInput}
+              onChange={(e) => setGoalTemplateInput(e.target.value)}
+            >
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} — {t.calories} cal
+                </option>
+              ))}
+            </select>
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                updateDailyLog(currentDate, { goalTemplateId: goalTemplateInput })
+                setGoalTemplateEditOpen(false)
+                toast.success('Goal template updated')
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setGoalTemplateEditOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ScrollSheetFooter>
+        </SheetContent>
+      </Sheet>
+      )}
 
       {trackCurrentWeight && (
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>
