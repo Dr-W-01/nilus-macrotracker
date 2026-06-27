@@ -581,18 +581,6 @@ export function DailyTab() {
           )}
         </div>
 
-        <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1 px-2 text-xs text-muted-foreground"
-            onClick={() => setCopyYesterdayConfirmOpen(true)}
-          >
-            <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            Copy yesterday
-          </Button>
-        </div>
-
         {trackBurnedCalories && (
         <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
           <div className="flex min-w-0 flex-1 items-center justify-between">
@@ -691,6 +679,18 @@ export function DailyTab() {
             />
           </div>
         )}
+
+        <div className="flex justify-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs text-muted-foreground"
+            onClick={() => setCopyYesterdayConfirmOpen(true)}
+          >
+            <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Copy yesterday
+          </Button>
+        </div>
       </div>
 
       {!selectFoodsMode && (
