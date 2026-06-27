@@ -45,11 +45,16 @@ export function BadgeCard({
         highlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
-      {isUnviewed && (
-        <span className="absolute left-2 top-2 h-2 w-2 rounded-full bg-destructive" aria-hidden />
+      {isUnviewed && earned && !featureLocked && (
+        <span
+          className="badge-new-pill absolute left-1 top-1 z-10 rounded px-1 py-0.5 text-[8px] font-bold uppercase leading-none tracking-wide shadow-sm"
+          aria-label="Newly earned"
+        >
+          NEW
+        </span>
       )}
       {count > 1 && (
-        <span className="absolute right-2 top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+        <span className="absolute right-1 top-1 z-10 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm">
           ×{count}
         </span>
       )}

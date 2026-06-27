@@ -436,12 +436,17 @@ export const useMacroStore = create<MacroStore>()(
           badgeState: { ...badgeState, unviewedBadgeIds: [] },
         })
       },
-      setCurrentTab: (tab) =>
+      setCurrentTab: (tab) => {
+        const prev = get().currentTab
         set({
           currentTab: tab,
           librarySearchEngaged:
             tab === 'library' ? get().librarySearchEngaged : false,
-        }),
+        })
+        if (prev === 'badges' && tab !== 'badges') {
+          get().markBadgesViewed()
+        }
+      },
       setLibrarySearchEngaged: (v) => set({ librarySearchEngaged: v }),
       setInputFocusEngaged: (v) => set({ inputFocusEngaged: v }),
       setPendingLibraryFoodId: (id) => set({ pendingLibraryFoodId: id }),
