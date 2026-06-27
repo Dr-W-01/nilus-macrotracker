@@ -238,7 +238,7 @@ export function TrendsWeightSection({
             />
           </div>
 
-          {trendText && (
+          {trendInfo && trendText && (
             <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2.5">
               <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                 Trend rate
