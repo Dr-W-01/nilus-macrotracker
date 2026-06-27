@@ -29,7 +29,8 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --bottom-nav-inner: 5.5rem;
+  /* Nav inner row (icons + labels + padding); safe area is added separately on .bottom-nav */
+  --bottom-nav-inner: 5.75rem;
   --bottom-nav-total: calc(var(--bottom-nav-inner) + env(safe-area-inset-bottom, 0px));
   --daily-edit-surface: #12151c;
   --chart-grid: #2a2a2a;
@@ -164,11 +165,7 @@ body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
   padding-top: var(--safe-top);
-  padding-bottom: var(--bottom-nav-total);
-}
-
-.app-main--nav-hidden {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: var(--bottom-nav-total);
 }
 
 .bottom-nav {
@@ -191,8 +188,10 @@ body {
 .daily-tab,
 .library-tab,
 .stats-tab,
+.badges-tab,
 .settings-tab {
   display: block;
+  min-height: 100%;
 }
 
 .tab-sticky-header {
@@ -215,22 +214,26 @@ body {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
-/* Extra scroll room at end of tab content (nav offset handled by .app-main) */
+/* Clear fixed bottom nav + home-indicator safe area on every tab */
 .pb-below-nav {
-  padding-bottom: 0.75rem;
+  padding-bottom: calc(0.75rem + var(--bottom-nav-total));
+}
+
+.app-main--nav-hidden .pb-below-nav {
+  padding-bottom: max(1rem, var(--safe-bottom));
 }
 
 .pb-below-nav-search {
-  padding-bottom: 0.75rem;
+  padding-bottom: max(1rem, var(--safe-bottom));
 }
 
 .library-tab:has(.library-search-input:focus) {
-  padding-bottom: 0.75rem;
+  padding-bottom: max(1rem, var(--safe-bottom));
 }
 
 /* Extra scroll room when keyboard is open and bottom nav is hidden */
 .settings-tab:has(input:focus, textarea:focus, select:focus) {
-  padding-bottom: 0.75rem;
+  padding-bottom: max(1rem, var(--safe-bottom));
 }
 
 .accent-text {
