@@ -19,8 +19,8 @@ export const BADGE_CATEGORY_META: BadgeCategoryMeta[] = [
   },
   {
     id: 'burned',
-    title: 'Burned Calories',
-    description: 'Track and stay consistent with calories burned.',
+    title: 'Net Energy & Burn Logging',
+    description: 'Log burned calories consistently and hit net calorie deficit milestones.',
   },
   {
     id: 'streak',

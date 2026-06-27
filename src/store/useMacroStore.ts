@@ -81,6 +81,7 @@ function runBadgeEvaluation(
     settings: state.settings,
     badgeState: state.badgeState,
     favoriteFoodIds: state.favoriteFoodIds,
+    customCategories: state.customCategories,
   })
 
   const { nextState, newBadgeIds } = applyBadgeAwards(state.badgeState, awards)
@@ -416,6 +417,7 @@ export const useMacroStore = create<MacroStore>()(
           settings: state.settings,
           badgeState: state.badgeState,
           favoriteFoodIds: state.favoriteFoodIds,
+          customCategories: state.customCategories,
         })
         const { nextState, newBadgeIds } = applyBadgeAwards(state.badgeState, awards)
         const withUnviewed = appendUnviewedBadges(
