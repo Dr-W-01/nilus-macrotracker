@@ -83,7 +83,7 @@ export function CreateRecipeSheet({ open, onOpenChange }: CreateRecipeSheetProps
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <SheetContent
         side="bottom"
         className={scrollSheetContentClass}

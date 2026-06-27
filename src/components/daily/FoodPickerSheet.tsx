@@ -111,7 +111,7 @@ export function FoodPickerSheet({ open, onOpenChange, onSelectFood }: FoodPicker
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <DialogContent
         className={scrollDialogContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}

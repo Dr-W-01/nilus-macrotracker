@@ -54,7 +54,7 @@ export function NewFoodSheet({ open, onOpenChange }: NewFoodSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <SheetContent
         side="bottom"
         className={scrollSheetContentClass}

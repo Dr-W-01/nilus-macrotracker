@@ -29,7 +29,7 @@ export function DeleteCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <DialogContent className={scrollDialogContentClass}>
         <ScrollDialogHeader>
           <DialogTitle>Delete &quot;{category}&quot;?</DialogTitle>

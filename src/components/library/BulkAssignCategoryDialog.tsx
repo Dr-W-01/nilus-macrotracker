@@ -78,7 +78,7 @@ export function BulkAssignCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <DialogContent className={scrollDialogContentClass}>
         <ScrollDialogHeader>
           <DialogTitle>Assign category</DialogTitle>

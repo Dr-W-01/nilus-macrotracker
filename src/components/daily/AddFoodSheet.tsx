@@ -100,7 +100,7 @@ export function AddFoodSheet({
         onOpenChange(v)
       }}
     >
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <SheetContent
         side="bottom"
         className={scrollSheetContentClass}

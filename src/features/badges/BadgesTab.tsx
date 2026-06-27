@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Award } from 'lucide-react'
 import { BadgeCategorySection } from '@/components/badges/BadgeCategorySection'
+import { NewBadgesSection } from '@/components/badges/NewBadgesSection'
 import { BadgeDetailDialog } from '@/components/badges/BadgeDetailDialog'
 import { BADGE_CATEGORY_META, badgesByCategory } from '@/lib/badges/categories'
 import { BADGE_DEFINITIONS } from '@/lib/badges/definitions'
@@ -78,6 +79,14 @@ export function BadgesTab() {
       </header>
 
       <div className="space-y-8 p-4">
+        <NewBadgesSection
+          unviewedIds={unviewedIds}
+          progress={badgeState.progress}
+          weightTrackingEnabled={weightTrackingEnabled}
+          burnTrackingEnabled={burnTrackingEnabled}
+          onBadgeClick={openBadgeDetail}
+        />
+
         {BADGE_CATEGORY_META.map((meta) => (
           <BadgeCategorySection
             key={meta.id}

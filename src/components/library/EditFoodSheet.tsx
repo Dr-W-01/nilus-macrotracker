@@ -75,7 +75,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
   return (
     <>
       <Sheet open onOpenChange={(open) => !open && onClose()}>
-        <ModalViewport active />
+        <ModalViewport active onRequestClose={onClose} />
         <SheetContent
           side="bottom"
           className={scrollSheetContentClass}
@@ -127,7 +127,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
       </Sheet>
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <ModalViewport active={deleteConfirmOpen} />
+        <ModalViewport active={deleteConfirmOpen} onRequestClose={() => setDeleteConfirmOpen(false)} />
         <DialogContent className={scrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>Delete {food.name}?</DialogTitle>

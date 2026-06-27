@@ -535,7 +535,13 @@ export function SettingsTab() {
       </div>
 
       <Dialog open={backupConfirmOpen} onOpenChange={setBackupConfirmOpen}>
-        <ModalViewport active={backupConfirmOpen} />
+        <ModalViewport
+          active={backupConfirmOpen}
+          onRequestClose={() => {
+            setBackupConfirmOpen(false)
+            setPendingBackup(null)
+          }}
+        />
         <DialogContent className={scrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>Restore full backup?</DialogTitle>
@@ -621,7 +627,7 @@ function GoalEditDialog({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <ModalViewport active />
+      <ModalViewport active onRequestClose={onClose} />
       <DialogContent
         className={scrollDialogContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}

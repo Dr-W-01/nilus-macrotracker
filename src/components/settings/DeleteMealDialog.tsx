@@ -30,7 +30,7 @@ export function DeleteMealDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <DialogContent className={scrollDialogContentClass}>
         <ScrollDialogHeader>
           <DialogTitle>Remove &quot;{meal}&quot; meal?</DialogTitle>

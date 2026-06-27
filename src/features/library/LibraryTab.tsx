@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAppBackHandler } from '@/hooks/useAppBackHandler'
 import {
   BookOpen,
   CalendarPlus,
@@ -87,6 +88,14 @@ export function LibraryTab() {
     setEditMode(false)
     setSelected(new Set())
   }
+
+  const leaveCategory = useCallback(() => {
+    setActiveCategory(null)
+    setQuery('')
+  }, [])
+
+  useAppBackHandler(leaveCategory, librarySegment === 'categories' && activeCategory !== null)
+  useAppBackHandler(exitEditMode, editMode)
 
   const enterEditMode = () => {
     setEditMode(true)
@@ -497,7 +506,7 @@ export function LibraryTab() {
       />
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <ModalViewport active={deleteConfirmOpen} />
+        <ModalViewport active={deleteConfirmOpen} onRequestClose={() => setDeleteConfirmOpen(false)} />
         <DialogContent className={scrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>{bulkDeleteTitle}</DialogTitle>

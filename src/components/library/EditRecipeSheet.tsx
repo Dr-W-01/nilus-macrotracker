@@ -94,7 +94,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
   return (
     <>
       <Sheet open onOpenChange={(v) => !v && onClose()}>
-        <ModalViewport active />
+        <ModalViewport active onRequestClose={onClose} />
         <SheetContent
           side="bottom"
           className={scrollSheetContentClass}
@@ -178,7 +178,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
       </Sheet>
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <ModalViewport active={deleteConfirmOpen} />
+        <ModalViewport active={deleteConfirmOpen} onRequestClose={() => setDeleteConfirmOpen(false)} />
         <DialogContent className={scrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>Delete {recipe.name}?</DialogTitle>

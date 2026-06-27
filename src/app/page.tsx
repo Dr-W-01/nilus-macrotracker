@@ -1,3 +1,4 @@
+import { AppBackNavigation } from '@/components/AppBackNavigation'
 import { BottomNav } from '@/components/BottomNav'
 import { InputFocusTracker } from '@/components/InputFocusTracker'
 import { PwaUpdateManager } from '@/components/PwaUpdateManager'
@@ -19,6 +20,7 @@ export default function AppPage() {
 
   return (
     <div className="app-viewport flex min-h-0 flex-1 flex-col">
+      <AppBackNavigation />
       <PwaUpdateManager />
       <InputFocusTracker />
       <BadgeUnlockListener />

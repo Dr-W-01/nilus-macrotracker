@@ -1,4 +1,5 @@
 import { useEffect, type HTMLAttributes, type ReactNode } from 'react'
+import { useAppBackHandler } from '@/hooks/useAppBackHandler'
 import { MODAL_HEADER_SURFACE, MODAL_SURFACE } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
@@ -24,8 +25,15 @@ export function useModalViewportHeight(active: boolean) {
   }, [active])
 }
 
-export function ModalViewport({ active }: { active: boolean }) {
+export function ModalViewport({
+  active,
+  onRequestClose,
+}: {
+  active: boolean
+  onRequestClose?: () => void
+}) {
   useModalViewportHeight(active)
+  useAppBackHandler(() => onRequestClose?.(), active && !!onRequestClose)
   return null
 }
 

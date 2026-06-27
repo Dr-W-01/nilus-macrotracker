@@ -22,7 +22,7 @@ export function FactoryResetDialog({
 }: FactoryResetDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <DialogContent className={scrollDialogContentClass}>
         <ScrollDialogHeader>
           <DialogTitle>Factory reset?</DialogTitle>

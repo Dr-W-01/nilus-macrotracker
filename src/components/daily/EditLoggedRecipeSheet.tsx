@@ -73,7 +73,7 @@ export function EditLoggedRecipeSheet({
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={onClose} />
       <SheetContent
         side="bottom"
         className={scrollSheetContentClass}

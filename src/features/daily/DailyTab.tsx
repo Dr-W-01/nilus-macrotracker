@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAppBackHandler } from '@/hooks/useAppBackHandler'
 import { format, parseISO } from 'date-fns'
 import {
   Calendar as CalendarIcon,
@@ -160,6 +161,13 @@ export function DailyTab() {
     setSelectFoodsMode(false)
     setSelectedLogIds(new Set())
   }, [currentDate])
+
+  const exitSelectFoodsMode = useCallback(() => {
+    setSelectFoodsMode(false)
+    setSelectedLogIds(new Set())
+  }, [])
+
+  useAppBackHandler(exitSelectFoodsMode, selectFoodsMode)
 
   const { unassignedFoods, foodsByMeal } = useMemo(() => {
     const unassigned: LoggedFood[] = []
@@ -775,7 +783,7 @@ export function DailyTab() {
 
       {trackBurnedCalories && (
       <Sheet open={burnEditOpen} onOpenChange={setBurnEditOpen}>
-        <ModalViewport active={burnEditOpen} />
+        <ModalViewport active={burnEditOpen} onRequestClose={() => setBurnEditOpen(false)} />
         <SheetContent side="bottom" className={scrollSheetContentClass}>
           <ScrollSheetHeader>
             <SheetTitle>Burned calories</SheetTitle>
@@ -810,7 +818,10 @@ export function DailyTab() {
       )}
 
       <Dialog open={copyYesterdayConfirmOpen} onOpenChange={setCopyYesterdayConfirmOpen}>
-        <ModalViewport active={copyYesterdayConfirmOpen} />
+        <ModalViewport
+          active={copyYesterdayConfirmOpen}
+          onRequestClose={() => setCopyYesterdayConfirmOpen(false)}
+        />
         <DialogContent className={scrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>Copy yesterday&apos;s log?</DialogTitle>
@@ -838,7 +849,10 @@ export function DailyTab() {
       </Dialog>
 
       <Dialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
-        <ModalViewport active={bulkDeleteConfirmOpen} />
+        <ModalViewport
+          active={bulkDeleteConfirmOpen}
+          onRequestClose={() => setBulkDeleteConfirmOpen(false)}
+        />
         <DialogContent className={scrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>
@@ -870,7 +884,7 @@ export function DailyTab() {
 
       {trackCurrentWeight && (
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>
-        <ModalViewport active={weightEditOpen} />
+        <ModalViewport active={weightEditOpen} onRequestClose={() => setWeightEditOpen(false)} />
         <SheetContent side="bottom" className={scrollSheetContentClass}>
           <ScrollSheetHeader>
             <SheetTitle>Weight ({weightUnitLabel(weightUnit)})</SheetTitle>
@@ -979,7 +993,7 @@ function EditLoggedSheet({
   if (!entry || !food || food.isRecipe) {
     return (
       <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-        <ModalViewport active={open} />
+        <ModalViewport active={open} onRequestClose={onClose} />
         <SheetContent side="bottom" className={scrollSheetContentClass}>
           <ScrollSheetHeader>
             <SheetTitle>Edit entry</SheetTitle>
@@ -1025,7 +1039,7 @@ function EditLoggedSheet({
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={onClose} />
       <SheetContent
         side="bottom"
         className={scrollSheetContentClass}

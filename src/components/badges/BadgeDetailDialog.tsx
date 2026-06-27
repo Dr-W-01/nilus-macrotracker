@@ -41,7 +41,7 @@ export function BadgeDetailDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <ModalViewport active />
+      <ModalViewport active onRequestClose={onClose} />
       <DialogContent className={scrollDialogContentClass}>
         <ScrollDialogHeader>
           <DialogTitle className="flex items-center gap-3">

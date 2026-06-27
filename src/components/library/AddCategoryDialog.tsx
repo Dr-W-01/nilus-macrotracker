@@ -48,7 +48,7 @@ export function AddCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ModalViewport active={open} />
+      <ModalViewport active={open} onRequestClose={() => onOpenChange(false)} />
       <DialogContent
         className={scrollDialogContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
