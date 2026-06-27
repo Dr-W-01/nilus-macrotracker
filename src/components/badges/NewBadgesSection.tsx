@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { BadgeCard } from '@/components/badges/BadgeCard'
+import { Button } from '@/components/ui/button'
 import { getBadgeCount } from '@/lib/badges/evaluate'
 import type { BadgeId, BadgeProgress } from '@/lib/badges/types'
 import { cn } from '@/lib/utils'
@@ -10,6 +11,7 @@ interface NewBadgesSectionProps {
   weightTrackingEnabled: boolean
   burnTrackingEnabled: boolean
   onBadgeClick: (id: BadgeId) => void
+  onClearAll: () => void
 }
 
 export function NewBadgesSection({
@@ -18,6 +20,7 @@ export function NewBadgesSection({
   weightTrackingEnabled,
   burnTrackingEnabled,
   onBadgeClick,
+  onClearAll,
 }: NewBadgesSectionProps) {
   const newBadges = useMemo(() => {
     return unviewedIds
@@ -36,11 +39,22 @@ export function NewBadgesSection({
 
   return (
     <section className="space-y-3">
-      <div className="border-b border-border/60 pb-2">
-        <h2 className="text-sm font-semibold text-foreground">New Badges</h2>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-          Recently earned — tap to view details
-        </p>
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 pb-2">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-foreground">New Badges</h2>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            Recently earned — tap to view details
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 shrink-0 px-3 text-xs"
+          onClick={onClearAll}
+        >
+          Clear All
+        </Button>
       </div>
 
       {useHorizontalScroll ? (

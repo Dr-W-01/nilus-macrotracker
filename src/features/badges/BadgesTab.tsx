@@ -21,6 +21,7 @@ export function BadgesTab() {
   const setHighlightedBadgeId = useMacroStore((s) => s.setHighlightedBadgeId)
   const setOpenBadgeDetailId = useMacroStore((s) => s.setOpenBadgeDetailId)
   const markBadgeViewed = useMacroStore((s) => s.markBadgeViewed)
+  const markAllNewBadgesViewed = useMacroStore((s) => s.markAllNewBadgesViewed)
   const unviewedIds = useMacroStore((s) => s.badgeState.unviewedBadgeIds)
 
   const [detailId, setDetailId] = useState<BadgeId | null>(null)
@@ -85,6 +86,7 @@ export function BadgesTab() {
           weightTrackingEnabled={weightTrackingEnabled}
           burnTrackingEnabled={burnTrackingEnabled}
           onBadgeClick={openBadgeDetail}
+          onClearAll={markAllNewBadgesViewed}
         />
 
         {BADGE_CATEGORY_META.map((meta) => (

@@ -315,6 +315,7 @@ interface MacroStore {
   initializeBadges: () => void
   evaluateBadges: (silent?: boolean) => void
   markBadgeViewed: (badgeId: BadgeId) => void
+  markAllNewBadgesViewed: () => void
   setCurrentTab: (tab: AppTab) => void
   setLibrarySearchEngaged: (v: boolean) => void
   setInputFocusEngaged: (v: boolean) => void
@@ -438,6 +439,22 @@ export const useMacroStore = create<MacroStore>()(
           badgeState: {
             ...badgeState,
             unviewedBadgeIds: badgeState.unviewedBadgeIds.filter((id) => id !== badgeId),
+          },
+        })
+      },
+
+      markAllNewBadgesViewed: () => {
+        const { badgeState } = get()
+        if (badgeState.unviewedBadgeIds.length === 0) return
+        const earnedUnviewed = badgeState.unviewedBadgeIds.filter(
+          (id) => (badgeState.progress[id]?.instances.length ?? 0) > 0,
+        )
+        if (earnedUnviewed.length === 0) return
+        const earnedSet = new Set(earnedUnviewed)
+        set({
+          badgeState: {
+            ...badgeState,
+            unviewedBadgeIds: badgeState.unviewedBadgeIds.filter((id) => !earnedSet.has(id)),
           },
         })
       },
