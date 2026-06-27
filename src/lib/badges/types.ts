@@ -101,7 +101,7 @@ export type BadgeId =
   | 'meal_complete_week'
   | 'big_day_10'
   | 'big_day_15'
-  | 'big_day_20'
+
   | 'note_streak_3'
   | 'note_streak_7'
   | 'note_streak_14'
@@ -109,7 +109,7 @@ export type BadgeId =
   | 'logs_100'
   | 'recipe_logs_10'
   | 'recipe_logs_50'
-  | 'favorite_logger'
+
   // Special & fun
   | 'first_favorite'
   | 'five_favorites'
@@ -117,7 +117,7 @@ export type BadgeId =
   | 'custom_recipe'
   | 'categories_five'
   | 'category_tagger'
-  | 'library_diverse'
+
 
 export interface BadgeEarnedInstance {
   earnedAt: string

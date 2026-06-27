@@ -314,7 +314,7 @@ interface MacroStore {
   setOpenBadgeDetailId: (id: BadgeId | null) => void
   initializeBadges: () => void
   evaluateBadges: (silent?: boolean) => void
-  markBadgesViewed: () => void
+  markBadgeViewed: (badgeId: BadgeId) => void
   setCurrentTab: (tab: AppTab) => void
   setLibrarySearchEngaged: (v: boolean) => void
   setInputFocusEngaged: (v: boolean) => void
@@ -431,24 +431,22 @@ export const useMacroStore = create<MacroStore>()(
         runBadgeEvaluation(get, set, { silent })
       },
 
-      markBadgesViewed: () => {
+      markBadgeViewed: (badgeId) => {
         const { badgeState } = get()
-        if (badgeState.unviewedBadgeIds.length === 0) return
+        if (!badgeState.unviewedBadgeIds.includes(badgeId)) return
         set({
-          badgeState: { ...badgeState, unviewedBadgeIds: [] },
+          badgeState: {
+            ...badgeState,
+            unviewedBadgeIds: badgeState.unviewedBadgeIds.filter((id) => id !== badgeId),
+          },
         })
       },
-      setCurrentTab: (tab) => {
-        const prev = get().currentTab
+      setCurrentTab: (tab) =>
         set({
           currentTab: tab,
           librarySearchEngaged:
             tab === 'library' ? get().librarySearchEngaged : false,
-        })
-        if (prev === 'badges' && tab !== 'badges') {
-          get().markBadgesViewed()
-        }
-      },
+        }),
       setLibrarySearchEngaged: (v) => set({ librarySearchEngaged: v }),
       setInputFocusEngaged: (v) => set({ inputFocusEngaged: v }),
       setPendingLibraryFoodId: (id) => set({ pendingLibraryFoodId: id }),

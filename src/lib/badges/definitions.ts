@@ -102,7 +102,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   b({ id: 'meal_complete_week', category: 'streak', name: 'Full Week Plates', description: 'Full plate days all week.', howToEarn: 'Log food in every meal on 5+ days in the same week.', icon: '🍽️', recurring: true }),
   b({ id: 'big_day_10', category: 'streak', name: 'Big Day', description: 'Ten or more entries in one day.', howToEarn: 'Log 10 or more food entries on a single day.', icon: '🍔', recurring: true }),
   b({ id: 'big_day_15', category: 'streak', name: 'Bigger Day', description: 'Fifteen entries in one day.', howToEarn: 'Log 15 or more food entries on a single day.', icon: '🍕', recurring: true }),
-  b({ id: 'big_day_20', category: 'streak', name: 'Mega Day', description: 'Twenty entries in one day.', howToEarn: 'Log 20 or more food entries on a single day.', icon: '🎉', recurring: true }),
+
   b({ id: 'note_streak_3', category: 'streak', name: 'Note Streak', description: 'Three days of journaling in a row.', howToEarn: 'Write a daily note on 3 consecutive days.', icon: '📓', recurring: true }),
   b({ id: 'note_streak_7', category: 'streak', name: 'Journal Week', description: 'A week of daily notes.', howToEarn: 'Write a daily note on 7 consecutive days.', icon: '📔', recurring: true }),
   b({ id: 'note_streak_14', category: 'streak', name: 'Journal Fortnight', description: 'Two weeks of daily notes.', howToEarn: 'Write a daily note on 14 consecutive days.', icon: '📖', recurring: true }),
@@ -111,8 +111,6 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   b({ id: 'logs_100', category: 'volume', name: 'Century Logger', description: 'One hundred foods logged — keep going!', howToEarn: 'Log 100 total food entries (repeats every 100).', icon: '💯', recurring: true }),
   b({ id: 'recipe_logs_10', category: 'volume', name: 'Recipe Regular', description: 'Recipes are part of your routine.', howToEarn: 'Log recipes 10 times total (repeats every 10).', icon: '🍲', recurring: true }),
   b({ id: 'recipe_logs_50', category: 'volume', name: 'Recipe Enthusiast', description: 'Fifty recipe logs and counting.', howToEarn: 'Log recipes 50 times total (repeats every 50).', icon: '🥘', recurring: true }),
-  b({ id: 'favorite_logger', category: 'volume', name: 'Favorite Regular', description: 'Your go-to foods keep showing up.', howToEarn: 'Log a favorite food 10 times total (repeats every 10).', icon: '💫', recurring: true }),
-
   // —— Special & Fun ——
   b({ id: 'first_favorite', category: 'special', name: 'Favorite Finder', description: 'You marked a go-to food for quick logging.', howToEarn: 'Add your first favorite food.', icon: '⭐', recurring: false }),
   b({ id: 'five_favorites', category: 'special', name: 'Favorite Five', description: 'Five favorite foods saved.', howToEarn: 'Mark 5 foods as favorites.', icon: '🌟', recurring: false }),
@@ -120,7 +118,6 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   b({ id: 'custom_recipe', category: 'special', name: 'Recipe Tweaker', description: 'You customized a recipe for one day.', howToEarn: 'Log a recipe with customized ingredient portions.', icon: '🛠️', recurring: false }),
   b({ id: 'categories_five', category: 'special', name: 'Category Curator', description: 'Five categories organizing your library.', howToEarn: 'Create or use 5 distinct food categories.', icon: '🏷️', recurring: false }),
   b({ id: 'category_tagger', category: 'special', name: 'Tag Master', description: 'Ten foods neatly categorized.', howToEarn: 'Assign a category to 10 different library foods.', icon: '🔖', recurring: false }),
-  b({ id: 'library_diverse', category: 'special', name: 'Diverse Pantry', description: 'Your library spans multiple categories.', howToEarn: 'Have library foods in at least 3 different categories.', icon: '🌈', recurring: false }),
 ]
 
 export const BADGE_BY_ID: Record<BadgeId, BadgeDefinition> = Object.fromEntries(

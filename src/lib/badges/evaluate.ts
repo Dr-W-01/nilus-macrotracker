@@ -708,33 +708,6 @@ function evaluateFullWeekLogger(dailyLogs: Record<string, DailyLog>): BadgeEarne
   return instances
 }
 
-function evaluateFavoriteLogThresholds(
-  dailyLogs: Record<string, DailyLog>,
-  favoriteFoodIds: string[],
-  every: number,
-): BadgeEarnedInstance[] {
-  if (favoriteFoodIds.length === 0) return []
-
-  const favoriteSet = new Set(favoriteFoodIds)
-  const instances: BadgeEarnedInstance[] = []
-  const awarded = new Set<number>()
-  let cumulative = 0
-
-  for (const date of Object.keys(dailyLogs).sort()) {
-    for (const entry of dailyLogs[date].foods) {
-      if (!favoriteSet.has(entry.foodId)) continue
-      cumulative += 1
-      for (let t = every; t <= cumulative; t += every) {
-        if (awarded.has(t)) continue
-        awarded.add(t)
-        instances.push({ earnedAt: date, periodKey: `favorite-logs-${t}` })
-      }
-    }
-  }
-
-  return instances
-}
-
 function evaluateCategoryThresholds(
   foodLibrary: FoodItem[],
   customCategories: string[],
@@ -752,16 +725,6 @@ function evaluateCategoryThresholds(
   )
   if (taggedFoods.length >= 10) {
     awards.category_tagger = [{ earnedAt: fallbackDate, periodKey: 'once' }]
-  }
-
-  const categorySet = new Set<string>()
-  for (const food of foodLibrary.filter((f) => !f.isRecipe)) {
-    for (const category of foodCategories(food)) {
-      categorySet.add(category.toLowerCase())
-    }
-  }
-  if (categorySet.size >= 3) {
-    awards.library_diverse = [{ earnedAt: fallbackDate, periodKey: 'once' }]
   }
 
   return awards
@@ -971,8 +934,6 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
 
   awards.recipe_logs_10 = evaluateRecipeLogThresholds(dailyLogs, foodLibrary, 10)
   awards.recipe_logs_50 = evaluateRecipeLogThresholds(dailyLogs, foodLibrary, 50)
-  awards.favorite_logger = evaluateFavoriteLogThresholds(dailyLogs, favoriteFoodIds, 10)
-
   awards.streak_3 = evaluateStreakMilestones(dailyLogs, 3, 'streak-3')
   awards.streak_7 = evaluateStreakMilestones(dailyLogs, 7, 'streak-7')
   awards.streak_14 = evaluateStreakMilestones(dailyLogs, 14, 'streak-14')
@@ -1015,7 +976,6 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
   awards.meal_complete_week = evaluateMealCompleteWeeks(input)
   awards.big_day_10 = evaluateBigDays(dailyLogs, 10)
   awards.big_day_15 = evaluateBigDays(dailyLogs, 15)
-  awards.big_day_20 = evaluateBigDays(dailyLogs, 20)
   awards.weekend_logger = evaluateWeekendLogger(dailyLogs)
   awards.weekday_warrior = evaluateWeekdayWarrior(dailyLogs)
   awards.full_week_logger = evaluateFullWeekLogger(dailyLogs)
