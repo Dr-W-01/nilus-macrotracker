@@ -6,7 +6,7 @@ import type { BadgeId, BadgeProgress } from '@/lib/badges/types'
 import { cn } from '@/lib/utils'
 
 interface NewBadgesSectionProps {
-  unviewedIds: BadgeId[]
+  newSectionIds: BadgeId[]
   progress: Partial<Record<BadgeId, BadgeProgress>>
   weightTrackingEnabled: boolean
   burnTrackingEnabled: boolean
@@ -15,7 +15,7 @@ interface NewBadgesSectionProps {
 }
 
 export function NewBadgesSection({
-  unviewedIds,
+  newSectionIds,
   progress,
   weightTrackingEnabled,
   burnTrackingEnabled,
@@ -23,7 +23,7 @@ export function NewBadgesSection({
   onClearAll,
 }: NewBadgesSectionProps) {
   const newBadges = useMemo(() => {
-    return unviewedIds
+    return newSectionIds
       .filter((id) => getBadgeCount(progress[id]) > 0)
       .map((id) => ({
         id,
@@ -31,7 +31,7 @@ export function NewBadgesSection({
           progress[id]?.instances[progress[id]!.instances.length - 1]?.earnedAt ?? '',
       }))
       .sort((a, b) => b.earnedAt.localeCompare(a.earnedAt))
-  }, [unviewedIds, progress])
+  }, [newSectionIds, progress])
 
   if (newBadges.length === 0) return null
 

@@ -60,10 +60,14 @@ function normalizeBadgeState(raw?: BadgeState): BadgeState {
   const unviewed = Array.isArray(raw.unviewedBadgeIds)
     ? raw.unviewedBadgeIds.filter((id): id is BadgeId => validIds.has(id as BadgeId))
     : []
+  const newSection = Array.isArray(raw.newSectionBadgeIds)
+    ? raw.newSectionBadgeIds.filter((id): id is BadgeId => validIds.has(id as BadgeId))
+    : unviewed
   return {
     initialized: raw.initialized === true,
     progress: raw.progress && typeof raw.progress === 'object' ? raw.progress : {},
     unviewedBadgeIds: unviewed,
+    newSectionBadgeIds: newSection,
   }
 }
 
@@ -143,7 +147,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 13
+const PERSIST_VERSION = 14
 
 const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
@@ -434,27 +438,29 @@ export const useMacroStore = create<MacroStore>()(
 
       markBadgeViewed: (badgeId) => {
         const { badgeState } = get()
-        if (!badgeState.unviewedBadgeIds.includes(badgeId)) return
+        const inUnviewed = badgeState.unviewedBadgeIds.includes(badgeId)
+        const inNewSection = badgeState.newSectionBadgeIds.includes(badgeId)
+        if (!inUnviewed && !inNewSection) return
         set({
           badgeState: {
             ...badgeState,
-            unviewedBadgeIds: badgeState.unviewedBadgeIds.filter((id) => id !== badgeId),
+            unviewedBadgeIds: inUnviewed
+              ? badgeState.unviewedBadgeIds.filter((id) => id !== badgeId)
+              : badgeState.unviewedBadgeIds,
+            newSectionBadgeIds: inNewSection
+              ? badgeState.newSectionBadgeIds.filter((id) => id !== badgeId)
+              : badgeState.newSectionBadgeIds,
           },
         })
       },
 
       markAllNewBadgesViewed: () => {
         const { badgeState } = get()
-        if (badgeState.unviewedBadgeIds.length === 0) return
-        const earnedUnviewed = badgeState.unviewedBadgeIds.filter(
-          (id) => (badgeState.progress[id]?.instances.length ?? 0) > 0,
-        )
-        if (earnedUnviewed.length === 0) return
-        const earnedSet = new Set(earnedUnviewed)
+        if (badgeState.newSectionBadgeIds.length === 0) return
         set({
           badgeState: {
             ...badgeState,
-            unviewedBadgeIds: badgeState.unviewedBadgeIds.filter((id) => !earnedSet.has(id)),
+            newSectionBadgeIds: [],
           },
         })
       },
@@ -1003,7 +1009,12 @@ export const useMacroStore = create<MacroStore>()(
           mealCollapseByDate: {},
           favoriteFoodIds: [],
           recentFoodSearches: { ...EMPTY_RECENT_SEARCHES },
-          badgeState: { initialized: true, progress: {}, unviewedBadgeIds: [] },
+          badgeState: {
+            initialized: true,
+            progress: {},
+            unviewedBadgeIds: [],
+            newSectionBadgeIds: [],
+          },
           highlightedBadgeId: null,
           openBadgeDetailId: null,
           currentDate: todayString(),
@@ -1041,7 +1052,7 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
-        if (version < 13) {
+        if (version < 14) {
           raw.badgeState = normalizeBadgeState(raw.badgeState)
         }
         if (version < 11) {

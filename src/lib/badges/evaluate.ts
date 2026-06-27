@@ -1108,13 +1108,26 @@ export function appendUnviewedBadges(
   badgeIds: BadgeId[],
 ): BadgeState {
   if (badgeIds.length === 0) return badgeState
-  const existing = new Set(badgeState.unviewedBadgeIds ?? [])
-  for (const id of badgeIds) existing.add(id)
-  return { ...badgeState, unviewedBadgeIds: [...existing] }
+  const unviewed = new Set(badgeState.unviewedBadgeIds ?? [])
+  const newSection = new Set(badgeState.newSectionBadgeIds ?? [])
+  for (const id of badgeIds) {
+    unviewed.add(id)
+    newSection.add(id)
+  }
+  return {
+    ...badgeState,
+    unviewedBadgeIds: [...unviewed],
+    newSectionBadgeIds: [...newSection],
+  }
 }
 
 export function createEmptyBadgeState(): BadgeState {
-  return { initialized: false, progress: {}, unviewedBadgeIds: [] }
+  return {
+    initialized: false,
+    progress: {},
+    unviewedBadgeIds: [],
+    newSectionBadgeIds: [],
+  }
 }
 
 export function formatBadgeEarnedDate(dateStr: string): string {
