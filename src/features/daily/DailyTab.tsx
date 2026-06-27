@@ -102,6 +102,7 @@ export function DailyTab() {
   const foodLibrary = useMacroStore((s) => s.foodLibrary)
   const settings = useMacroStore((s) => s.settings)
   const getDailyLog = useMacroStore((s) => s.getDailyLog)
+  const storedLog = useMacroStore((s) => s.dailyLogs[s.currentDate])
   const addLoggedFood = useMacroStore((s) => s.addLoggedFood)
   const updateLoggedFood = useMacroStore((s) => s.updateLoggedFood)
   const bulkUpdateLoggedFoodMeal = useMacroStore((s) => s.bulkUpdateLoggedFoodMeal)
@@ -117,7 +118,10 @@ export function DailyTab() {
   const updateDailyLog = useMacroStore((s) => s.updateDailyLog)
   const duplicatePreviousDayLog = useMacroStore((s) => s.duplicatePreviousDayLog)
 
-  const log = getDailyLog(currentDate)
+  const log = useMemo(
+    () => storedLog ?? getDailyLog(currentDate),
+    [storedLog, currentDate, getDailyLog],
+  )
   const templates = settings?.goalTemplates ?? []
   const goal = settings ? resolveGoalForLog(log, settings) : templates[0]
 
