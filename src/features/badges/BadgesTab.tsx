@@ -68,15 +68,12 @@ export function BadgesTab() {
 
   return (
     <div className="badges-tab pb-below-nav">
-      <header className="tab-sticky-header px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Award className="h-5 w-5 text-primary" aria-hidden />
-          <div>
-            <h1 className="text-lg font-semibold">Badges</h1>
-            <p className="text-xs text-muted-foreground">
-              {earnedCount} of {BADGE_DEFINITIONS.length} earned
-            </p>
-          </div>
+      <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Award className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+          <h1 className="truncate whitespace-nowrap text-xl font-bold">
+            Badges ({earnedCount} / {BADGE_DEFINITIONS.length} earned)
+          </h1>
         </div>
       </header>
 
