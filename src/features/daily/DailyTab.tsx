@@ -11,6 +11,7 @@ import {
   Copy,
   Plus,
   Scale,
+  NotebookPen,
   UtensilsCrossed,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -206,6 +207,8 @@ export function DailyTab() {
     return { unassignedFoods: unassigned, foodsByMeal: byMeal }
   }, [log.foods, meals, foodLibrary])
   const [noteExpanded, setNoteExpanded] = useState(!!dailyNote)
+  const [noteEditOpen, setNoteEditOpen] = useState(false)
+  const [noteInput, setNoteInput] = useState(dailyNote)
   const [burnEditOpen, setBurnEditOpen] = useState(false)
   const [burnInput, setBurnInput] = useState(String(log.burnedCalories))
   const [weightEditOpen, setWeightEditOpen] = useState(false)
@@ -297,6 +300,11 @@ export function DailyTab() {
     })
     toastFoodAdded(selectedFood.name)
     resetFoodFlow()
+  }
+
+  const openNoteEdit = () => {
+    setNoteInput(dailyNote)
+    setNoteEditOpen(true)
   }
 
   const applyDuplicateYesterday = () => {
@@ -419,98 +427,6 @@ export function DailyTab() {
             </ul>
           </CardContent>
         </Card>
-
-        {trackBurnedCalories && (
-        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
-          <button
-            type="button"
-            className="flex min-w-0 flex-1 items-center justify-between"
-            onClick={() => {
-              setBurnInput(String(log.burnedCalories))
-              setBurnEditOpen(true)
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-primary" />
-              Burned calories
-            </span>
-            <span className="font-semibold">{log.burnedCalories} cal</span>
-          </button>
-          <EditIconButton
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-            label="Edit burned calories"
-            onClick={() => {
-              setBurnInput(String(log.burnedCalories))
-              setBurnEditOpen(true)
-            }}
-          />
-        </div>
-        )}
-
-        {trackCurrentWeight && (
-        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
-          <button
-            type="button"
-            className="flex min-w-0 flex-1 items-center justify-between"
-            onClick={() => {
-              setWeightInput(
-                log.weightKg != null
-                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
-                  : '',
-              )
-              setWeightEditOpen(true)
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Scale className="h-5 w-5 text-primary" />
-              Weight
-            </span>
-            <span className="font-semibold">
-              {weightDisplay ?? (
-                <span className="text-muted-foreground font-normal">Not logged</span>
-              )}
-            </span>
-          </button>
-          <EditIconButton
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-            label="Edit weight"
-            onClick={() => {
-              setWeightInput(
-                log.weightKg != null
-                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
-                  : '',
-              )
-              setWeightEditOpen(true)
-            }}
-          />
-        </div>
-        )}
-
-        <div className={SURFACE_GRADIENT_COMPACT}>
-          <button
-            type="button"
-            className="flex w-full items-center justify-between px-4 py-3"
-            onClick={() => setNoteExpanded(!noteExpanded)}
-          >
-            <span className="font-medium">Daily note</span>
-            {noteExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
-          {noteExpanded && (
-            <div className="px-4 pb-4">
-              <textarea
-                className="w-full min-h-[80px] rounded-lg border border-input bg-card p-3 text-sm"
-                value={dailyNote}
-                onChange={(e) => setDailyNote(e.target.value)}
-                placeholder="Notes for this day..."
-                {...mobileFriendlyInputProps}
-              />
-            </div>
-          )}
-        </div>
 
         <div>
           <div className="flex items-center justify-between gap-2 mb-2">
@@ -641,6 +557,116 @@ export function DailyTab() {
             <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
             Copy yesterday
           </Button>
+        </div>
+
+        {trackBurnedCalories && (
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center justify-between"
+            onClick={() => {
+              setBurnInput(String(log.burnedCalories))
+              setBurnEditOpen(true)
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Flame className="h-5 w-5 text-primary" />
+              Burned calories
+            </span>
+            <span className="font-semibold">{log.burnedCalories} cal</span>
+          </button>
+          <EditIconButton
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            label="Edit burned calories"
+            onClick={() => {
+              setBurnInput(String(log.burnedCalories))
+              setBurnEditOpen(true)
+            }}
+          />
+        </div>
+        )}
+
+        {trackCurrentWeight && (
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center justify-between"
+            onClick={() => {
+              setWeightInput(
+                log.weightKg != null
+                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+                  : '',
+              )
+              setWeightEditOpen(true)
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Scale className="h-5 w-5 text-primary" />
+              Weight
+            </span>
+            <span className="font-semibold">
+              {weightDisplay ?? (
+                <span className="text-muted-foreground font-normal">Not logged</span>
+              )}
+            </span>
+          </button>
+          <EditIconButton
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            label="Edit weight"
+            onClick={() => {
+              setWeightInput(
+                log.weightKg != null
+                  ? String(roundMacro(weightFromKg(log.weightKg, weightUnit), 1))
+                  : '',
+              )
+              setWeightEditOpen(true)
+            }}
+          />
+        </div>
+        )}
+
+        <div className={SURFACE_GRADIENT_COMPACT}>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 items-center justify-between"
+              onClick={() => setNoteExpanded(!noteExpanded)}
+            >
+              <span className="flex items-center gap-2">
+                <NotebookPen className="h-5 w-5 text-primary" />
+                Daily note
+              </span>
+              {noteExpanded ? (
+                <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+              )}
+            </button>
+            <EditIconButton
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              label="Edit daily note"
+              onClick={openNoteEdit}
+            />
+          </div>
+          {noteExpanded && (
+            <button
+              type="button"
+              className="w-full border-t border-border/60 px-4 pb-4 pt-3 text-left"
+              onClick={openNoteEdit}
+            >
+              {dailyNote ? (
+                <p className="text-sm whitespace-pre-wrap text-foreground">{dailyNote}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">No note for this day. Tap to add one.</p>
+              )}
+            </button>
+          )}
         </div>
 
         {templates.length > 0 && (
@@ -885,6 +911,57 @@ export function DailyTab() {
           </ScrollDialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Sheet open={noteEditOpen} onOpenChange={setNoteEditOpen}>
+        <ModalViewport active={noteEditOpen} onRequestClose={() => setNoteEditOpen(false)} />
+        <SheetContent side="bottom" className={scrollSheetContentClass}>
+          <ScrollSheetHeader>
+            <SheetTitle>Daily note</SheetTitle>
+          </ScrollSheetHeader>
+          <ScrollSheetBody>
+            <textarea
+              className="w-full min-h-[140px] rounded-lg border border-input bg-card p-3 text-sm"
+              value={noteInput}
+              onChange={(e) => setNoteInput(e.target.value)}
+              placeholder="Notes for this day..."
+              {...mobileFriendlyInputProps}
+            />
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                setDailyNote(noteInput)
+                setNoteEditOpen(false)
+                if (noteInput.trim()) setNoteExpanded(true)
+                toast.success('Daily note saved')
+              }}
+            >
+              Save
+            </Button>
+            {dailyNote.trim() && (
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  setNoteInput('')
+                  setDailyNote('')
+                  setNoteEditOpen(false)
+                  setNoteExpanded(false)
+                  toast.success('Daily note cleared')
+                }}
+              >
+                Clear note
+              </Button>
+            )}
+            <Button size="lg" variant="ghost" className="w-full" onClick={() => setNoteEditOpen(false)}>
+              Cancel
+            </Button>
+          </ScrollSheetFooter>
+        </SheetContent>
+      </Sheet>
 
       {trackCurrentWeight && (
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>
