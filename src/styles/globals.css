@@ -282,3 +282,13 @@ input[type='search'].library-search-input::-webkit-search-cancel-button,
   border-color: color-mix(in oklab, #f59e0b 55%, var(--border)) !important;
   color: var(--foreground) !important;
 }
+
+.badge-unlock-toast .badge-unlock-toast-close {
+  background: color-mix(in oklab, var(--card) 88%, transparent) !important;
+  border-color: color-mix(in oklab, #f59e0b 45%, var(--border)) !important;
+  color: var(--foreground) !important;
+}
+
+.badge-unlock-toast .badge-unlock-toast-action {
+  flex-shrink: 0;
+}

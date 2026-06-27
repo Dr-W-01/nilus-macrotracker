@@ -1,0 +1,40 @@
+---
+pid: 8248
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npx --yes playwright@1.52.0 install chromium && node scripts\\verify-toast.mjs\""
+started_at: 2026-06-27T12:29:00.310Z
+running_for_ms: 220008   
+---
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║ WARNING: It looks like you are running 'npx playwright install' without first ║
+║ installing your project's dependencies.                                       ║
+║                                                                               ║
+║ To avoid unexpected behavior, please install your dependencies first, and     ║
+║ then run Playwright's install command:                                        ║
+║                                                                               ║
+║     npm install                                                               ║
+║     npx playwright install                                                    ║
+║                                                                               ║
+║ If your project does not yet depend on Playwright, first install the          ║
+║ applicable npm package (most commonly @playwright/test), and                  ║
+║ then run Playwright's install command to download the browsers:               ║
+║                                                                               ║
+║     npm install @playwright/test                                              ║
+║     npx playwright install                                                    ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+Failed to install browsers
+Error: 
+╔═════════════════════════════════════════════════════════════════════════════╗
+║ An active lockfile is found at:                                             ║
+║                                                                             ║
+║   C:\Users\einsn\AppData\Local\ms-playwright\__dirlock                      ║
+║                                                                             ║
+║ Either:                                                                     ║
+║ - wait a few minutes if other Playwright is installing browsers in parallel ║
+║ - remove lock manually with:                                                ║
+║                                                                             ║
+║     rm -R C:\Users\einsn\AppData\Local\ms-playwright\__dirlock              ║
+║                                                                             ║
+║ <3 Playwright Team                                                          ║
+╚═════════════════════════════════════════════════════════════════════════════╝

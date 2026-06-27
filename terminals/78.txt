@@ -1,0 +1,49 @@
+---
+pid: 29736
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npx --yes playwright@1.52.0 install chromium 2>&1\""
+started_at: 2026-06-27T12:22:07.162Z
+running_for_ms: 750006   
+---
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║ WARNING: It looks like you are running 'npx playwright install' without first ║
+║ installing your project's dependencies.                                       ║
+║                                                                               ║
+║ To avoid unexpected behavior, please install your dependencies first, and     ║
+║ then run Playwright's install command:                                        ║
+║                                                                               ║
+║     npm install                                                               ║
+║     npx playwright install                                                    ║
+║                                                                               ║
+║ If your project does not yet depend on Playwright, first install the          ║
+║ applicable npm package (most commonly @playwright/test), and                  ║
+║ then run Playwright's install command to download the browsers:               ║
+║                                                                               ║
+║     npm install @playwright/test                                              ║
+║     npx playwright install                                                    ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+Downloading Chromium 136.0.7103.25 (playwright build v1169) from https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1169/chromium-win64.zip
+|                                                                                |   0% of 144.4 MiB
+|■■■■■■■■                                                                        |  10% of 144.4 MiB
+|■■■■■■■■■■■■■■■■                                                                |  20% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 144.4 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 144.4 MiB
+C:\Users\einsn\AppData\Local\npm-cache\_npx\c61c9351a0dbcfa7\node_modules\playwright-core\lib\server\registry\index.js:960
+          throw new Error(`${err.message} Path: ${lockfilePath}`);
+          ^
+
+Error: ENOENT: no such file or directory, stat 'C:\Users\einsn\AppData\Local\ms-playwright\__dirlock' Path: C:\Users\einsn\AppData\Local\ms-playwright\__dirlock
+    at Object.onCompromised (C:\Users\einsn\AppData\Local\npm-cache\_npx\c61c9351a0dbcfa7\node_modules\playwright-core\lib\server\registry\index.js:960:17)
+    at yf (C:\Users\einsn\AppData\Local\npm-cache\_npx\c61c9351a0dbcfa7\node_modules\playwright-core\lib\utilsBundleImpl\index.js:180:12668)
+    at C:\Users\einsn\AppData\Local\npm-cache\_npx\c61c9351a0dbcfa7\node_modules\playwright-core\lib\utilsBundleImpl\index.js:180:11967
+    at m (C:\Users\einsn\AppData\Local\npm-cache\_npx\c61c9351a0dbcfa7\node_modules\playwright-core\lib\utilsBundleImpl\index.js:179:3627)
+    at FSReqCallback.oncomplete (node:fs:195:21)
+
+Node.js v24.16.0
