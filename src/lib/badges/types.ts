@@ -1,49 +1,108 @@
+export type BadgeCategory =
+  | 'one_time'
+  | 'macro'
+  | 'weight'
+  | 'burned'
+  | 'streak'
+  | 'volume'
+  | 'special'
+
 export type BadgeId =
+  // One-time
   | 'first_food'
+  | 'library_five'
   | 'library_ten'
   | 'library_twentyfive'
   | 'library_fifty'
+  | 'library_hundred'
   | 'first_recipe'
+  | 'recipes_five'
   | 'recipe_logged'
-  | 'recipe_logs_10'
-  | 'custom_recipe'
-  | 'first_favorite'
-  | 'streak_3'
-  | 'streak_7'
-  | 'streak_14'
-  | 'streak_30'
-  | 'streak_60'
-  | 'streak_100'
+  | 'note_writer'
+  | 'note_long'
+  | 'first_uncategorized'
+  | 'weight_logs_10'
+  | 'weight_logs_50'
+  | 'burn_month_days'
+  | 'logs_50'
+  | 'logs_250'
+  | 'logs_500'
+  | 'logs_1000'
+  | 'logs_2000'
+  | 'logs_5000'
+  | 'days_logged_10'
+  | 'days_logged_50'
+  | 'days_logged_100'
+  | 'days_logged_200'
+  | 'days_logged_365'
+  // Macro tracking
   | 'protein_day'
   | 'calorie_day'
   | 'balance_day'
   | 'fiber_day'
+  | 'carbs_day'
+  | 'fat_day'
+  | 'sugars_day'
+  | 'deficit_day'
+  | 'surplus_day'
+  | 'macro_triple_day'
   | 'protein_week'
   | 'calorie_week'
   | 'balance_week'
-  | 'meal_complete'
-  | 'big_day_10'
-  | 'breakfast_streak_7'
-  | 'weekend_logger'
-  | 'note_writer'
-  | 'note_streak_3'
-  | 'burn_tracker'
-  | 'burn_week'
+  | 'fiber_week'
+  | 'carbs_week'
+  | 'fat_week'
+  | 'sugars_week'
+  | 'protein_streak_7'
+  | 'calorie_streak_7'
+  // Weight
   | 'first_weight'
   | 'weight_streak_7'
+  | 'weight_streak_14'
   | 'weight_streak_30'
-  | 'logs_50'
+  | 'weight_streak_60'
+  // Burned calories
+  | 'burn_tracker'
+  | 'burn_week'
+  | 'burn_streak_7'
+  | 'burn_streak_14'
+  | 'burn_streak_30'
+  | 'high_burn_day'
+  // Streak & consistency
+  | 'streak_3'
+  | 'streak_7'
+  | 'streak_14'
+  | 'streak_21'
+  | 'streak_30'
+  | 'streak_45'
+  | 'streak_60'
+  | 'streak_100'
+  | 'streak_200'
+  | 'streak_365'
+  | 'breakfast_streak_7'
+  | 'lunch_streak_7'
+  | 'dinner_streak_7'
+  | 'weekend_logger'
+  | 'weekday_warrior'
+  | 'meal_complete'
+  | 'meal_complete_week'
+  | 'big_day_10'
+  | 'big_day_15'
+  | 'big_day_20'
+  | 'note_streak_3'
+  | 'note_streak_7'
+  // Volume & milestones (recurring)
   | 'logs_100'
-  | 'logs_500'
-  | 'logs_1000'
-  | 'days_logged_10'
-  | 'days_logged_50'
-  | 'days_logged_100'
+  | 'recipe_logs_10'
+  | 'recipe_logs_50'
+  // Special & fun
+  | 'first_favorite'
+  | 'five_favorites'
+  | 'ten_favorites'
+  | 'custom_recipe'
 
 export interface BadgeEarnedInstance {
-  /** Calendar date (yyyy-MM-dd) when the badge was earned. */
   earnedAt: string
-  /** Stable key for recurring badges — prevents duplicate awards. */
   periodKey?: string
 }
 
@@ -54,16 +113,23 @@ export interface BadgeProgress {
 export interface BadgeState {
   initialized: boolean
   progress: Partial<Record<BadgeId, BadgeProgress>>
-  /** Badge IDs earned but not yet seen on the Badges tab. */
   unviewedBadgeIds: BadgeId[]
 }
 
 export interface BadgeDefinition {
   id: BadgeId
+  category: BadgeCategory
   name: string
   description: string
   howToEarn: string
   icon: string
   recurring: boolean
   weightBased?: boolean
+  burnBased?: boolean
+}
+
+export interface BadgeCategoryMeta {
+  id: BadgeCategory
+  title: string
+  description: string
 }

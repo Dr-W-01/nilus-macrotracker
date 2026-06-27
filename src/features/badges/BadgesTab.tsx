@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Award } from 'lucide-react'
-import { BadgeCard } from '@/components/badges/BadgeCard'
+import { BadgeCategorySection } from '@/components/badges/BadgeCategorySection'
 import { BadgeDetailDialog } from '@/components/badges/BadgeDetailDialog'
+import { BADGE_CATEGORY_META, badgesByCategory } from '@/lib/badges/categories'
 import { BADGE_DEFINITIONS } from '@/lib/badges/definitions'
 import { getBadgeCount } from '@/lib/badges/evaluate'
 import type { BadgeId } from '@/lib/badges/types'
-import { isTrackCurrentWeightEnabled } from '@/lib/trackingSettings'
+import {
+  isTrackBurnedCaloriesEnabled,
+  isTrackCurrentWeightEnabled,
+} from '@/lib/trackingSettings'
 import { useMacroStore } from '@/store/useMacroStore'
 
 export function BadgesTab() {
@@ -22,6 +26,9 @@ export function BadgesTab() {
   const highlightRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const weightTrackingEnabled = isTrackCurrentWeightEnabled(settings)
+  const burnTrackingEnabled = isTrackBurnedCaloriesEnabled(settings)
+
+  const badgesGrouped = useMemo(() => badgesByCategory(), [])
 
   const earnedCount = useMemo(
     () =>
@@ -72,26 +79,27 @@ export function BadgesTab() {
         </div>
       </header>
 
-      <div className="p-4">
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-          {BADGE_DEFINITIONS.map((badge) => (
-            <BadgeCard
-              key={badge.id}
-              badgeId={badge.id}
-              progress={badgeState.progress[badge.id]}
-              weightTrackingEnabled={weightTrackingEnabled}
-              highlighted={highlightedBadgeId === badge.id}
-              isUnviewed={unviewedIds.includes(badge.id)}
-              onClick={() => setDetailId(badge.id)}
-            />
-          ))}
-        </div>
+      <div className="space-y-8 p-4">
+        {BADGE_CATEGORY_META.map((meta) => (
+          <BadgeCategorySection
+            key={meta.id}
+            meta={meta}
+            badges={badgesGrouped[meta.id]}
+            progress={badgeState.progress}
+            weightTrackingEnabled={weightTrackingEnabled}
+            burnTrackingEnabled={burnTrackingEnabled}
+            highlightedBadgeId={highlightedBadgeId}
+            unviewedIds={unviewedIds}
+            onBadgeClick={setDetailId}
+          />
+        ))}
       </div>
 
       <BadgeDetailDialog
         badgeId={detailId}
         progress={detailId ? badgeState.progress[detailId] : undefined}
         weightTrackingEnabled={weightTrackingEnabled}
+        burnTrackingEnabled={burnTrackingEnabled}
         onClose={closeDetail}
       />
     </div>

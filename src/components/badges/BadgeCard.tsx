@@ -7,6 +7,7 @@ interface BadgeCardProps {
   badgeId: BadgeId
   progress?: BadgeProgress
   weightTrackingEnabled: boolean
+  burnTrackingEnabled: boolean
   highlighted?: boolean
   isUnviewed?: boolean
   onClick: () => void
@@ -16,6 +17,7 @@ export function BadgeCard({
   badgeId,
   progress,
   weightTrackingEnabled,
+  burnTrackingEnabled,
   highlighted,
   isUnviewed,
   onClick,
@@ -24,6 +26,8 @@ export function BadgeCard({
   const count = getBadgeCount(progress)
   const earned = count > 0
   const weightLocked = def.weightBased && !weightTrackingEnabled && !earned
+  const burnLocked = def.burnBased && !burnTrackingEnabled && !earned
+  const featureLocked = weightLocked || burnLocked
 
   return (
     <button
@@ -33,11 +37,11 @@ export function BadgeCard({
       className={cn(
         'relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all',
         'min-h-[108px] active:scale-[0.98]',
-        earned && !weightLocked
+        earned && !featureLocked
           ? 'border-primary/40 bg-primary/10 shadow-sm'
           : 'border-border/60 bg-card/50',
         !earned && 'opacity-55 grayscale-[0.35]',
-        weightLocked && 'opacity-45 grayscale-[0.5]',
+        featureLocked && 'opacity-45 grayscale-[0.5]',
         highlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
@@ -52,7 +56,7 @@ export function BadgeCard({
       <span
         className={cn(
           'text-3xl leading-none',
-          earned && !weightLocked ? 'drop-shadow-sm' : 'opacity-80',
+          earned && !featureLocked ? 'drop-shadow-sm' : 'opacity-80',
         )}
         aria-hidden
       >
@@ -61,7 +65,7 @@ export function BadgeCard({
       <span
         className={cn(
           'text-xs font-semibold leading-tight',
-          earned && !weightLocked ? 'text-foreground' : 'text-muted-foreground',
+          earned && !featureLocked ? 'text-foreground' : 'text-muted-foreground',
         )}
       >
         {def.name}
@@ -69,6 +73,11 @@ export function BadgeCard({
       {weightLocked && (
         <span className="text-[10px] leading-snug text-muted-foreground">
           Enable weight tracking to unlock
+        </span>
+      )}
+      {burnLocked && (
+        <span className="text-[10px] leading-snug text-muted-foreground">
+          Enable burned calories to unlock
         </span>
       )}
     </button>

@@ -17,6 +17,7 @@ interface BadgeDetailDialogProps {
   badgeId: BadgeId | null
   progress?: BadgeProgress
   weightTrackingEnabled: boolean
+  burnTrackingEnabled: boolean
   onClose: () => void
 }
 
@@ -24,6 +25,7 @@ export function BadgeDetailDialog({
   badgeId,
   progress,
   weightTrackingEnabled,
+  burnTrackingEnabled,
   onClose,
 }: BadgeDetailDialogProps) {
   if (!badgeId) return null
@@ -32,6 +34,7 @@ export function BadgeDetailDialog({
   const count = getBadgeCount(progress)
   const earned = count > 0
   const weightLocked = def.weightBased && !weightTrackingEnabled && !earned
+  const burnLocked = def.burnBased && !burnTrackingEnabled && !earned
   const instances = [...(progress?.instances ?? [])].sort((a, b) =>
     b.earnedAt.localeCompare(a.earnedAt),
   )
@@ -73,6 +76,13 @@ export function BadgeDetailDialog({
           {weightLocked && (
             <p className="rounded-lg border border-dashed border-border px-3 py-2.5 text-xs text-muted-foreground">
               Enable <span className="font-medium text-foreground">Track current weight</span> in
+              Settings to unlock this badge.
+            </p>
+          )}
+
+          {burnLocked && (
+            <p className="rounded-lg border border-dashed border-border px-3 py-2.5 text-xs text-muted-foreground">
+              Enable <span className="font-medium text-foreground">Track burned calories</span> in
               Settings to unlock this badge.
             </p>
           )}

@@ -118,9 +118,41 @@ function evaluateWeightStreakMilestones(
   return instances
 }
 
+type WeeklyGoalKind =
+  | 'protein_week'
+  | 'calorie_week'
+  | 'balance_week'
+  | 'fiber_week'
+  | 'carbs_week'
+  | 'fat_week'
+  | 'sugars_week'
+
+function rowHitsWeeklyGoal(row: ReturnType<typeof getStatsDayRowForDate> & object, kind: WeeklyGoalKind): boolean {
+  if (kind === 'protein_week') {
+    return isProteinOnTarget(row.protein, row.goal.protein)
+  }
+  if (kind === 'calorie_week') {
+    return isWithinTarget(row.calories, row.goal.calories)
+  }
+  if (kind === 'fiber_week') {
+    return isWithinTarget(row.fiber, row.goal.fiber)
+  }
+  if (kind === 'carbs_week') {
+    return isWithinTarget(row.carbs, row.goal.carbs)
+  }
+  if (kind === 'fat_week') {
+    return isWithinTarget(row.fat, row.goal.fat)
+  }
+  if (kind === 'sugars_week') {
+    return isWithinTarget(row.sugars, row.goal.sugars)
+  }
+  if ((row.goal.targetDeficit ?? 0) === 0) return false
+  return isEnergyBalanceOnTarget(row.net, row.goal.targetDeficit)
+}
+
 function evaluateWeeklyBadges(
   input: BadgeScanInput,
-  kind: 'protein_week' | 'calorie_week' | 'balance_week',
+  kind: WeeklyGoalKind,
 ): BadgeEarnedInstance[] {
   const instances: BadgeEarnedInstance[] = []
   const weekStarts = new Set<string>()
@@ -147,16 +179,7 @@ function evaluateWeeklyBadges(
 
     if (rows.length < 5) continue
 
-    const allHit = rows.every((row) => {
-      if (kind === 'protein_week') {
-        return isProteinOnTarget(row.protein, row.goal.protein)
-      }
-      if (kind === 'calorie_week') {
-        return isWithinTarget(row.calories, row.goal.calories)
-      }
-      if ((row.goal.targetDeficit ?? 0) === 0) return false
-      return isEnergyBalanceOnTarget(row.net, row.goal.targetDeficit)
-    })
+    const allHit = rows.every((row) => rowHitsWeeklyGoal(row, kind))
 
     if (!allHit) continue
     if (kind === 'balance_week' && rows.every((r) => (r.goal.targetDeficit ?? 0) === 0)) {
@@ -169,9 +192,21 @@ function evaluateWeeklyBadges(
   return instances
 }
 
+type DailyGoalKind =
+  | 'protein_day'
+  | 'calorie_day'
+  | 'balance_day'
+  | 'fiber_day'
+  | 'carbs_day'
+  | 'fat_day'
+  | 'sugars_day'
+  | 'deficit_day'
+  | 'surplus_day'
+  | 'macro_triple_day'
+
 function evaluateDailyGoalBadges(
   input: BadgeScanInput,
-  kind: 'protein_day' | 'calorie_day' | 'balance_day' | 'fiber_day',
+  kind: DailyGoalKind,
 ): BadgeEarnedInstance[] {
   const instances: BadgeEarnedInstance[] = []
 
@@ -191,12 +226,76 @@ function evaluateDailyGoalBadges(
       hit = isWithinTarget(row.calories, row.goal.calories)
     } else if (kind === 'fiber_day') {
       hit = isWithinTarget(row.fiber, row.goal.fiber)
-    } else if ((row.goal.targetDeficit ?? 0) !== 0) {
-      hit = isEnergyBalanceOnTarget(row.net, row.goal.targetDeficit)
+    } else if (kind === 'carbs_day') {
+      hit = isWithinTarget(row.carbs, row.goal.carbs)
+    } else if (kind === 'fat_day') {
+      hit = isWithinTarget(row.fat, row.goal.fat)
+    } else if (kind === 'sugars_day') {
+      hit = isWithinTarget(row.sugars, row.goal.sugars)
+    } else if (kind === 'deficit_day') {
+      const target = row.goal.targetDeficit ?? 0
+      hit = target < 0 && isEnergyBalanceOnTarget(row.net, target)
+    } else if (kind === 'surplus_day') {
+      const target = row.goal.targetDeficit ?? 0
+      hit = target > 0 && isEnergyBalanceOnTarget(row.net, target)
+    } else if (kind === 'balance_day') {
+      if ((row.goal.targetDeficit ?? 0) !== 0) {
+        hit = isEnergyBalanceOnTarget(row.net, row.goal.targetDeficit)
+      }
+    } else if (kind === 'macro_triple_day') {
+      hit =
+        isProteinOnTarget(row.protein, row.goal.protein) &&
+        isWithinTarget(row.calories, row.goal.calories) &&
+        isWithinTarget(row.fiber, row.goal.fiber)
     }
 
     if (hit) {
       instances.push({ earnedAt: date, periodKey: `${kind}-${date}` })
+    }
+  }
+
+  return instances
+}
+
+function evaluateGoalStreakMilestones(
+  input: BadgeScanInput,
+  macro: 'protein' | 'calorie',
+  milestone: number,
+): BadgeEarnedInstance[] {
+  const instances: BadgeEarnedInstance[] = []
+  const prefix = macro === 'protein' ? 'protein-streak' : 'calorie-streak'
+
+  const hitsGoal = (date: string): boolean => {
+    if (!dayHasLoggedFood(input.dailyLogs[date])) return false
+    const row = getStatsDayRowForDate(
+      date,
+      input.dailyLogs,
+      input.foodLibrary,
+      input.settings,
+    )
+    if (!row) return false
+    if (macro === 'protein') {
+      return isProteinOnTarget(row.protein, row.goal.protein)
+    }
+    return isWithinTarget(row.calories, row.goal.calories)
+  }
+
+  const computeStreak = (anchorDate: string): number => {
+    let streak = 0
+    let d = anchorDate
+    while (hitsGoal(d)) {
+      streak += 1
+      d = shiftDate(d, -1)
+    }
+    return streak
+  }
+
+  for (const date of sortedLogDates(input.dailyLogs)) {
+    if (!hitsGoal(date)) continue
+    const streak = computeStreak(date)
+    const prevStreak = computeStreak(shiftDate(date, -1))
+    if (streak >= milestone && prevStreak < milestone) {
+      instances.push({ earnedAt: date, periodKey: `${prefix}-${milestone}-${date}` })
     }
   }
 
@@ -284,9 +383,11 @@ function evaluateLibraryThresholds(
   const count = foodLibrary.filter((f) => !f.isRecipe).length
   const awards: Partial<Record<BadgeId, BadgeEarnedInstance[]>> = {}
   const map: Record<number, BadgeId> = {
+    5: 'library_five',
     10: 'library_ten',
     25: 'library_twentyfive',
     50: 'library_fifty',
+    100: 'library_hundred',
   }
 
   for (const threshold of thresholds) {
@@ -297,6 +398,49 @@ function evaluateLibraryThresholds(
   }
 
   return awards
+}
+
+function evaluateRecipeCountThreshold(
+  foodLibrary: FoodItem[],
+  threshold: number,
+  fallbackDate: string,
+): BadgeEarnedInstance[] | undefined {
+  const count = foodLibrary.filter((f) => f.isRecipe).length
+  if (count >= threshold) {
+    return [{ earnedAt: fallbackDate, periodKey: 'once' }]
+  }
+  return undefined
+}
+
+function evaluateFavoriteThresholds(
+  favoriteFoodIds: string[],
+  fallbackDate: string,
+): Partial<Record<BadgeId, BadgeEarnedInstance[]>> {
+  const awards: Partial<Record<BadgeId, BadgeEarnedInstance[]>> = {}
+  const count = favoriteFoodIds.length
+  const map: Record<number, BadgeId> = {
+    5: 'five_favorites',
+    10: 'ten_favorites',
+  }
+
+  for (const [threshold, id] of Object.entries(map)) {
+    if (count >= Number(threshold)) {
+      awards[id] = [{ earnedAt: fallbackDate, periodKey: 'once' }]
+    }
+  }
+
+  return awards
+}
+
+function evaluateDistinctCountThreshold(
+  dates: string[],
+  threshold: number,
+  prefix: string,
+): BadgeEarnedInstance[] {
+  if (dates.length >= threshold) {
+    return [{ earnedAt: dates[threshold - 1], periodKey: `${prefix}-${threshold}` }]
+  }
+  return []
 }
 
 function evaluateBigDays(
@@ -385,6 +529,108 @@ function evaluateMealStreak(
   return instances
 }
 
+function computeBurnStreak(
+  dailyLogs: Record<string, DailyLog>,
+  anchorDate: string,
+): number {
+  let streak = 0
+  let date = anchorDate
+  while ((dailyLogs[date]?.burnedCalories ?? 0) > 0) {
+    streak += 1
+    date = shiftDate(date, -1)
+  }
+  return streak
+}
+
+function datesWithBurn(dailyLogs: Record<string, DailyLog>): string[] {
+  return Object.keys(dailyLogs)
+    .filter((date) => (dailyLogs[date]?.burnedCalories ?? 0) > 0)
+    .sort()
+}
+
+function evaluateBurnStreakMilestones(
+  dailyLogs: Record<string, DailyLog>,
+  milestone: number,
+): BadgeEarnedInstance[] {
+  const instances: BadgeEarnedInstance[] = []
+  for (const date of datesWithBurn(dailyLogs)) {
+    const streak = computeBurnStreak(dailyLogs, date)
+    const prevStreak = computeBurnStreak(dailyLogs, shiftDate(date, -1))
+    if (streak >= milestone && prevStreak < milestone) {
+      instances.push({
+        earnedAt: date,
+        periodKey: `burn-streak-${milestone}-${date}`,
+      })
+    }
+  }
+  return instances
+}
+
+function evaluateHighBurnDays(dailyLogs: Record<string, DailyLog>): BadgeEarnedInstance[] {
+  const instances: BadgeEarnedInstance[] = []
+  for (const date of Object.keys(dailyLogs).sort()) {
+    if ((dailyLogs[date]?.burnedCalories ?? 0) >= 500) {
+      instances.push({ earnedAt: date, periodKey: `high-burn-${date}` })
+    }
+  }
+  return instances
+}
+
+function evaluateWeekdayWarrior(dailyLogs: Record<string, DailyLog>): BadgeEarnedInstance[] {
+  const instances: BadgeEarnedInstance[] = []
+  const weekStarts = new Set<string>()
+
+  for (const date of Object.keys(dailyLogs)) {
+    if (!dayHasLoggedFood(dailyLogs[date])) continue
+    weekStarts.add(getWeekRangeForDate(date).start)
+  }
+
+  for (const weekStart of [...weekStarts].sort()) {
+    const week = getWeekRangeForDate(weekStart)
+    let allWeekdays = true
+    let d = week.start
+    while (d <= week.end) {
+      const weekday = parseISO(d).getDay()
+      if (weekday >= 1 && weekday <= 5 && !dayHasLoggedFood(dailyLogs[d])) {
+        allWeekdays = false
+        break
+      }
+      d = shiftDate(d, 1)
+    }
+    if (allWeekdays) {
+      instances.push({ earnedAt: week.end, periodKey: `weekday-${week.start}` })
+    }
+  }
+
+  return instances
+}
+
+function evaluateMealCompleteWeeks(input: BadgeScanInput): BadgeEarnedInstance[] {
+  const meals = normalizeMeals(input.settings.meals)
+  if (meals.length === 0) return []
+
+  const completeDays = evaluateMealCompleteDays(input)
+  const byWeek = new Map<string, number>()
+
+  for (const inst of completeDays) {
+    const weekStart = getWeekRangeForDate(inst.earnedAt).start
+    byWeek.set(weekStart, (byWeek.get(weekStart) ?? 0) + 1)
+  }
+
+  const instances: BadgeEarnedInstance[] = []
+  for (const [weekStart, count] of [...byWeek.entries()].sort()) {
+    if (count >= 5) {
+      const week = getWeekRangeForDate(weekStart)
+      instances.push({
+        earnedAt: week.end,
+        periodKey: `meal-complete-week-${weekStart}`,
+      })
+    }
+  }
+
+  return instances
+}
+
 function evaluateBurnWeeks(dailyLogs: Record<string, DailyLog>): BadgeEarnedInstance[] {
   const instances: BadgeEarnedInstance[] = []
   const weekStarts = new Set<string>()
@@ -443,20 +689,6 @@ function evaluateNoteStreak(
   return instances
 }
 
-function countRecipeLogs(
-  dailyLogs: Record<string, DailyLog>,
-  foodLibrary: FoodItem[],
-): number {
-  const recipeIds = new Set(foodLibrary.filter((f) => f.isRecipe).map((f) => f.id))
-  let count = 0
-  for (const log of Object.values(dailyLogs)) {
-    for (const entry of log.foods) {
-      if (recipeIds.has(entry.foodId)) count += 1
-    }
-  }
-  return count
-}
-
 function evaluateRecipeLogThresholds(
   dailyLogs: Record<string, DailyLog>,
   foodLibrary: FoodItem[],
@@ -496,7 +728,7 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
 
   Object.assign(
     awards,
-    evaluateLibraryThresholds(foodLibrary, [10, 25, 50], fallbackDate),
+    evaluateLibraryThresholds(foodLibrary, [5, 10, 25, 50, 100], fallbackDate),
   )
 
   const firstRecipe = foodLibrary
@@ -506,9 +738,15 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
     awards.first_recipe = [{ earnedAt: firstRecipe.lastUsed, periodKey: 'once' }]
   }
 
+  const recipesFive = evaluateRecipeCountThreshold(foodLibrary, 5, fallbackDate)
+  if (recipesFive) {
+    awards.recipes_five = recipesFive
+  }
+
   if (favoriteFoodIds.length > 0) {
     awards.first_favorite = [{ earnedAt: fallbackDate, periodKey: 'once' }]
   }
+  Object.assign(awards, evaluateFavoriteThresholds(favoriteFoodIds, fallbackDate))
 
   const recipeIds = new Set(foodLibrary.filter((f) => f.isRecipe).map((f) => f.id))
   let firstRecipeLogDate: string | undefined
@@ -531,35 +769,67 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
     awards.custom_recipe = [{ earnedAt: firstCustomRecipeDate, periodKey: 'once' }]
   }
 
-  if (countRecipeLogs(dailyLogs, foodLibrary) > 0) {
-    awards.recipe_logs_10 = evaluateRecipeLogThresholds(dailyLogs, foodLibrary, 10)
-  }
+  awards.recipe_logs_10 = evaluateRecipeLogThresholds(dailyLogs, foodLibrary, 10)
+  awards.recipe_logs_50 = evaluateRecipeLogThresholds(dailyLogs, foodLibrary, 50)
 
   awards.streak_3 = evaluateStreakMilestones(dailyLogs, 3, 'streak-3')
   awards.streak_7 = evaluateStreakMilestones(dailyLogs, 7, 'streak-7')
   awards.streak_14 = evaluateStreakMilestones(dailyLogs, 14, 'streak-14')
+  awards.streak_21 = evaluateStreakMilestones(dailyLogs, 21, 'streak-21')
   awards.streak_30 = evaluateStreakMilestones(dailyLogs, 30, 'streak-30')
+  awards.streak_45 = evaluateStreakMilestones(dailyLogs, 45, 'streak-45')
   awards.streak_60 = evaluateStreakMilestones(dailyLogs, 60, 'streak-60')
   awards.streak_100 = evaluateStreakMilestones(dailyLogs, 100, 'streak-100')
+  awards.streak_200 = evaluateStreakMilestones(dailyLogs, 200, 'streak-200')
+  awards.streak_365 = evaluateStreakMilestones(dailyLogs, 365, 'streak-365')
 
   awards.protein_day = evaluateDailyGoalBadges(input, 'protein_day')
   awards.calorie_day = evaluateDailyGoalBadges(input, 'calorie_day')
   awards.balance_day = evaluateDailyGoalBadges(input, 'balance_day')
   awards.fiber_day = evaluateDailyGoalBadges(input, 'fiber_day')
+  awards.carbs_day = evaluateDailyGoalBadges(input, 'carbs_day')
+  awards.fat_day = evaluateDailyGoalBadges(input, 'fat_day')
+  awards.sugars_day = evaluateDailyGoalBadges(input, 'sugars_day')
+  awards.deficit_day = evaluateDailyGoalBadges(input, 'deficit_day')
+  awards.surplus_day = evaluateDailyGoalBadges(input, 'surplus_day')
+  awards.macro_triple_day = evaluateDailyGoalBadges(input, 'macro_triple_day')
 
   awards.protein_week = evaluateWeeklyBadges(input, 'protein_week')
   awards.calorie_week = evaluateWeeklyBadges(input, 'calorie_week')
   awards.balance_week = evaluateWeeklyBadges(input, 'balance_week')
+  awards.fiber_week = evaluateWeeklyBadges(input, 'fiber_week')
+  awards.carbs_week = evaluateWeeklyBadges(input, 'carbs_week')
+  awards.fat_week = evaluateWeeklyBadges(input, 'fat_week')
+  awards.sugars_week = evaluateWeeklyBadges(input, 'sugars_week')
+
+  awards.protein_streak_7 = evaluateGoalStreakMilestones(input, 'protein', 7)
+  awards.calorie_streak_7 = evaluateGoalStreakMilestones(input, 'calorie', 7)
 
   awards.meal_complete = evaluateMealCompleteDays(input)
+  awards.meal_complete_week = evaluateMealCompleteWeeks(input)
   awards.big_day_10 = evaluateBigDays(dailyLogs, 10)
+  awards.big_day_15 = evaluateBigDays(dailyLogs, 15)
+  awards.big_day_20 = evaluateBigDays(dailyLogs, 20)
   awards.weekend_logger = evaluateWeekendLogger(dailyLogs)
+  awards.weekday_warrior = evaluateWeekdayWarrior(dailyLogs)
   awards.burn_week = evaluateBurnWeeks(dailyLogs)
+  awards.burn_streak_7 = evaluateBurnStreakMilestones(dailyLogs, 7)
+  awards.burn_streak_14 = evaluateBurnStreakMilestones(dailyLogs, 14)
+  awards.burn_streak_30 = evaluateBurnStreakMilestones(dailyLogs, 30)
+  awards.high_burn_day = evaluateHighBurnDays(dailyLogs)
 
   const meals = normalizeMeals(input.settings.meals)
   const breakfast = meals[0]
+  const lunch = meals[1]
+  const dinner = meals[2]
   if (breakfast) {
     awards.breakfast_streak_7 = evaluateMealStreak(dailyLogs, meals, breakfast, 7)
+  }
+  if (lunch) {
+    awards.lunch_streak_7 = evaluateMealStreak(dailyLogs, meals, lunch, 7)
+  }
+  if (dinner) {
+    awards.dinner_streak_7 = evaluateMealStreak(dailyLogs, meals, dinner, 7)
   }
 
   const firstNoteDate = Object.keys(dailyLogs)
@@ -568,31 +838,61 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
   if (firstNoteDate) {
     awards.note_writer = [{ earnedAt: firstNoteDate, periodKey: 'once' }]
   }
-  awards.note_streak_3 = evaluateNoteStreak(dailyLogs, 3)
-
-  const firstBurnDate = Object.keys(dailyLogs)
-    .filter((date) => dailyLogs[date].burnedCalories > 0)
+  const firstLongNoteDate = Object.keys(dailyLogs)
+    .filter((date) => dailyLogs[date].note.trim().length >= 100)
     .sort()[0]
+  if (firstLongNoteDate) {
+    awards.note_long = [{ earnedAt: firstLongNoteDate, periodKey: 'once' }]
+  }
+  awards.note_streak_3 = evaluateNoteStreak(dailyLogs, 3)
+  awards.note_streak_7 = evaluateNoteStreak(dailyLogs, 7)
+
+  let firstUncategorizedDate: string | undefined
+  for (const date of Object.keys(dailyLogs).sort()) {
+    for (const entry of dailyLogs[date].foods) {
+      if (!entry.meal?.trim() || !isConfiguredMeal(entry.meal, meals)) {
+        firstUncategorizedDate = date
+        break
+      }
+    }
+    if (firstUncategorizedDate) break
+  }
+  if (firstUncategorizedDate) {
+    awards.first_uncategorized = [{ earnedAt: firstUncategorizedDate, periodKey: 'once' }]
+  }
+
+  const firstBurnDate = datesWithBurn(dailyLogs)[0]
   if (firstBurnDate) {
     awards.burn_tracker = [{ earnedAt: firstBurnDate, periodKey: 'once' }]
   }
+  awards.burn_month_days = evaluateDistinctCountThreshold(datesWithBurn(dailyLogs), 20, 'burn-days')
 
-  const firstWeightDate = datesWithWeight(dailyLogs)[0]
+  const weightDates = datesWithWeight(dailyLogs)
+  const firstWeightDate = weightDates[0]
   if (firstWeightDate) {
     awards.first_weight = [{ earnedAt: firstWeightDate, periodKey: 'once' }]
   }
+  awards.weight_logs_10 = evaluateDistinctCountThreshold(weightDates, 10, 'weight-days')
+  awards.weight_logs_50 = evaluateDistinctCountThreshold(weightDates, 50, 'weight-days')
 
   awards.weight_streak_7 = evaluateWeightStreakMilestones(dailyLogs, 7)
+  awards.weight_streak_14 = evaluateWeightStreakMilestones(dailyLogs, 14)
   awards.weight_streak_30 = evaluateWeightStreakMilestones(dailyLogs, 30)
+  awards.weight_streak_60 = evaluateWeightStreakMilestones(dailyLogs, 60)
 
   awards.logs_50 = evaluateCumulativeLogThresholds(dailyLogs, [50], 'logs')
   awards.logs_100 = evaluateCumulativeLogThresholds(dailyLogs, [], 'logs', 100)
+  awards.logs_250 = evaluateCumulativeLogThresholds(dailyLogs, [250], 'logs')
   awards.logs_500 = evaluateCumulativeLogThresholds(dailyLogs, [500], 'logs')
   awards.logs_1000 = evaluateCumulativeLogThresholds(dailyLogs, [1000], 'logs')
+  awards.logs_2000 = evaluateCumulativeLogThresholds(dailyLogs, [2000], 'logs')
+  awards.logs_5000 = evaluateCumulativeLogThresholds(dailyLogs, [5000], 'logs')
 
   awards.days_logged_10 = evaluateDistinctDayThresholds(dailyLogs, [10])
   awards.days_logged_50 = evaluateDistinctDayThresholds(dailyLogs, [50])
   awards.days_logged_100 = evaluateDistinctDayThresholds(dailyLogs, [100])
+  awards.days_logged_200 = evaluateDistinctDayThresholds(dailyLogs, [200])
+  awards.days_logged_365 = evaluateDistinctDayThresholds(dailyLogs, [365])
 
   return awards
 }
