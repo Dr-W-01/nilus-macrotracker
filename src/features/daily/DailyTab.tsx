@@ -109,6 +109,7 @@ export function DailyTab() {
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
   const setDailyWeight = useMacroStore((s) => s.setDailyWeight)
   const setDailyNote = useMacroStore((s) => s.setDailyNote)
+  const dailyNote = useMacroStore((s) => s.dailyLogs[s.currentDate]?.note ?? '')
   const collapsedMealNames = useMacroStore(
     (s) => s.mealCollapseByDate[s.currentDate] ?? NO_COLLAPSED_MEALS,
   )
@@ -192,7 +193,7 @@ export function DailyTab() {
       })
     return { unassignedFoods: unassigned, foodsByMeal: byMeal }
   }, [log.foods, meals, foodLibrary])
-  const [noteExpanded, setNoteExpanded] = useState(!!log.note)
+  const [noteExpanded, setNoteExpanded] = useState(!!dailyNote)
   const [burnEditOpen, setBurnEditOpen] = useState(false)
   const [burnInput, setBurnInput] = useState(String(log.burnedCalories))
   const [weightEditOpen, setWeightEditOpen] = useState(false)
@@ -490,7 +491,7 @@ export function DailyTab() {
             <div className="px-4 pb-4">
               <textarea
                 className="w-full min-h-[80px] rounded-lg border border-input bg-card p-3 text-sm"
-                value={log.note}
+                value={dailyNote}
                 onChange={(e) => setDailyNote(e.target.value)}
                 placeholder="Notes for this day..."
                 {...mobileFriendlyInputProps}
