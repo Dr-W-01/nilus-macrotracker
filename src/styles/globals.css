@@ -245,6 +245,58 @@ body {
   border-bottom: 1px solid color-mix(in oklab, var(--primary) 20%, var(--border));
 }
 
+/* Shared title row for Library, Stats, Badges, and Settings */
+.tab-title-row {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.tab-title-heading {
+  font-size: 1rem;
+  line-height: 1.25rem;
+  font-weight: 700;
+}
+
+/* Library Items / Categories / Recipes segment control */
+.library-segment-tabs {
+  display: grid !important;
+  height: 2.25rem !important;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem !important;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.library-segment-tab {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.library-segment-tab[data-state='active'] {
+  box-shadow: none;
+}
+
+/* Compact Daily tab metadata rows */
+.daily-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+}
+
 .safe-top {
   padding-top: var(--safe-top);
 }

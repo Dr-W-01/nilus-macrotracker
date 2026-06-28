@@ -21,7 +21,7 @@ import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_LIGHT_SECONDARY_TEXT_COLOR,
   DEFAULT_SECONDARY_TEXT_COLOR,
-  DARK_THEME_SECONDARY_PRESETS,
+  isDarkThemeSecondaryColor,
   secondaryPresetsForTheme,
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
@@ -78,8 +78,8 @@ export function SettingsTab() {
     const lightSecondaryPresets = new Set(
       secondaryPresetsForTheme('light').map((c) => c.toUpperCase()),
     )
-    if (theme === 'light' && DARK_THEME_SECONDARY_PRESETS.has(currentSecondary)) {
-      patch.secondaryTextColor = DEFAULT_LIGHT_SECONDARY_TEXT_COLOR
+    if (theme === 'light' && isDarkThemeSecondaryColor(currentSecondary)) {
+      patch.secondaryTextColor = '#000000'
     }
     if (theme === 'dark' && lightSecondaryPresets.has(currentSecondary)) {
       patch.secondaryTextColor = DEFAULT_SECONDARY_TEXT_COLOR
@@ -133,10 +133,10 @@ export function SettingsTab() {
 
   return (
     <div className="settings-tab">
-      <header className="tab-sticky-header flex min-h-12 items-center px-4 py-2">
-        <div className="flex items-center gap-2">
+      <header className="tab-sticky-header">
+        <div className="tab-title-row">
           <Settings className="h-4 w-4 text-primary" aria-hidden />
-          <h1 className="text-base font-bold">Settings</h1>
+          <h1 className="tab-title-heading">Settings</h1>
         </div>
       </header>
 

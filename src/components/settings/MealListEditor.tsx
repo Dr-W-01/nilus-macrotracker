@@ -137,7 +137,7 @@ export function MealListEditor() {
                 aria-label={`Move ${meal} up`}
                 onClick={() => moveMeal(index, 'up')}
               >
-                <ChevronUp className={reorderIconClass} />
+                <ChevronUp className={reorderIconClass} strokeWidth={2.5} />
               </Button>
               <Button
                 type="button"
@@ -148,7 +148,7 @@ export function MealListEditor() {
                 aria-label={`Move ${meal} down`}
                 onClick={() => moveMeal(index, 'down')}
               >
-                <ChevronDown className={reorderIconClass} />
+                <ChevronDown className={reorderIconClass} strokeWidth={2.5} />
               </Button>
               <EditIconButton
                 variant="outline"

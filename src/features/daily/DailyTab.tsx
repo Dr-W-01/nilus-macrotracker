@@ -574,18 +574,18 @@ export function DailyTab() {
         </div>
 
         {trackBurnedCalories && (
-        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-3 py-2')}>
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
           <div className="flex min-w-0 flex-1 items-center justify-between">
-            <span className="flex items-center gap-1.5 text-sm">
-              <Flame className="h-4 w-4 text-primary" />
+            <span className="flex items-center gap-1.5 text-sm leading-tight">
+              <Flame className="h-4 w-4 shrink-0 text-primary" />
               Burned calories
             </span>
-            <span className="text-sm font-semibold">{log.burnedCalories} cal</span>
+            <span className="text-sm font-semibold leading-tight">{log.burnedCalories} cal</span>
           </div>
           <EditIconButton
             size="icon"
             variant="ghost"
-            className="h-7 w-7"
+            className="h-6 w-6"
             label="Edit burned calories"
             onClick={openBurnEdit}
           />
@@ -593,13 +593,13 @@ export function DailyTab() {
         )}
 
         {trackCurrentWeight && (
-        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-3 py-2')}>
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
           <div className="flex min-w-0 flex-1 items-center justify-between">
-            <span className="flex items-center gap-1.5 text-sm">
-              <Scale className="h-4 w-4 text-primary" />
+            <span className="flex items-center gap-1.5 text-sm leading-tight">
+              <Scale className="h-4 w-4 shrink-0 text-primary" />
               Weight
             </span>
-            <span className="text-sm font-semibold">
+            <span className="text-sm font-semibold leading-tight">
               {weightDisplay ?? (
                 <span className="text-muted-foreground font-normal">Not logged</span>
               )}
@@ -608,7 +608,7 @@ export function DailyTab() {
           <EditIconButton
             size="icon"
             variant="ghost"
-            className="h-7 w-7"
+            className="h-6 w-6"
             label="Edit weight"
             onClick={openWeightEdit}
           />
@@ -616,7 +616,7 @@ export function DailyTab() {
         )}
 
         <div className={SURFACE_GRADIENT_COMPACT}>
-          <div className="flex items-center gap-1.5 px-3 py-2">
+          <div className="daily-meta-row">
             <button
               type="button"
               className="flex min-w-0 flex-1 items-center justify-between"
@@ -635,13 +635,13 @@ export function DailyTab() {
             <EditIconButton
               size="icon"
               variant="ghost"
-              className="h-7 w-7"
+              className="h-6 w-6"
               label="Edit daily note"
               onClick={openNoteEdit}
             />
           </div>
           {noteExpanded && (
-            <div className="w-full border-t border-border/60 px-3 pb-2.5 pt-2 text-left">
+            <div className="w-full border-t border-border/60 px-3 pb-2 pt-1.5 text-left">
               {dailyNote ? (
                 <p className="text-sm whitespace-pre-wrap text-foreground">{dailyNote}</p>
               ) : (
@@ -652,20 +652,20 @@ export function DailyTab() {
         </div>
 
         {templates.length > 0 && (
-          <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-3 py-2')}>
+          <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
             <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5 text-sm">
+              <span className="flex items-center gap-1.5 text-sm leading-tight">
                 <Target className="h-4 w-4 shrink-0 text-primary" />
                 Goal template
               </span>
-              <span className="truncate text-right text-sm font-semibold">
+              <span className="truncate text-right text-sm font-semibold leading-tight">
                 {activeTemplate?.name ?? '—'}
               </span>
             </div>
             <EditIconButton
               size="icon"
               variant="ghost"
-              className="h-7 w-7"
+              className="h-6 w-6"
               label="Edit goal template"
               onClick={openGoalTemplateEdit}
             />

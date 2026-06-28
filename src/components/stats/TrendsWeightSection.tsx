@@ -225,6 +225,10 @@ export function TrendsWeightSection({
             <button
               key={scale}
               type="button"
+              aria-pressed={weightScale === scale}
+              aria-label={
+                scale === 'All' ? 'Show all logged weight data' : `Show ${scale} weight data`
+              }
               className={cn(
                 'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
                 weightScale === scale

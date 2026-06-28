@@ -71,10 +71,10 @@ export function BadgesTab() {
 
   return (
     <div className="badges-tab">
-      <header className="tab-sticky-header flex min-h-12 items-center px-4 py-2">
-        <div className="flex min-w-0 items-center gap-2">
+      <header className="tab-sticky-header">
+        <div className="tab-title-row min-w-0">
           <Award className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-          <h1 className="truncate whitespace-nowrap text-base font-bold">
+          <h1 className="tab-title-heading truncate whitespace-nowrap">
             Badges ({earnedCount} / {BADGE_DEFINITIONS.length} earned)
           </h1>
         </div>

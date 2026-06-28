@@ -11,8 +11,17 @@ export const DARK_THEME_SECONDARY_PRESETS = new Set([
   '#E5E5E5',
   '#A3A3A3',
   '#9CA3AF',
+  '#FFFFFF',
+  '#F4F4F5',
+  '#F4F4F4',
   DEFAULT_SECONDARY_TEXT_COLOR.toUpperCase(),
 ])
+
+/** Colors that should reset to black when switching to light mode */
+export function isDarkThemeSecondaryColor(color: string): boolean {
+  const upper = normalizeHexColor(color, DEFAULT_SECONDARY_TEXT_COLOR).toUpperCase()
+  return DARK_THEME_SECONDARY_PRESETS.has(upper)
+}
 
 export function normalizeHexColor(value: string, fallback: string): string {
   const trimmed = value.trim()
