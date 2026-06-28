@@ -486,7 +486,10 @@ export function LibraryTab() {
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([letter, items]) => (
               <section key={letter}>
-                <h2 className="sticky-letter py-2 text-sm font-bold text-primary">{letter}</h2>
+                <h2 className="sticky-letter pt-1.5 pb-1 text-sm font-bold text-primary">
+                  <span className="shrink-0 leading-none">{letter}</span>
+                  <span className="sticky-letter-line" aria-hidden />
+                </h2>
                 <FoodList
                   items={items}
                   editMode={editMode}

@@ -330,8 +330,17 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background-color: var(--background);
-  border-bottom: 1px solid var(--border);
+}
+
+.sticky-letter-line {
+  flex: 1;
+  height: 1px;
+  min-width: 0;
+  background-color: color-mix(in oklab, var(--border) 65%, transparent);
 }
 
 /* Daily tab uses the same customizable secondary text color */
