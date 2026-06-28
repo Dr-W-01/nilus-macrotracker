@@ -158,19 +158,19 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
               />
             </FormSection>
           </ScrollSheetBody>
-          <ScrollSheetFooter>
-            <Button size="lg" className="w-full" onClick={save}>
+          <ScrollSheetFooter compact>
+            <Button size="sm" className="w-full" onClick={save}>
               Save recipe
             </Button>
             <Button
-              size="lg"
+              size="sm"
               variant="destructive"
               className="w-full"
               onClick={() => setDeleteConfirmOpen(true)}
             >
               Delete recipe
             </Button>
-            <Button size="lg" variant="ghost" className="w-full" onClick={onClose}>
+            <Button size="sm" variant="ghost" className="w-full" onClick={onClose}>
               Cancel
             </Button>
           </ScrollSheetFooter>

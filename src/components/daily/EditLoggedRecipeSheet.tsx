@@ -11,7 +11,6 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import {
   RecipeIngredientsEditor,
   RecipeInstanceMacroBar,
-  RecipeInstanceScopeBanner,
   RecipeServingQuantity,
   buildRecipeOverridePayload,
   scaleRecipePreviewMacros,
@@ -79,33 +78,34 @@ export function EditLoggedRecipeSheet({
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader>
-          <SheetTitle>{recipe.name}</SheetTitle>
-          <p className="text-sm text-muted-foreground">Edit today&apos;s portions</p>
+        <ScrollSheetHeader className="py-3">
+          <SheetTitle className="text-base">{recipe.name}</SheetTitle>
+          <p className="text-xs font-normal text-muted-foreground">{dateLabel}</p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-3">
-          <RecipeInstanceScopeBanner mode="edit" dateLabel={dateLabel} recipeName={recipe.name} />
+        <ScrollSheetBody className="space-y-2 py-3">
           <RecipeServingQuantity
+            compact
             quantity={servings}
             onQuantityChange={setServings}
             servingDesc={recipe.servingDesc}
           />
-          {scaledMacros && <RecipeInstanceMacroBar macros={scaledMacros} />}
+          {scaledMacros && <RecipeInstanceMacroBar compact macros={scaledMacros} />}
           <RecipeIngredientsEditor
+            compact
             recipe={recipe}
             library={library}
             overrides={overrides}
             setOverrides={setOverrides}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter>
-          <Button size="lg" className="w-full" onClick={handleSave}>
+        <ScrollSheetFooter compact>
+          <Button size="sm" className="w-full" onClick={handleSave}>
             Save for {dateLabel}
           </Button>
-          <Button variant="destructive" size="lg" className="w-full" onClick={onDelete}>
+          <Button variant="destructive" size="sm" className="w-full" onClick={onDelete}>
             Remove from day
           </Button>
-          <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
+          <Button variant="ghost" size="sm" className="w-full" onClick={onClose}>
             Cancel
           </Button>
         </ScrollSheetFooter>

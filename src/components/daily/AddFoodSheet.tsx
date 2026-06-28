@@ -143,16 +143,16 @@ export function AddFoodSheet({
             <FoodNoteField note={note} onNoteChange={setNote} />
           </FormSection>
         </ScrollSheetBody>
-        <ScrollSheetFooter>
+        <ScrollSheetFooter compact>
           <Button
-            size="lg"
+            size="sm"
             className="w-full"
             onClick={handleAdd}
             disabled={food.scaleType === 'scale' && amountEaten <= 0}
           >
             Add to {dateLabel}
           </Button>
-          <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
+          <Button size="sm" variant="ghost" className="w-full" onClick={onCancel}>
             Cancel
           </Button>
         </ScrollSheetFooter>

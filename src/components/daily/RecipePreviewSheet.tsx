@@ -86,19 +86,19 @@ export function RecipePreviewSheet({
             showEmptyHint={false}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter>
+        <ScrollSheetFooter compact>
           <Button
-            size="lg"
+            size="sm"
             className="w-full"
             onClick={() => onAdd(meal || undefined, servings)}
           >
             Add
           </Button>
-          <Button size="lg" variant="outline" className="w-full gap-2" onClick={onEdit}>
-            <Pencil className="h-4 w-4" />
+          <Button size="sm" variant="outline" className="w-full gap-1.5" onClick={onEdit}>
+            <Pencil className="h-3.5 w-3.5" />
             Customize for today
           </Button>
-          <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
+          <Button size="sm" variant="ghost" className="w-full" onClick={onCancel}>
             Cancel
           </Button>
         </ScrollSheetFooter>

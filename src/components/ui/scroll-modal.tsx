@@ -55,6 +55,16 @@ export const scrollSheetBodyClass =
 export const scrollModalFooterButtonClass =
   '[&_button]:!h-11 [&_button]:!min-h-11 [&_button]:!max-h-11 [&_button]:!py-2 [&_button]:!px-4 [&_button]:!text-sm'
 
+/** Tighter modal footer buttons (~36px) for Library and Daily sheets. */
+export const compactModalFooterButtonClass =
+  '[&_button]:!h-9 [&_button]:!min-h-9 [&_button]:!max-h-9 [&_button]:!py-1.5 [&_button]:!text-sm'
+
+export const compactSheetFooterClass = cn(
+  'shrink-0 space-y-1 border-t border-border bg-card px-4 pt-2',
+  'pb-[max(0.5rem,var(--safe-bottom))]',
+  compactModalFooterButtonClass,
+)
+
 export const scrollSheetFooterClass = cn(
   'shrink-0 space-y-1.5 border-t border-border bg-card px-4 pt-2.5',
   'pb-[max(0.5rem,var(--safe-bottom))]',
@@ -78,12 +88,16 @@ export function ScrollSheetBody({
 export function ScrollSheetFooter({
   className,
   children,
+  compact = false,
 }: {
   className?: string
   children: ReactNode
+  compact?: boolean
 }) {
   return (
-    <div className={cn(scrollSheetFooterClass, className)}>{children}</div>
+    <div className={cn(compact ? compactSheetFooterClass : scrollSheetFooterClass, className)}>
+      {children}
+    </div>
   )
 }
 

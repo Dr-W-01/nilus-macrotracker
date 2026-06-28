@@ -88,18 +88,20 @@ export function RecipeCustomizeSheet({
         className={scrollSheetContentClass}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <ScrollSheetHeader>
-          <SheetTitle>{recipe.name}</SheetTitle>
-          <p className="text-sm text-muted-foreground">Customize for today</p>
+        <ScrollSheetHeader className="py-3">
+          <SheetTitle className="text-base">{recipe.name}</SheetTitle>
+          <p className="text-xs font-normal text-muted-foreground">Customize for today</p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-3">
+        <ScrollSheetBody className="space-y-2 py-3">
           <RecipeServingQuantity
+            compact
             quantity={servings}
             onQuantityChange={setServings}
             servingDesc={recipe.servingDesc}
           />
-          {scaledMacros && <RecipeInstanceMacroBar macros={scaledMacros} />}
+          {scaledMacros && <RecipeInstanceMacroBar compact macros={scaledMacros} />}
           <RecipeIngredientsEditor
+            compact
             recipe={recipe}
             library={library}
             overrides={overrides}
@@ -113,11 +115,11 @@ export function RecipeCustomizeSheet({
             showEmptyHint={false}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter>
-          <Button size="lg" className="w-full" onClick={handleConfirm}>
+        <ScrollSheetFooter compact>
+          <Button size="sm" className="w-full" onClick={handleConfirm}>
             Add customized recipe
           </Button>
-          <Button size="lg" variant="ghost" className="w-full" onClick={onCancel}>
+          <Button size="sm" variant="ghost" className="w-full" onClick={onCancel}>
             Cancel
           </Button>
         </ScrollSheetFooter>

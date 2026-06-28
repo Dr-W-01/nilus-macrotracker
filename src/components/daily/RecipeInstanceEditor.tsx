@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
-import { BookOpen, CalendarDays, Minus, Plus } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { QuantityInput } from '@/components/daily/QuantityInput'
@@ -10,6 +10,7 @@ import {
   getFoodBaseAmount,
 } from '@/lib/scale'
 import type { FoodItem } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 export type RecipeOverrideState = Record<
   string,
@@ -58,71 +59,71 @@ export function useRecipeOverrideState(
   return { overrides, setOverrides, components, previewMacros }
 }
 
-export function RecipeInstanceScopeBanner({
-  mode,
-  dateLabel,
-  recipeName,
-}: {
-  mode: 'add' | 'edit'
-  dateLabel?: string
-  recipeName: string
-}) {
-  return (
-    <div className="flex gap-3 rounded-lg border border-border bg-secondary/30 px-3 py-2.5">
-      <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-      <div className="min-w-0 space-y-1 text-xs leading-relaxed text-muted-foreground">
-        <p>
-          <span className="font-medium text-foreground">Today&apos;s entry</span>
-          {mode === 'edit' && dateLabel ? ` · ${dateLabel}` : ''} — adjust portions for{' '}
-          <span className="font-medium text-foreground">{recipeName}</span> on this day only.
-        </p>
-        <p className="flex items-center gap-1.5">
-          <BookOpen className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          Library recipe unchanged. Edit the master recipe under Library → Recipes.
-        </p>
-      </div>
-    </div>
-  )
-}
-
 export function RecipeServingQuantity({
   quantity,
   onQuantityChange,
   servingDesc,
+  compact = false,
 }: {
   quantity: number
   onQuantityChange: (q: number) => void
   servingDesc?: string
+  compact?: boolean
 }) {
   const qty = Math.max(1, Math.round(quantity) || 1)
 
   return (
-    <div className="space-y-2">
+    <div className={compact ? 'space-y-1' : 'space-y-2'}>
       {servingDesc && (
-        <p className="text-center text-sm text-muted-foreground">{servingDesc}</p>
+        <p
+          className={cn(
+            'text-center text-muted-foreground',
+            compact ? 'text-xs' : 'text-sm',
+          )}
+        >
+          {servingDesc}
+        </p>
       )}
-      <div className="flex items-center justify-center gap-6">
+      <div
+        className={cn(
+          'flex items-center justify-center',
+          compact ? 'gap-4' : 'gap-6',
+        )}
+      >
         <Button
           type="button"
           variant="stepper"
           size="icon"
-          className="h-14 w-14 rounded-full text-2xl"
+          className={
+            compact
+              ? 'h-9 w-9 rounded-full'
+              : 'h-14 w-14 rounded-full text-2xl'
+          }
           disabled={qty <= 1}
           onClick={() => onQuantityChange(Math.max(1, qty - 1))}
         >
-          <Minus className="h-6 w-6" aria-hidden />
+          <Minus className={compact ? 'h-4 w-4' : 'h-6 w-6'} aria-hidden />
         </Button>
-        <span className="min-w-[4rem] text-center text-5xl font-bold tabular-nums">
+        <span
+          className={cn(
+            'text-center font-bold tabular-nums',
+            compact ? 'min-w-[2.5rem] text-2xl' : 'min-w-[4rem] text-5xl',
+          )}
+        >
           {qty}
         </span>
         <Button
           type="button"
           variant="stepper"
           size="icon"
-          className="h-14 w-14 rounded-full text-2xl"
+          className={
+            compact
+              ? 'h-9 w-9 rounded-full'
+              : 'h-14 w-14 rounded-full text-2xl'
+          }
           onClick={() => onQuantityChange(qty + 1)}
         >
-          <Plus className="h-6 w-6" aria-hidden />
+          <Plus className={compact ? 'h-4 w-4' : 'h-6 w-6'} aria-hidden />
         </Button>
       </div>
     </div>
@@ -138,15 +139,31 @@ export function scaleRecipePreviewMacros(
 
 export function RecipeInstanceMacroBar({
   macros,
+  compact = false,
 }: {
   macros: ReturnType<typeof computeComponentMacros>
+  compact?: boolean
 }) {
   return (
-    <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
-      <p className="text-lg font-bold tabular-nums text-primary">
+    <div
+      className={cn(
+        'rounded-lg border border-primary/30 bg-primary/10 px-3 text-center',
+        compact ? 'py-2' : 'py-2.5',
+      )}
+    >
+      <p
+        className={cn(
+          'font-bold tabular-nums text-primary',
+          compact ? 'text-base' : 'text-lg',
+        )}
+      >
         {Math.round(macros.calories)} cal
       </p>
-      <LoggedMacroPreview macros={macros} size="md" className="mt-1" />
+      <LoggedMacroPreview
+        macros={macros}
+        size={compact ? 'sm' : 'md'}
+        className="mt-0.5"
+      />
     </div>
   )
 }
@@ -156,11 +173,13 @@ export function RecipeIngredientsEditor({
   library,
   overrides,
   setOverrides,
+  compact = false,
 }: {
   recipe: FoodItem
   library: FoodItem[]
   overrides: RecipeOverrideState
   setOverrides: Dispatch<SetStateAction<RecipeOverrideState>>
+  compact?: boolean
 }) {
   if (!recipe.recipeComponents) return null
 
@@ -172,8 +191,18 @@ export function RecipeIngredientsEditor({
         const state = overrides[comp.foodId] ?? { quantity: comp.quantity }
 
         return (
-          <div key={comp.foodId} className="px-3 py-3">
-            <p className="mb-2 text-sm font-medium">{food.name}</p>
+          <div
+            key={comp.foodId}
+            className={compact ? 'px-2.5 py-2' : 'px-3 py-3'}
+          >
+            <p
+              className={cn(
+                'font-medium',
+                compact ? 'mb-1 text-xs' : 'mb-2 text-sm',
+              )}
+            >
+              {food.name}
+            </p>
             {food.scaleType === 'scale' ? (
               <QuantityInput
                 food={food}

@@ -1127,11 +1127,11 @@ function EditLoggedSheet({
               </p>
             )}
           </ScrollSheetBody>
-          <ScrollSheetFooter>
-            <Button variant="destructive" size="lg" className="w-full" onClick={onDelete}>
+          <ScrollSheetFooter compact>
+            <Button variant="destructive" size="sm" className="w-full" onClick={onDelete}>
               Remove from day
             </Button>
-            <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
+            <Button variant="ghost" size="sm" className="w-full" onClick={onClose}>
               Cancel
             </Button>
           </ScrollSheetFooter>
@@ -1195,14 +1195,14 @@ function EditLoggedSheet({
             showInlineMacroPreview={false}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter>
-          <Button size="lg" className="w-full" onClick={handleSave}>
+        <ScrollSheetFooter compact>
+          <Button size="sm" className="w-full" onClick={handleSave}>
             Save for {dateLabel}
           </Button>
-          <Button variant="destructive" size="lg" className="w-full" onClick={onDelete}>
+          <Button variant="destructive" size="sm" className="w-full" onClick={onDelete}>
             Remove from day
           </Button>
-          <Button variant="ghost" size="lg" className="w-full" onClick={onClose}>
+          <Button variant="ghost" size="sm" className="w-full" onClick={onClose}>
             Cancel
           </Button>
         </ScrollSheetFooter>
