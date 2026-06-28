@@ -178,11 +178,11 @@ export function MealListEditor() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleAdd()
           }}
-          className="h-9 text-sm"
+          className="h-8 text-sm"
           {...mobilePlainTextInputProps}
         />
-        <Button type="button" variant="outline" size="sm" className="h-9 shrink-0 gap-1 px-2.5" onClick={handleAdd}>
-          <Plus className="h-4 w-4" />
+        <Button type="button" variant="outline" size="sm" className="h-7 min-h-7 shrink-0 gap-1 px-2.5 text-xs" onClick={handleAdd}>
+          <Plus className="h-3.5 w-3.5" />
           Add
         </Button>
       </div>

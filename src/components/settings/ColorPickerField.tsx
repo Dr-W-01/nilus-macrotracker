@@ -101,7 +101,7 @@ export function ColorPickerField({
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">Suggested colors</p>
-              <div className="grid grid-cols-6 gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 {presets.map((color) => {
                   const selected =
                     normalizeHexColor(draft, fallback).toUpperCase() === color.toUpperCase()
@@ -111,7 +111,7 @@ export function ColorPickerField({
                       type="button"
                       title={color}
                       className={cn(
-                        'aspect-square w-full rounded-lg border-2 transition-transform active:scale-95',
+                        'h-9 w-9 shrink-0 rounded-lg border-2 transition-transform active:scale-95',
                         selected ? 'border-foreground ring-2 ring-primary/40' : 'border-border/60',
                       )}
                       style={{ backgroundColor: color }}

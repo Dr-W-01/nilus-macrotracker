@@ -207,7 +207,8 @@ export function SettingsTab() {
         </ul>
         <Button
           variant="outline"
-          className="w-full"
+          size="sm"
+          className="h-7 min-h-7 w-full text-xs"
           onClick={() =>
             setEditingGoal({
               id: '',
@@ -258,14 +259,16 @@ export function SettingsTab() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <Button
-            className="flex-1"
+            size="sm"
+            className="h-7 min-h-7 flex-1 text-xs"
             variant={(settings.weightUnit ?? 'lbs') === 'lbs' ? 'default' : 'outline'}
             onClick={() => updateSettings({ weightUnit: 'lbs' as WeightUnit })}
           >
             Pounds (lbs)
           </Button>
           <Button
-            className="flex-1"
+            size="sm"
+            className="h-7 min-h-7 flex-1 text-xs"
             variant={settings.weightUnit === 'kg' ? 'default' : 'outline'}
             onClick={() => updateSettings({ weightUnit: 'kg' })}
           >
@@ -336,7 +339,7 @@ export function SettingsTab() {
         <div className="flex gap-2">
           <Button
             size="sm"
-            className="h-8 flex-1 text-xs"
+            className="h-7 min-h-7 flex-1 text-xs"
             variant={settings.theme === 'dark' ? 'default' : 'outline'}
             onClick={() => setTheme('dark')}
           >
@@ -344,7 +347,7 @@ export function SettingsTab() {
           </Button>
           <Button
             size="sm"
-            className="h-8 flex-1 text-xs"
+            className="h-7 min-h-7 flex-1 text-xs"
             variant={settings.theme === 'light' ? 'default' : 'outline'}
             onClick={() => setTheme('light')}
           >
@@ -361,13 +364,13 @@ export function SettingsTab() {
           presets={accentPresets}
           onChange={(color) => updateSettings({ accentColor: color })}
         />
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           {accentPresets.map((color) => (
             <button
               key={color}
               type="button"
               title={color}
-              className="h-7 w-7 rounded-full border-2 border-border"
+              className="h-7 w-7 shrink-0 rounded-full border-2 border-border"
               style={{
                 background: color,
                 outline:
@@ -393,13 +396,13 @@ export function SettingsTab() {
           presets={textPresets}
           onChange={(color) => updateSettings({ secondaryTextColor: color })}
         />
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           {textPresets.map((color) => (
             <button
               key={color}
               type="button"
               title={color}
-              className="h-7 w-7 rounded-full border-2 border-border"
+              className="h-7 w-7 shrink-0 rounded-full border-2 border-border"
               style={{
                 background: color,
                 outline:
@@ -415,7 +418,7 @@ export function SettingsTab() {
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-full text-xs"
+          className="h-7 min-h-7 w-full text-xs"
           onClick={() =>
             updateSettings({
               accentColor: DEFAULT_ACCENT_COLOR,

@@ -78,6 +78,7 @@ export function secondaryPresetsForTheme(theme: 'dark' | 'light'): string[] {
   return ['#A3A3A3', '#9CA3AF', '#8B8B8B', '#B0B0B0', '#7A7A7A']
 }
 
+/** Balanced rainbow accents — distinct hues with strong contrast in dark and light themes */
 export function accentPresetsForTheme(): string[] {
-  return ['#B22222', '#C41E3A', '#DC2626', '#2563EB', '#0D9488', '#D97706']
+  return ['#DC2626', '#F97316', '#22C55E', '#2563EB', '#7C3AED']
 }
