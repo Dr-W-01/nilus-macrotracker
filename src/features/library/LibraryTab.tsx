@@ -350,7 +350,7 @@ export function LibraryTab() {
           />
           {!editMode && librarySegment === 'items' && (
             <div className="tab-action-row">
-              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setNewFoodOpen(true)}>
+              <Button size="sm" className="h-7 min-h-7 min-w-0 flex-1 py-0 text-xs leading-tight" onClick={() => setNewFoodOpen(true)}>
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 New Food
               </Button>
