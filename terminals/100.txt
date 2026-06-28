@@ -1,9 +1,9 @@
 ---
-pid: 11584
+pid: 11696
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location C:\\Users\\einsn\\Documents\\nilus-macrotracker; npm run dev"
-started_at: 2026-06-28T02:22:57.408Z
-running_for_ms: 5694984  
+started_at: 2026-06-28T03:57:26.331Z
+running_for_ms: 24992    
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -14,8 +14,9 @@ Port 5174 is in use, trying another one...
 Port 5175 is in use, trying another one...
 Port 5176 is in use, trying another one...
 Port 5177 is in use, trying another one...
+Port 5178 is in use, trying another one...
 
-  VITE v8.0.16  ready in 539 ms
+  VITE v8.0.16  ready in 484 ms
 
-  ➜  Local:   http://localhost:5178/nilus-macrotracker/
-  ➜  Network: http://192.168.1.69:5178/nilus-macrotracker/
+  ➜  Local:   http://localhost:5179/nilus-macrotracker/
+  ➜  Network: http://192.168.1.69:5179/nilus-macrotracker/

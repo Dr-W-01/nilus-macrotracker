@@ -3,7 +3,7 @@ pid: 29736
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npx --yes playwright@1.52.0 install chromium 2>&1\""
 started_at: 2026-06-27T12:22:07.162Z
-running_for_ms: 50275004 
+running_for_ms: 55959998 
 ---
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║ WARNING: It looks like you are running 'npx playwright install' without first ║

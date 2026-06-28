@@ -5,7 +5,7 @@ import {
   ScrollDialogBody,
   ScrollDialogFooter,
   ScrollDialogHeader,
-  scrollDialogContentClass,
+  fitScrollDialogContentClass,
 } from '@/components/ui/scroll-modal'
 import { Button } from '@/components/ui/button'
 import { BADGE_BY_ID } from '@/lib/badges/definitions'
@@ -42,7 +42,7 @@ export function BadgeDetailDialog({
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <ModalViewport active onRequestClose={onClose} />
-      <DialogContent className={scrollDialogContentClass}>
+      <DialogContent className={fitScrollDialogContentClass}>
         <ScrollDialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <span
@@ -92,11 +92,11 @@ export function BadgeDetailDialog({
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {def.recurring ? 'Earned on' : 'Earned'}
               </p>
-              <ul className="max-h-48 overflow-y-auto rounded-lg border border-border divide-y divide-border">
+              <ul className="max-h-72 overflow-y-auto rounded-lg border border-border divide-y divide-border">
                 {instances.map((inst) => (
                   <li
                     key={inst.periodKey ?? inst.earnedAt}
-                    className="px-3 py-2.5 text-sm text-foreground"
+                    className="px-3 py-2 text-sm text-foreground"
                   >
                     {format(parseISO(inst.earnedAt), 'MMM d, yyyy')}
                   </li>

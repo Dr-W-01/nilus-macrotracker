@@ -87,6 +87,13 @@ export function ScrollSheetFooter({
   )
 }
 
+/** Centered dialog that grows with content, capped at viewport height */
+export const fitScrollDialogContentClass = cn(
+  'fixed left-1/2 top-1/2 z-50 flex h-auto w-[calc(100%-1rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden p-0',
+  'max-h-[min(92dvh,var(--modal-vh,92dvh))] rounded-xl shadow-lg',
+  MODAL_SURFACE,
+)
+
 /** Centered dialog: scrollable body + sticky footer (keyboard-friendly top anchor) */
 export const scrollDialogContentClass = cn(
   'fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 flex h-[min(92dvh,var(--modal-vh,92dvh))]',
