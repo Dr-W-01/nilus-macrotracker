@@ -289,16 +289,16 @@ export function LibraryTab() {
       className="library-tab"
     >
       <div className="tab-sticky-header">
-        <div className="space-y-2 px-4 pb-2">
-          <div className="tab-title-row -mx-4 justify-between">
+        <div className="space-y-1.5 px-4 pb-1.5">
+          <div className="tab-title-row library-tab-title-row -mx-4 justify-between">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" aria-hidden />
               <h1 className="tab-title-heading">Library</h1>
             </div>
             {librarySegment === 'categories' && activeCategory ? (
               <EditIconButton
-                className="h-8 w-8"
-                iconClassName="h-4 w-4"
+                className="h-7 w-7 shrink-0"
+                iconClassName="h-3.5 w-3.5"
                 label="Manage category"
                 onClick={() => setCategoryManageOpen(true)}
               />
@@ -335,6 +335,7 @@ export function LibraryTab() {
             </Button>
           )}
           <FoodSearchField
+            className="space-y-1"
             scope="library"
             placeholder={
               librarySegment === 'categories' && !activeCategory
@@ -350,14 +351,14 @@ export function LibraryTab() {
           />
           {!editMode && librarySegment === 'items' && (
             <div className="tab-action-row">
-              <Button size="sm" className="h-7 min-h-7 min-w-0 flex-1 py-0 text-xs leading-tight" onClick={() => setNewFoodOpen(true)}>
-                <Plus className="h-3.5 w-3.5 mr-1" />
+              <Button size="sm" className="library-header-action min-w-0 flex-1 gap-1" onClick={() => setNewFoodOpen(true)}>
+                <Plus className="h-3.5 w-3.5 shrink-0" />
                 New Food
               </Button>
               {showBulkEdit && (
                 <EditIconButton
-                  className="h-8 w-8 shrink-0"
-                  iconClassName="h-4 w-4"
+                  className="h-7 w-7 shrink-0"
+                  iconClassName="h-3.5 w-3.5"
                   label="Edit library"
                   onClick={enterEditMode}
                 />
@@ -366,14 +367,14 @@ export function LibraryTab() {
           )}
           {!editMode && librarySegment === 'categories' && !activeCategory && (
             <div className="tab-action-row">
-              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setAddCategoryOpen(true)}>
-                <Plus className="h-3.5 w-3.5 mr-1" />
+              <Button size="sm" className="library-header-action min-w-0 flex-1 gap-1" onClick={() => setAddCategoryOpen(true)}>
+                <Plus className="h-3.5 w-3.5 shrink-0" />
                 New Category
               </Button>
               {showBulkEdit && (
                 <EditIconButton
-                  className="h-8 w-8 shrink-0"
-                  iconClassName="h-4 w-4"
+                  className="h-7 w-7 shrink-0"
+                  iconClassName="h-3.5 w-3.5"
                   label="Edit categories"
                   onClick={enterEditMode}
                 />
@@ -382,14 +383,14 @@ export function LibraryTab() {
           )}
           {!editMode && librarySegment === 'recipes' && (
             <div className="tab-action-row">
-              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setRecipeOpen(true)}>
-                <ChefHat className="h-3.5 w-3.5 mr-1" />
+              <Button size="sm" className="library-header-action min-w-0 flex-1 gap-1" onClick={() => setRecipeOpen(true)}>
+                <ChefHat className="h-3.5 w-3.5 shrink-0" />
                 Create Recipe
               </Button>
               {showBulkEdit && (
                 <EditIconButton
-                  className="h-8 w-8 shrink-0"
-                  iconClassName="h-4 w-4"
+                  className="h-7 w-7 shrink-0"
+                  iconClassName="h-3.5 w-3.5"
                   label="Edit recipes"
                   onClick={enterEditMode}
                 />
@@ -399,7 +400,7 @@ export function LibraryTab() {
           {editMode && showBulkEdit && (
             <Button
               variant="default"
-              className="h-8 w-full gap-1 text-xs"
+              className="library-header-action h-7 min-h-7 w-full gap-1"
               onClick={exitEditMode}
             >
               <Check className="h-4 w-4" />

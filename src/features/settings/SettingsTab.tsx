@@ -508,9 +508,9 @@ export function SettingsTab() {
             </div>
             <Button
               type="button"
-              size="lg"
+              size="sm"
               className={cn(
-                'h-14 w-full gap-2.5 text-base font-semibold shadow-md',
+                'h-10 min-h-10 w-full gap-2 text-sm font-semibold shadow-md',
                 'bg-emerald-600 text-white hover:bg-emerald-500',
                 'focus-visible:ring-emerald-500',
                 checkingUpdate && 'opacity-90',
@@ -520,7 +520,7 @@ export function SettingsTab() {
               onClick={handleCheckForUpdates}
             >
               <RefreshCw
-                className={cn('h-5 w-5 shrink-0', checkingUpdate && 'animate-spin')}
+                className={cn('h-4 w-4 shrink-0', checkingUpdate && 'animate-spin')}
               />
               {checkingUpdate
                 ? 'Checking for updates…'
