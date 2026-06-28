@@ -71,7 +71,7 @@ export function QuantityInput({
         <p
           className={
             compact
-              ? 'text-xs text-muted-foreground'
+              ? 'text-center text-xs text-muted-foreground'
               : 'text-center text-sm text-muted-foreground'
           }
         >
@@ -145,13 +145,19 @@ export function QuantityInput({
         </div>
       )}
 
-      <div>
+      <div className={compact ? 'text-center' : undefined}>
         {!compact && (
           <Label htmlFor="amount-eaten" className="text-sm font-medium">
             Amount eaten
           </Label>
         )}
-        <div className={compact ? 'flex items-center gap-2' : 'mt-2 flex items-center justify-center gap-3'}>
+        <div
+          className={
+            compact
+              ? 'flex items-center justify-center gap-2'
+              : 'mt-2 flex items-center justify-center gap-3'
+          }
+        >
           <Input
             id="amount-eaten"
             type="number"
@@ -197,7 +203,7 @@ export function QuantityInput({
       <p
         className={
           compact
-            ? 'text-xs text-muted-foreground'
+            ? 'text-center text-xs text-muted-foreground'
             : 'text-center text-sm font-medium text-foreground'
         }
       >
