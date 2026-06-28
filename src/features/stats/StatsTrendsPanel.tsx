@@ -455,8 +455,6 @@ export function StatsTrendsPanel({
 
       {trackCurrentWeight && (
         <TrendsWeightSection
-          range={range}
-          statsPeriod={statsPeriod}
           dailyLogs={dailyLogs}
           settings={settings}
           accentColor={accentColor}

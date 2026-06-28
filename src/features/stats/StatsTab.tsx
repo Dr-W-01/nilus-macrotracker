@@ -56,15 +56,17 @@ export function StatsTab() {
 
   return (
     <div className="stats-tab">
-      <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
-          <h1 className="text-xl font-bold">Stats</h1>
+      <header className="tab-sticky-header">
+        <div className="space-y-2 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
+            <h1 className="text-lg font-bold">Stats</h1>
+          </div>
+          <StatsPeriodBar range={range} compact />
         </div>
       </header>
 
       <div className="space-y-4 p-4">
-      <StatsPeriodBar range={range} />
 
       <Tabs
         value={activeView}

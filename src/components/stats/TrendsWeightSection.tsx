@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import {
   CartesianGrid,
@@ -31,20 +31,31 @@ import {
   CHART_TREND_LINE,
   chartTooltipStyle,
 } from '@/lib/chartTheme'
+import { shiftDate, todayString } from '@/lib/dates'
 import type { DailyLog, Settings } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-const GOAL_WEIGHT_COLOR = '#22c55e'
+type WeightScale = '1W' | '1M' | '3M' | '6M' | '1Y'
 
-const PERIOD_LABELS: Record<'week' | 'month' | 'custom', string> = {
-  week: 'This week',
-  month: 'This month',
-  custom: 'Selected period',
+const WEIGHT_SCALES: WeightScale[] = ['1W', '1M', '3M', '6M', '1Y']
+
+const WEIGHT_SCALE_DAYS: Record<WeightScale, number> = {
+  '1W': 7,
+  '1M': 30,
+  '3M': 90,
+  '6M': 180,
+  '1Y': 365,
 }
 
+function weightRangeForScale(scale: WeightScale): { start: string; end: string } {
+  const end = todayString()
+  const start = shiftDate(end, -(WEIGHT_SCALE_DAYS[scale] - 1))
+  return { start, end }
+}
+
+const GOAL_WEIGHT_COLOR = '#22c55e'
+
 interface TrendsWeightSectionProps {
-  range: { start: string; end: string }
-  statsPeriod: 'week' | 'month' | 'custom'
   dailyLogs: Record<string, DailyLog>
   settings: Settings
   accentColor: string
@@ -120,13 +131,14 @@ function WeightStatTile({
 }
 
 export function TrendsWeightSection({
-  range,
-  statsPeriod,
   dailyLogs,
   settings,
   accentColor,
   onDayClick,
 }: TrendsWeightSectionProps) {
+  const [weightScale, setWeightScale] = useState<WeightScale>('1M')
+  const range = useMemo(() => weightRangeForScale(weightScale), [weightScale])
+
   const unit = settings.weightUnit ?? 'lbs'
   const unitLabel = weightUnitLabel(unit)
 
@@ -190,15 +202,34 @@ export function TrendsWeightSection({
       : null
 
   return (
-    <StatsSectionCard contentClassName="space-y-4">
-      <StatsSectionHeader
-        title="Weight over time"
-        description={
-          logCount === 0
-            ? `No weight entries in ${PERIOD_LABELS[statsPeriod].toLowerCase()}. Log weight on the Daily tab.`
-            : `${PERIOD_LABELS[statsPeriod]} · ${logCount} ${logCount === 1 ? 'entry' : 'entries'} · 7-day average`
-        }
-      />
+    <StatsSectionCard contentClassName="space-y-3">
+      <div className="space-y-2">
+        <StatsSectionHeader
+          title="Weight over time"
+          description={
+            logCount === 0
+              ? 'No weight entries in this range. Log weight on the Daily tab.'
+              : `${logCount} ${logCount === 1 ? 'entry' : 'entries'} · 7-day average`
+          }
+        />
+        <div className="flex flex-wrap gap-1">
+          {WEIGHT_SCALES.map((scale) => (
+            <button
+              key={scale}
+              type="button"
+              className={cn(
+                'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                weightScale === scale
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary/60 text-muted-foreground hover:text-foreground',
+              )}
+              onClick={() => setWeightScale(scale)}
+            >
+              {scale}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {periodStats && (
         <div className="space-y-3">

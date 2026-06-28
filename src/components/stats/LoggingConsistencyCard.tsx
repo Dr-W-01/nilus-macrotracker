@@ -29,7 +29,7 @@ export function LoggingConsistencyCard({ dailyLogs }: LoggingConsistencyCardProp
         />
         <div className="flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5">
           <Flame className="h-4 w-4 text-primary" aria-hidden />
-          <span className="text-sm font-bold tabular-nums text-primary">{streak}</span>
+          <span className="text-sm font-bold tabular-nums text-foreground">{streak}</span>
         </div>
       </div>
 

@@ -107,7 +107,7 @@ export function DailyTab() {
   const storedLog = useMacroStore((s) => s.dailyLogs[s.currentDate])
   const addLoggedFood = useMacroStore((s) => s.addLoggedFood)
   const updateLoggedFood = useMacroStore((s) => s.updateLoggedFood)
-  const bulkUpdateLoggedFoodMeal = useMacroStore((s) => s.bulkUpdateLoggedFoodMeal)
+  const dailyLogs = useMacroStore((s) => s.dailyLogs)
   const bulkRemoveLoggedFood = useMacroStore((s) => s.bulkRemoveLoggedFood)
   const removeLoggedFood = useMacroStore((s) => s.removeLoggedFood)
   const setBurnedCalories = useMacroStore((s) => s.setBurnedCalories)
@@ -157,15 +157,10 @@ export function DailyTab() {
   )
   const [selectFoodsMode, setSelectFoodsMode] = useState(false)
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
-  const [bulkAssignMeal, setBulkAssignMeal] = useState(meals[0] ?? 'Breakfast')
   const collapsedMeals = useMemo(
     () => new Set(collapsedMealNames),
     [collapsedMealNames],
   )
-
-  useEffect(() => {
-    setBulkAssignMeal(meals[0] ?? 'Breakfast')
-  }, [meals])
 
   useEffect(() => {
     setSelectFoodsMode(false)
@@ -283,14 +278,13 @@ export function DailyTab() {
     setSelectedLogIds(new Set())
   }
 
-  const handleBulkAssignMeal = () => {
-    if (selectedLogIds.size === 0) return
-    bulkUpdateLoggedFoodMeal([...selectedLogIds], bulkAssignMeal)
-    toast.success(
-      `Moved ${selectedLogIds.size} ${selectedLogIds.size === 1 ? 'item' : 'items'} to ${bulkAssignMeal}`,
-    )
-    exitSelectMode()
-  }
+  const datesWithLoggedFood = useMemo(
+    () =>
+      Object.entries(dailyLogs)
+        .filter(([, dayLog]) => dayLog.foods.length > 0)
+        .map(([date]) => parseISO(date)),
+    [dailyLogs],
+  )
 
   const handleBulkDelete = () => {
     const count = selectedLogIds.size
@@ -397,6 +391,8 @@ export function DailyTab() {
                   mode="single"
                   selected={parseISO(currentDate)}
                   onSelect={(d) => d && setCurrentDate(format(d, 'yyyy-MM-dd'))}
+                  modifiers={{ has_food: datesWithLoggedFood }}
+                  modifiersClassNames={{ has_food: 'has-food-day' }}
                 />
               </PopoverContent>
             </Popover>
@@ -498,10 +494,6 @@ export function DailyTab() {
             <div className="sticky top-0 z-10 -mx-1 mb-3 bg-background py-1">
               <BulkMealAssignBar
                 count={selectedLogIds.size}
-                meals={meals}
-                assignMeal={bulkAssignMeal}
-                onAssignMealChange={setBulkAssignMeal}
-                onAssign={handleBulkAssignMeal}
                 onDelete={() => setBulkDeleteConfirmOpen(true)}
                 onClear={() => setSelectedLogIds(new Set())}
                 onDone={exitSelectMode}

@@ -332,6 +332,20 @@ input[type='search'].library-search-input::-webkit-search-cancel-button,
 }
 
 /* Newly earned badge pill in the Badges grid */
+/* Daily calendar: dot on days with logged food */
+.has-food-day button::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background-color: var(--primary);
+  pointer-events: none;
+}
+
 .badge-new-pill {
   background: linear-gradient(
     135deg,

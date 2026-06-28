@@ -289,11 +289,11 @@ export function LibraryTab() {
       className="library-tab"
     >
       <div className="tab-sticky-header">
-        <div className="space-y-3 px-4 py-3">
+        <div className="space-y-2 px-4 py-2">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" aria-hidden />
-              <h1 className="text-xl font-bold">Library</h1>
+              <BookOpen className="h-4 w-4 text-primary" aria-hidden />
+              <h1 className="text-lg font-bold">Library</h1>
             </div>
             {librarySegment === 'categories' && activeCategory ? (
               <EditIconButton
@@ -307,7 +307,7 @@ export function LibraryTab() {
             value={librarySegment}
             onValueChange={(v) => setLibrarySegment(v as typeof librarySegment)}
           >
-            <TabsList className="grid grid-cols-3">
+            <TabsList className="grid h-8 grid-cols-3">
               <TabsTrigger value="items">Items</TabsTrigger>
               <TabsTrigger value="categories">Categories</TabsTrigger>
               <TabsTrigger value="recipes">Recipes</TabsTrigger>
@@ -343,15 +343,15 @@ export function LibraryTab() {
           />
           {!editMode && librarySegment === 'items' && (
             <div className="tab-action-row">
-              <Button className="min-w-0 flex-1" onClick={() => setNewFoodOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" />
+              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setNewFoodOpen(true)}>
+                <Plus className="h-3.5 w-3.5 mr-1" />
                 New Food
               </Button>
               {showBulkEdit && (
                 <EditIconButton
                   variant="outline"
-                  className="h-11 w-11 shrink-0"
-                  iconClassName="h-5 w-5"
+                  className="h-8 w-8 shrink-0"
+                  iconClassName="h-4 w-4"
                   label="Edit library"
                   onClick={enterEditMode}
                 />
@@ -360,15 +360,15 @@ export function LibraryTab() {
           )}
           {!editMode && librarySegment === 'categories' && !activeCategory && (
             <div className="tab-action-row">
-              <Button className="min-w-0 flex-1" onClick={() => setAddCategoryOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" />
+              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setAddCategoryOpen(true)}>
+                <Plus className="h-3.5 w-3.5 mr-1" />
                 New Category
               </Button>
               {showBulkEdit && (
                 <EditIconButton
                   variant="outline"
-                  className="h-11 w-11 shrink-0"
-                  iconClassName="h-5 w-5"
+                  className="h-8 w-8 shrink-0"
+                  iconClassName="h-4 w-4"
                   label="Edit categories"
                   onClick={enterEditMode}
                 />
@@ -377,15 +377,15 @@ export function LibraryTab() {
           )}
           {!editMode && librarySegment === 'recipes' && (
             <div className="tab-action-row">
-              <Button className="min-w-0 flex-1" onClick={() => setRecipeOpen(true)}>
-                <ChefHat className="h-4 w-4 mr-1" />
+              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setRecipeOpen(true)}>
+                <ChefHat className="h-3.5 w-3.5 mr-1" />
                 Create Recipe
               </Button>
               {showBulkEdit && (
                 <EditIconButton
                   variant="outline"
-                  className="h-11 w-11 shrink-0"
-                  iconClassName="h-5 w-5"
+                  className="h-8 w-8 shrink-0"
+                  iconClassName="h-4 w-4"
                   label="Edit recipes"
                   onClick={enterEditMode}
                 />
@@ -395,7 +395,7 @@ export function LibraryTab() {
           {editMode && showBulkEdit && (
             <Button
               variant="default"
-              className="h-11 w-full gap-1.5"
+              className="h-8 w-full gap-1 text-xs"
               onClick={exitEditMode}
             >
               <Check className="h-4 w-4" />
@@ -678,7 +678,7 @@ function FoodList({
       {items.map((food) => (
         <li key={food.id}>
           {editMode ? (
-            <label className={cn(SURFACE_GRADIENT_COMPACT, 'flex cursor-pointer items-start gap-3 px-3 py-3 active:bg-secondary/50')}>
+            <label className={cn(SURFACE_GRADIENT_COMPACT, 'flex cursor-pointer items-start gap-2 px-2.5 py-2 active:bg-secondary/50')}>
               <Checkbox
                 checked={selected.has(food.id)}
                 onChange={() => onToggle(food.id)}
@@ -691,7 +691,7 @@ function FoodList({
             <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-stretch gap-1')}>
               <button
                 type="button"
-                className="flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3 text-left active:bg-secondary/50"
+                className="flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2 text-left active:bg-secondary/50"
                 onClick={() => onOpenItem(food)}
               >
                 <FoodRowContent food={food} showFavorite={false} />
@@ -703,7 +703,7 @@ function FoodList({
                 type="button"
                 variant="outline"
                 size="icon"
-                className="mr-1 h-9 w-9 shrink-0 self-center"
+                className="mr-1 h-8 w-8 shrink-0 self-center"
                 onClick={() => onAddToToday(food)}
                 aria-label={`Add ${food.name} to today`}
                 title="Add to Today"
@@ -729,7 +729,7 @@ function FoodRowContent({
     <>
       <div className="flex w-full items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="font-medium truncate">
+          <p className="text-sm font-medium truncate">
             {food.name} {food.isRecipe && '🍱'}
           </p>
           <p className="text-xs text-muted-foreground truncate">

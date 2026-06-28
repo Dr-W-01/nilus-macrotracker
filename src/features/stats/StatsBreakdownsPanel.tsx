@@ -143,12 +143,13 @@ export function StatsBreakdownsPanel({
 
   return (
     <div className="space-y-4">
-      <StatsSectionCard contentClassName="space-y-3">
+      <StatsSectionCard contentClassName="space-y-2">
         <StatsSectionHeader
           title="Average macro distribution"
           description="Share of calories from protein, carbs, and fat (daily averages)"
+          className="mb-0"
         />
-        <div className="h-56">
+        <div className="-mt-1 h-52">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -189,10 +190,7 @@ export function StatsBreakdownsPanel({
       </StatsSectionCard>
 
       <StatsSectionCard contentClassName="space-y-3">
-        <StatsSectionHeader
-          title="Top foods"
-          description="By total calories in period"
-        />
+        <StatsSectionHeader title="Top foods" />
         <ul className="-mx-4 divide-y divide-border border-t border-border sm:-mx-0 sm:rounded-lg sm:border">
             {topFoods.length === 0 ? (
               <li className="px-4 py-6 text-center text-sm text-muted-foreground">
@@ -223,7 +221,10 @@ export function StatsBreakdownsPanel({
       </StatsSectionCard>
 
       <StatsSectionCard contentClassName="space-y-3">
-        <StatsSectionHeader title="Period averages" description="Per logged day" />
+        <StatsSectionHeader
+          title="Period averages"
+          description={`${format(parseISO(range.start), 'MMM d')} – ${format(parseISO(range.end), 'MMM d, yyyy')}`}
+        />
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
           <AvgCell label="Calories" value={roundMacro(avg.calories, 0)} />
           <AvgCell label="Net" value={roundMacro(avg.net, 0)} accent />

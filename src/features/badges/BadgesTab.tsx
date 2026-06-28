@@ -71,16 +71,16 @@ export function BadgesTab() {
 
   return (
     <div className="badges-tab">
-      <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
+      <header className="tab-sticky-header flex min-h-12 items-center px-4 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          <Award className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-          <h1 className="truncate whitespace-nowrap text-xl font-bold">
+          <Award className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <h1 className="truncate whitespace-nowrap text-base font-bold">
             Badges ({earnedCount} / {BADGE_DEFINITIONS.length} earned)
           </h1>
         </div>
       </header>
 
-      <div className="space-y-8 p-4">
+      <div className="space-y-5 p-3">
         <NewBadgesSection
           badgeState={badgeState}
           unviewedIds={unviewedIds}

@@ -17,8 +17,12 @@ import {
 import { exportFullBackup, parseFullBackup } from '@/lib/importExport'
 import { clearAllStorage } from '@/lib/storage'
 import {
+  accentPresetsForTheme,
   DEFAULT_ACCENT_COLOR,
+  DEFAULT_LIGHT_SECONDARY_TEXT_COLOR,
   DEFAULT_SECONDARY_TEXT_COLOR,
+  DARK_THEME_SECONDARY_PRESETS,
+  secondaryPresetsForTheme,
 } from '@/lib/theme'
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
@@ -39,9 +43,6 @@ import { useAppUpdateState } from '@/hooks/useAppUpdateState'
 import { runManualUpdateCheck } from '@/lib/pwaUpdate'
 import { SURFACE_GRADIENT_COMPACT, SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
-
-const ACCENT_PRESETS = ['#B22222', '#8B0000', '#CD5C5C', '#2563EB', '#16A34A']
-const TEXT_PRESETS = ['#D1D1D1', '#C4C4C4', '#E5E5E5', '#A3A3A3', '#9CA3AF']
 
 export function SettingsTab() {
   const settings = useMacroStore((s) => s.settings)
@@ -67,7 +68,24 @@ export function SettingsTab() {
   const accentColor = settings.accentColor || DEFAULT_ACCENT_COLOR
   const secondaryTextColor =
     settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR
+  const accentPresets = accentPresetsForTheme()
+  const textPresets = secondaryPresetsForTheme(settings.theme)
   const { updateAvailable, lastUpdatedLabel } = useAppUpdateState()
+
+  const setTheme = (theme: 'dark' | 'light') => {
+    const patch: Parameters<typeof updateSettings>[0] = { theme }
+    const currentSecondary = (settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR).toUpperCase()
+    const lightSecondaryPresets = new Set(
+      secondaryPresetsForTheme('light').map((c) => c.toUpperCase()),
+    )
+    if (theme === 'light' && DARK_THEME_SECONDARY_PRESETS.has(currentSecondary)) {
+      patch.secondaryTextColor = DEFAULT_LIGHT_SECONDARY_TEXT_COLOR
+    }
+    if (theme === 'dark' && lightSecondaryPresets.has(currentSecondary)) {
+      patch.secondaryTextColor = DEFAULT_SECONDARY_TEXT_COLOR
+    }
+    updateSettings(patch)
+  }
 
   const handleBackupFile = async (file: File) => {
     try {
@@ -303,31 +321,33 @@ export function SettingsTab() {
       </section>
       )}
 
-      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
-        <h2 className="font-semibold">Daily meals</h2>
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-2 p-3')}>
+        <h2 className="text-sm font-semibold">Daily meals</h2>
         <MealListEditor />
       </section>
 
-      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-4 p-4')}>
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-3')}>
         <div>
-          <h2 className="font-semibold">Appearance</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Customize accent and text colors on the dark theme base.
+          <h2 className="text-sm font-semibold">Appearance</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Customize accent and secondary text colors for the active theme.
           </p>
         </div>
 
         <div className="flex gap-2">
           <Button
-            className="flex-1"
+            size="sm"
+            className="h-8 flex-1 text-xs"
             variant={settings.theme === 'dark' ? 'default' : 'outline'}
-            onClick={() => updateSettings({ theme: 'dark' })}
+            onClick={() => setTheme('dark')}
           >
             Dark
           </Button>
           <Button
-            className="flex-1"
+            size="sm"
+            className="h-8 flex-1 text-xs"
             variant={settings.theme === 'light' ? 'default' : 'outline'}
-            onClick={() => updateSettings({ theme: 'light' })}
+            onClick={() => setTheme('light')}
           >
             Light
           </Button>
@@ -339,15 +359,16 @@ export function SettingsTab() {
           description="Buttons, active tab, highlights, links, and chart accents."
           value={accentColor}
           fallback={DEFAULT_ACCENT_COLOR}
+          presets={accentPresets}
           onChange={(color) => updateSettings({ accentColor: color })}
         />
-        <div className="flex flex-wrap gap-2">
-          {ACCENT_PRESETS.map((color) => (
+        <div className="flex flex-wrap gap-1.5">
+          {accentPresets.map((color) => (
             <button
               key={color}
               type="button"
               title={color}
-              className="h-9 w-9 rounded-full border-2 border-border"
+              className="h-7 w-7 rounded-full border-2 border-border"
               style={{
                 background: color,
                 outline:
@@ -365,16 +386,21 @@ export function SettingsTab() {
           label="Secondary text color"
           description="Labels, hints, and grey text (including the Daily tab)."
           value={secondaryTextColor}
-          fallback={DEFAULT_SECONDARY_TEXT_COLOR}
+          fallback={
+            settings.theme === 'light'
+              ? DEFAULT_LIGHT_SECONDARY_TEXT_COLOR
+              : DEFAULT_SECONDARY_TEXT_COLOR
+          }
+          presets={textPresets}
           onChange={(color) => updateSettings({ secondaryTextColor: color })}
         />
-        <div className="flex flex-wrap gap-2">
-          {TEXT_PRESETS.map((color) => (
+        <div className="flex flex-wrap gap-1.5">
+          {textPresets.map((color) => (
             <button
               key={color}
               type="button"
               title={color}
-              className="h-9 w-9 rounded-full border-2 border-border"
+              className="h-7 w-7 rounded-full border-2 border-border"
               style={{
                 background: color,
                 outline:
@@ -389,11 +415,15 @@ export function SettingsTab() {
 
         <Button
           variant="outline"
-          className="w-full"
+          size="sm"
+          className="h-8 w-full text-xs"
           onClick={() =>
             updateSettings({
               accentColor: DEFAULT_ACCENT_COLOR,
-              secondaryTextColor: DEFAULT_SECONDARY_TEXT_COLOR,
+              secondaryTextColor:
+                settings.theme === 'light'
+                  ? DEFAULT_LIGHT_SECONDARY_TEXT_COLOR
+                  : DEFAULT_SECONDARY_TEXT_COLOR,
             })
           }
         >

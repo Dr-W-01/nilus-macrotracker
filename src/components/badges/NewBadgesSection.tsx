@@ -31,14 +31,14 @@ export function NewBadgesSection({
 
   if (newBadges.length === 0) return null
 
-  const useHorizontalScroll = newBadges.length > 6
+  const useHorizontalScroll = newBadges.length > 4
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-start justify-between gap-3 border-b border-border/60 pb-2">
+    <section className="space-y-2">
+      <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-1.5">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-foreground">New Badges</h2>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          <h2 className="text-xs font-semibold text-foreground">New Badges</h2>
+          <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">
             Recently awarded — tap to view details
           </p>
         </div>
@@ -46,7 +46,7 @@ export function NewBadgesSection({
           type="button"
           variant="outline"
           size="sm"
-          className="h-8 shrink-0 px-3 text-xs"
+          className="h-7 shrink-0 px-2 text-[10px]"
           onClick={onClearAll}
         >
           Clear All
@@ -60,26 +60,25 @@ export function NewBadgesSection({
             '[-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
-          <div className="flex w-max items-stretch gap-3">
+          <div
+            className="grid w-max grid-flow-col grid-rows-2 gap-2"
+            style={{ gridAutoColumns: 'calc((min(100vw - 2rem, 32rem) - 0.5rem) / 2)' }}
+          >
             {newBadges.map(({ id }) => (
-              <div
+              <BadgeCard
                 key={id}
-                className="w-[calc((100vw-2rem-1.5rem)/3)] max-w-[7.5rem] shrink-0 self-stretch"
-              >
-                <BadgeCard
-                  badgeId={id}
-                  progress={progress[id]}
-                  weightTrackingEnabled={weightTrackingEnabled}
-                  burnTrackingEnabled={burnTrackingEnabled}
-                  isUnviewed={unviewedIds.includes(id)}
-                  onClick={() => onBadgeClick(id)}
-                />
-              </div>
+                badgeId={id}
+                progress={progress[id]}
+                weightTrackingEnabled={weightTrackingEnabled}
+                burnTrackingEnabled={burnTrackingEnabled}
+                isUnviewed={unviewedIds.includes(id)}
+                onClick={() => onBadgeClick(id)}
+              />
             ))}
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 items-stretch gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-4 items-stretch gap-2">
           {newBadges.map(({ id }) => (
             <BadgeCard
               key={id}

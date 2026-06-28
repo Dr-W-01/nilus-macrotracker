@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DeleteMealDialog } from '@/components/settings/DeleteMealDialog'
 import { Button } from '@/components/ui/button'
@@ -11,8 +11,8 @@ import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
-const actionBtnClass = 'h-11 w-11 shrink-0'
-const actionIconClass = 'h-5 w-5'
+const reorderBtnClass = 'h-7 min-w-[2rem] shrink-0 px-1.5 text-[10px] font-medium'
+const actionBtnClass = 'h-7 w-7 shrink-0'
 
 export function MealListEditor() {
   const meals = useMacroStore((s) => s.settings.meals)
@@ -98,14 +98,14 @@ export function MealListEditor() {
         — nothing is permanently removed.
       </p>
 
-      <ul className="space-y-1.5">
+      <ul className="space-y-1">
         {meals.map((meal, index) => {
           const isEditing = editingMeal === meal
 
           return (
             <li
               key={meal}
-              className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-2 py-1.5')}
+              className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1 px-2 py-1.5')}
             >
               {isEditing ? (
                 <Input
@@ -117,7 +117,7 @@ export function MealListEditor() {
                     if (e.key === 'Enter') e.currentTarget.blur()
                     if (e.key === 'Escape') cancelEditing()
                   }}
-                  className="h-9 min-h-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-1"
+                  className="h-8 min-h-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-1"
                   aria-label={`Edit meal name: ${meal}`}
                   {...mobilePlainTextInputProps}
                 />
@@ -130,29 +130,29 @@ export function MealListEditor() {
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
-                className={actionBtnClass}
+                size="sm"
+                className={reorderBtnClass}
                 disabled={index === 0}
                 aria-label={`Move ${meal} up`}
                 onClick={() => moveMeal(index, 'up')}
               >
-                <ChevronUp className={actionIconClass} />
+                Up
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
-                className={actionBtnClass}
+                size="sm"
+                className={reorderBtnClass}
                 disabled={index === meals.length - 1}
                 aria-label={`Move ${meal} down`}
                 onClick={() => moveMeal(index, 'down')}
               >
-                <ChevronDown className={actionIconClass} />
+                Down
               </Button>
               <EditIconButton
                 variant="outline"
                 className={actionBtnClass}
-                iconClassName={actionIconClass}
+                iconClassName="h-3.5 w-3.5"
                 label={`Edit ${meal}`}
                 onClick={() => startEditing(meal)}
               />
@@ -165,7 +165,7 @@ export function MealListEditor() {
                 aria-label={`Delete ${meal}`}
                 onClick={() => requestDelete(meal)}
               >
-                <Trash2 className={actionIconClass} />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </li>
           )
@@ -180,11 +180,11 @@ export function MealListEditor() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleAdd()
           }}
-          className="h-10 text-sm"
+          className="h-9 text-sm"
           {...mobilePlainTextInputProps}
         />
-        <Button type="button" variant="outline" size="sm" className="h-10 shrink-0 gap-1.5 px-3" onClick={handleAdd}>
-          <Plus className="h-5 w-5" />
+        <Button type="button" variant="outline" size="sm" className="h-9 shrink-0 gap-1 px-2.5" onClick={handleAdd}>
+          <Plus className="h-4 w-4" />
           Add
         </Button>
       </div>

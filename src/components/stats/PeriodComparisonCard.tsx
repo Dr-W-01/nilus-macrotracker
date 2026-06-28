@@ -44,7 +44,7 @@ export function PeriodComparisonCard({
   if (rows.length === 0) return null
 
   return (
-    <StatsSectionCard contentClassName="space-y-3">
+    <StatsSectionCard contentClassName="space-y-2">
       <StatsSectionHeader
         title="Period averages"
         description={`This period vs ${periodLabel}. Daily averages for logged days (— if not tracked).`}
@@ -71,7 +71,7 @@ function ComparisonRow({
   return (
     <div
       className={cn(
-        'rounded-lg border px-3 py-2.5',
+        'rounded-lg border px-2.5 py-2',
         row.emphasized ? 'border-primary/30 bg-primary/5' : 'border-border/60 bg-secondary/30',
       )}
     >

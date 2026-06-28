@@ -41,8 +41,8 @@ export function BadgeCard({
       data-badge-id={badgeId}
       onClick={onClick}
       className={cn(
-        'relative flex h-full w-full flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all',
-        'min-h-[108px] active:scale-[0.98]',
+        'relative flex h-full w-full flex-col items-center justify-center rounded-lg border p-2 text-center transition-all',
+        'min-h-[80px] active:scale-[0.98]',
         earned && !featureLocked
           ? 'border-primary/40 bg-primary/10 shadow-sm'
           : 'border-border/60 bg-card/50',
@@ -53,21 +53,21 @@ export function BadgeCard({
     >
       {isUnviewed && earned && !featureLocked && (
         <span
-          className="badge-new-pill absolute left-1 top-1 z-10 rounded px-1 py-0.5 text-[8px] font-bold uppercase leading-none tracking-wide shadow-sm"
+          className="badge-new-pill absolute left-0.5 top-0.5 z-10 rounded px-1 py-0.5 text-[7px] font-bold uppercase leading-none tracking-wide shadow-sm"
           aria-label="Newly earned"
         >
           NEW
         </span>
       )}
       {count > 1 && (
-        <span className="absolute right-1 top-1 z-10 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm">
+        <span className="absolute right-0.5 top-0.5 z-10 rounded-full bg-primary px-1 py-0.5 text-[9px] font-bold text-primary-foreground shadow-sm">
           ×{count}
         </span>
       )}
-      <div className="flex w-full flex-col items-center justify-center gap-1.5 px-0.5">
+      <div className="flex w-full flex-col items-center justify-center gap-1 px-0.5">
         <span
           className={cn(
-            'flex h-9 shrink-0 items-center justify-center text-3xl leading-none',
+            'flex h-7 shrink-0 items-center justify-center text-2xl leading-none',
             earned && !featureLocked ? 'drop-shadow-sm' : 'opacity-80',
           )}
           aria-hidden
@@ -76,14 +76,14 @@ export function BadgeCard({
         </span>
         <span
           className={cn(
-            'line-clamp-2 w-full text-xs font-semibold leading-tight',
+            'line-clamp-2 w-full text-[10px] font-semibold leading-tight',
             earned && !featureLocked ? 'text-foreground' : 'text-muted-foreground',
           )}
         >
           {def.name}
         </span>
         {lockHint && (
-          <span className="line-clamp-2 w-full text-[10px] leading-snug text-muted-foreground">
+          <span className="line-clamp-2 w-full text-[9px] leading-snug text-muted-foreground">
             {lockHint}
           </span>
         )}

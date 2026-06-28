@@ -2,12 +2,37 @@ import type { Settings } from './types'
 
 export const DEFAULT_ACCENT_COLOR = '#B22222'
 export const DEFAULT_SECONDARY_TEXT_COLOR = '#d1d1d1'
+export const DEFAULT_LIGHT_SECONDARY_TEXT_COLOR = '#71717a'
+
+/** Preset secondary colors tuned for dark backgrounds — poor contrast on light theme */
+export const DARK_THEME_SECONDARY_PRESETS = new Set([
+  '#D1D1D1',
+  '#C4C4C4',
+  '#E5E5E5',
+  '#A3A3A3',
+  '#9CA3AF',
+  DEFAULT_SECONDARY_TEXT_COLOR.toUpperCase(),
+])
 
 export function normalizeHexColor(value: string, fallback: string): string {
   const trimmed = value.trim()
   if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) return trimmed
   if (/^[0-9A-Fa-f]{6}$/.test(trimmed)) return `#${trimmed}`
   return fallback
+}
+
+function resolveSecondaryTextColor(settings: Settings): string {
+  const raw = normalizeHexColor(
+    settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR,
+    DEFAULT_SECONDARY_TEXT_COLOR,
+  )
+  if (settings.theme === 'light') {
+    const upper = raw.toUpperCase()
+    if (DARK_THEME_SECONDARY_PRESETS.has(upper) || upper === DEFAULT_SECONDARY_TEXT_COLOR.toUpperCase()) {
+      return DEFAULT_LIGHT_SECONDARY_TEXT_COLOR
+    }
+  }
+  return raw
 }
 
 /** Apply theme + custom colors to document CSS variables (instant global update). */
@@ -19,10 +44,7 @@ export function applyThemeColors(settings: Settings): void {
     settings.accentColor,
     DEFAULT_ACCENT_COLOR,
   )
-  const secondaryText = normalizeHexColor(
-    settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR,
-    DEFAULT_SECONDARY_TEXT_COLOR,
-  )
+  const secondaryText = resolveSecondaryTextColor(settings)
 
   root.style.setProperty('--primary', accent)
   root.style.setProperty('--accent', accent)
@@ -38,4 +60,15 @@ export function withDefaultSettings(settings: Partial<Settings> & Settings): Set
     secondaryTextColor:
       settings.secondaryTextColor ?? DEFAULT_SECONDARY_TEXT_COLOR,
   }
+}
+
+export function secondaryPresetsForTheme(theme: 'dark' | 'light'): string[] {
+  if (theme === 'light') {
+    return ['#71717A', '#52525B', '#6B7280', '#78716C', '#64748B']
+  }
+  return ['#A3A3A3', '#9CA3AF', '#8B8B8B', '#B0B0B0', '#7A7A7A']
+}
+
+export function accentPresetsForTheme(): string[] {
+  return ['#B22222', '#C41E3A', '#DC2626', '#2563EB', '#0D9488', '#D97706']
 }

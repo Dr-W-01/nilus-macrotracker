@@ -2,8 +2,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { StatsSectionHeader } from '@/components/stats/StatsSectionCard'
-import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import {
   getMonthRange,
   getWeekRange,
@@ -19,9 +17,10 @@ import { cn } from '@/lib/utils'
 
 interface StatsPeriodBarProps {
   range: { start: string; end: string }
+  compact?: boolean
 }
 
-export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
+export function StatsPeriodBar({ range, compact = false }: StatsPeriodBarProps) {
   const statsPeriod = useMacroStore((s) => s.statsPeriod)
   const setStatsPeriod = useMacroStore((s) => s.setStatsPeriod)
   const statsRangeStart = useMacroStore((s) => s.statsRangeStart)
@@ -43,10 +42,8 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
   }
 
   return (
-    <section
-      className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-2 p-3')}
-    >
-      <StatsSectionHeader title="Period" />
+    <section className={cn(compact ? 'space-y-1.5' : 'space-y-2 rounded-xl border border-primary/20 bg-gradient-to-b from-[color-mix(in_oklab,var(--primary)_8%,var(--card))] to-card p-3 shadow-sm')}>
+      {!compact && <p className="text-sm font-semibold">Period</p>}
       <Tabs
         value={statsPeriod}
         onValueChange={(v) => {
@@ -65,14 +62,14 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
           }
         }}
       >
-        <TabsList className="grid h-9 grid-cols-3 bg-secondary/80 p-1">
-          <TabsTrigger value="week" className="text-xs font-medium sm:text-sm">
+        <TabsList className={cn('grid grid-cols-3 bg-secondary/80 p-0.5', compact ? 'h-8' : 'h-9 p-1')}>
+          <TabsTrigger value="week" className="text-xs font-medium">
             This Week
           </TabsTrigger>
-          <TabsTrigger value="month" className="text-xs font-medium sm:text-sm">
+          <TabsTrigger value="month" className="text-xs font-medium">
             Month
           </TabsTrigger>
-          <TabsTrigger value="custom" className="text-xs font-medium sm:text-sm">
+          <TabsTrigger value="custom" className="text-xs font-medium">
             Custom
           </TabsTrigger>
         </TabsList>
@@ -81,17 +78,19 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
       {statsPeriod === 'custom' && (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-muted-foreground">Start</label>
+            <label className="text-[10px] text-muted-foreground">Start</label>
             <Input
               type="date"
+              className={compact ? 'h-8 text-xs' : undefined}
               value={statsRangeStart}
               onChange={(e) => setStatsRange(e.target.value, statsRangeEnd)}
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">End</label>
+            <label className="text-[10px] text-muted-foreground">End</label>
             <Input
               type="date"
+              className={compact ? 'h-8 text-xs' : undefined}
               max={statsLastCompleteDate()}
               value={statsRangeEnd}
               onChange={(e) => setStatsRange(statsRangeStart, e.target.value)}
@@ -101,14 +100,14 @@ export function StatsPeriodBar({ range }: StatsPeriodBarProps) {
       )}
 
       <div className="flex items-center justify-between gap-2">
-        <Button variant="ghost" size="icon" onClick={() => shiftPeriod(-1)}>
-          <ChevronLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className={compact ? 'h-8 w-8' : undefined} onClick={() => shiftPeriod(-1)}>
+          <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-center text-sm text-muted-foreground">
+        <span className={cn('text-center text-muted-foreground', compact ? 'text-xs' : 'text-sm')}>
           {format(parseISO(range.start), 'MMM d')} – {format(parseISO(range.end), 'MMM d, yyyy')}
         </span>
-        <Button variant="ghost" size="icon" onClick={() => shiftPeriod(1)}>
-          <ChevronRight className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className={compact ? 'h-8 w-8' : undefined} onClick={() => shiftPeriod(1)}>
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </section>
