@@ -142,7 +142,7 @@ export function SettingsTab() {
 
       <div className="space-y-6 p-4">
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'p-4')}>
-        <h2 className="mb-3 font-semibold">Goals & Templates</h2>
+        <h2 className="mb-3 text-sm font-semibold">Goals & Templates</h2>
         <ul className="space-y-2 mb-3">
           {settings.goalTemplates.map((g) => {
             const isDefault = g.id === settings.defaultTemplateId
@@ -252,7 +252,7 @@ export function SettingsTab() {
       {isTrackCurrentWeightEnabled(settings) && (
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <div>
-          <h2 className="font-semibold">Units</h2>
+          <h2 className="text-sm font-semibold">Units</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Weight logged on the Daily tab uses this unit.
           </p>
@@ -281,7 +281,7 @@ export function SettingsTab() {
       {isTrackCurrentWeightEnabled(settings) && (
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <div>
-          <h2 className="font-semibold">Target weight</h2>
+          <h2 className="text-sm font-semibold">Target weight</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Optional goal line on the weight chart in Stats → Trends.
           </p>
@@ -435,7 +435,7 @@ export function SettingsTab() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>Data</CardTitle>
+          <CardTitle className="text-sm font-semibold leading-snug tracking-normal">Data</CardTitle>
           <p className="text-sm text-muted-foreground font-normal">
             Back up or restore your library, logs, and settings.
           </p>
