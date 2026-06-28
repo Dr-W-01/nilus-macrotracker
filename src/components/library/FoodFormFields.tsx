@@ -173,9 +173,10 @@ export function FoodFormFields({
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Scale type">
             <Button
               type="button"
+              size="sm"
               variant={values.scaleType === 'count' ? 'default' : 'outline'}
               className={cn(
-                'h-10',
+                'h-9 min-h-9 py-0',
                 values.scaleType === 'count' && 'ring-1 ring-primary/25',
               )}
               onClick={() => patch({ scaleType: 'count' })}
@@ -184,9 +185,10 @@ export function FoodFormFields({
             </Button>
             <Button
               type="button"
+              size="sm"
               variant={values.scaleType === 'scale' ? 'default' : 'outline'}
               className={cn(
-                'h-10',
+                'h-9 min-h-9 py-0',
                 values.scaleType === 'scale' && 'ring-1 ring-primary/25',
               )}
               onClick={() => patch({ scaleType: 'scale' })}

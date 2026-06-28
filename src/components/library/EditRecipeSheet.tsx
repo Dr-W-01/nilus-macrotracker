@@ -158,7 +158,7 @@ export function EditRecipeSheet({ recipe, onClose }: EditRecipeSheetProps) {
               />
             </FormSection>
           </ScrollSheetBody>
-          <ScrollSheetFooter compact>
+          <ScrollSheetFooter>
             <Button size="sm" className="w-full" onClick={save}>
               Save recipe
             </Button>

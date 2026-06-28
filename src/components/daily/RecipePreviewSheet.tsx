@@ -86,7 +86,7 @@ export function RecipePreviewSheet({
             showEmptyHint={false}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter compact>
+        <ScrollSheetFooter>
           <Button
             size="sm"
             className="w-full"

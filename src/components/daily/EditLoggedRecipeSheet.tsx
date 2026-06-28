@@ -98,7 +98,7 @@ export function EditLoggedRecipeSheet({
             setOverrides={setOverrides}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter compact>
+        <ScrollSheetFooter>
           <Button size="sm" className="w-full" onClick={handleSave}>
             Save for {dateLabel}
           </Button>

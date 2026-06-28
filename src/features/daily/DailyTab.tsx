@@ -27,8 +27,9 @@ import { MealPicker } from '@/components/daily/MealPicker'
 
 import { RecipeCustomizeSheet } from '@/components/daily/RecipeCustomizeSheet'
 import { RecipePreviewSheet } from '@/components/daily/RecipePreviewSheet'
-import { QuantityInput } from '@/components/daily/QuantityInput'
+import { FoodNoteField, QuantityInput } from '@/components/daily/QuantityInput'
 import { Button } from '@/components/ui/button'
+import { FormSection } from '@/components/ui/form-section'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Calendar } from '@/components/ui/calendar'
@@ -1127,7 +1128,7 @@ function EditLoggedSheet({
               </p>
             )}
           </ScrollSheetBody>
-          <ScrollSheetFooter compact>
+          <ScrollSheetFooter>
             <Button variant="destructive" size="sm" className="w-full" onClick={onDelete}>
               Remove from day
             </Button>
@@ -1168,22 +1169,12 @@ function EditLoggedSheet({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <ScrollSheetHeader>
-          <SheetTitle>Edit {food.name}</SheetTitle>
-          <p className="text-xs text-muted-foreground font-normal">
-            Changes apply to this day&apos;s log only.
+          <SheetTitle>{food.name}</SheetTitle>
+          <p className="text-xs font-normal text-muted-foreground">
+            Edit for {dateLabel}
           </p>
         </ScrollSheetHeader>
-        <ScrollSheetBody className="space-y-4">
-          <MealPicker label="Meal" meals={meals} value={meal} onChange={setMeal} compact />
-          {previewMacros && (
-            <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Macros for this entry</p>
-              <p className="text-lg font-bold text-primary tabular-nums">
-                {roundMacro(previewMacros.calories, 0)} cal
-              </p>
-              <LoggedMacroPreview macros={previewMacros} size="md" className="mt-1" />
-            </div>
-          )}
+        <ScrollSheetBody className="space-y-3">
           <QuantityInput
             food={food}
             note={note}
@@ -1192,10 +1183,29 @@ function EditLoggedSheet({
             onCountQuantityChange={setCountQty}
             amountEaten={amountEaten}
             onAmountEatenChange={setAmountEaten}
+            showNote={false}
             showInlineMacroPreview={false}
           />
+          {previewMacros && (
+            <div className="text-center">
+              <p className="text-lg font-bold text-primary tabular-nums">
+                {roundMacro(previewMacros.calories, 0)} cal
+              </p>
+              <LoggedMacroPreview macros={previewMacros} size="md" className="mt-0.5" />
+            </div>
+          )}
+          <FormSection title="Details" className="p-3 space-y-2.5">
+            <MealPicker
+              label="Meal"
+              meals={meals}
+              value={meal}
+              onChange={setMeal}
+              showEmptyHint={false}
+            />
+            <FoodNoteField note={note} onNoteChange={setNote} />
+          </FormSection>
         </ScrollSheetBody>
-        <ScrollSheetFooter compact>
+        <ScrollSheetFooter>
           <Button size="sm" className="w-full" onClick={handleSave}>
             Save for {dateLabel}
           </Button>

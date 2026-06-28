@@ -107,7 +107,7 @@ export function EditFoodSheet({ food, onClose }: EditFoodSheetProps) {
               scaleReadOnly={false}
             />
           </ScrollSheetBody>
-          <ScrollSheetFooter compact>
+          <ScrollSheetFooter>
             <Button size="sm" className="w-full" onClick={save}>
               Save changes
             </Button>

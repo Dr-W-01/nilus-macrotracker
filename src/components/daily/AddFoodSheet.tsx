@@ -143,7 +143,7 @@ export function AddFoodSheet({
             <FoodNoteField note={note} onNoteChange={setNote} />
           </FormSection>
         </ScrollSheetBody>
-        <ScrollSheetFooter compact>
+        <ScrollSheetFooter>
           <Button
             size="sm"
             className="w-full"

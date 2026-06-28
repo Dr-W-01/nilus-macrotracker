@@ -115,7 +115,7 @@ export function RecipeCustomizeSheet({
             showEmptyHint={false}
           />
         </ScrollSheetBody>
-        <ScrollSheetFooter compact>
+        <ScrollSheetFooter>
           <Button size="sm" className="w-full" onClick={handleConfirm}>
             Add customized recipe
           </Button>
