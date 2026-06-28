@@ -37,8 +37,8 @@ export function NewBadgesSection({
     <section className="space-y-2">
       <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-1.5">
         <div className="min-w-0">
-          <h2 className="text-xs font-semibold text-foreground">New Badges</h2>
-          <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">
+          <h2 className="text-sm font-semibold text-foreground">New Badges</h2>
+          <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
             Recently awarded — tap to view details
           </p>
         </div>

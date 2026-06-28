@@ -30,12 +30,12 @@ export function BadgeCategorySection({
     <section className="space-y-2">
       <div className="border-b border-border/60 pb-1.5">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-xs font-semibold text-foreground">{meta.title}</h2>
-          <span className="shrink-0 text-[10px] text-muted-foreground">
+          <h2 className="text-sm font-semibold text-foreground">{meta.title}</h2>
+          <span className="shrink-0 text-xs text-muted-foreground">
             {earnedInCategory}/{badges.length}
           </span>
         </div>
-        <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">{meta.description}</p>
+        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{meta.description}</p>
       </div>
 
       <div className="grid grid-cols-4 items-stretch gap-2">
