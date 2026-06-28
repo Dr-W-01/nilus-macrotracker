@@ -1,5 +1,7 @@
 import { BadgeCard } from '@/components/badges/BadgeCard'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import type { BadgeCategoryMeta, BadgeDefinition, BadgeId, BadgeProgress } from '@/lib/badges/types'
+import { cn } from '@/lib/utils'
 
 interface BadgeCategorySectionProps {
   meta: BadgeCategoryMeta
@@ -28,7 +30,7 @@ export function BadgeCategorySection({
 
   return (
     <section className="space-y-2">
-      <div className="border-y border-border/60 py-1.5">
+      <div className={cn(SURFACE_GRADIENT_ROUNDED, 'p-3')}>
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-sm font-semibold text-foreground">{meta.title}</h2>
           <span className="shrink-0 text-xs text-muted-foreground">

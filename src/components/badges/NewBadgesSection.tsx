@@ -3,6 +3,7 @@ import { BadgeCard } from '@/components/badges/BadgeCard'
 import { Button } from '@/components/ui/button'
 import { getRecentlyAwardedBadges } from '@/lib/badges/evaluate'
 import type { BadgeId, BadgeProgress, BadgeState } from '@/lib/badges/types'
+import { SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 interface NewBadgesSectionProps {
@@ -35,7 +36,7 @@ export function NewBadgesSection({
 
   return (
     <section className="space-y-2">
-      <div className="flex items-start justify-between gap-2 border-y border-border/60 py-1.5">
+      <div className={cn(SURFACE_GRADIENT_ROUNDED, 'flex items-start justify-between gap-2 p-3')}>
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-foreground">New Badges</h2>
           <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
