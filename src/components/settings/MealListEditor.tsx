@@ -7,12 +7,10 @@ import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Input } from '@/components/ui/input'
 import { countLoggedFoodsForMeal } from '@/lib/meals'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
-import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
-import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
-const reorderBtnClass = 'h-7 w-7 shrink-0'
-const actionBtnClass = 'h-7 w-7 shrink-0'
+const reorderBtnClass = 'h-6 w-6 shrink-0'
+const actionBtnClass = 'h-6 w-6 shrink-0'
 const reorderIconClass = 'h-3.5 w-3.5'
 
 export function MealListEditor() {
@@ -106,7 +104,7 @@ export function MealListEditor() {
           return (
             <li
               key={meal}
-              className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1 px-2 py-1.5')}
+              className="flex items-center gap-0.5 border-b border-border/50 py-1"
             >
               {isEditing ? (
                 <Input
@@ -130,7 +128,7 @@ export function MealListEditor() {
 
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 className={reorderBtnClass}
                 disabled={index === 0}
@@ -141,7 +139,7 @@ export function MealListEditor() {
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 className={reorderBtnClass}
                 disabled={index === meals.length - 1}
@@ -151,7 +149,6 @@ export function MealListEditor() {
                 <ChevronDown className={reorderIconClass} strokeWidth={2.5} />
               </Button>
               <EditIconButton
-                variant="outline"
                 className={actionBtnClass}
                 iconClassName="h-3.5 w-3.5"
                 label={`Edit ${meal}`}
@@ -159,9 +156,9 @@ export function MealListEditor() {
               />
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className={`${actionBtnClass} text-foreground/75 hover:border-destructive/50 hover:text-destructive`}
+                className={`${actionBtnClass} text-muted-foreground hover:text-destructive`}
                 disabled={meals.length <= 1}
                 aria-label={`Delete ${meal}`}
                 onClick={() => requestDelete(meal)}

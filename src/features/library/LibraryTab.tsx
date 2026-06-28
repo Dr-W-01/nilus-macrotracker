@@ -297,7 +297,8 @@ export function LibraryTab() {
             </div>
             {librarySegment === 'categories' && activeCategory ? (
               <EditIconButton
-                variant="outline"
+                className="h-8 w-8"
+                iconClassName="h-4 w-4"
                 label="Manage category"
                 onClick={() => setCategoryManageOpen(true)}
               />
@@ -349,13 +350,12 @@ export function LibraryTab() {
           />
           {!editMode && librarySegment === 'items' && (
             <div className="tab-action-row">
-              <Button size="sm" className="h-8 min-w-0 flex-1 text-xs" onClick={() => setNewFoodOpen(true)}>
+              <Button size="sm" className="h-8 shrink-0 px-3 text-xs" onClick={() => setNewFoodOpen(true)}>
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 New Food
               </Button>
               {showBulkEdit && (
                 <EditIconButton
-                  variant="outline"
                   className="h-8 w-8 shrink-0"
                   iconClassName="h-4 w-4"
                   label="Edit library"
@@ -372,7 +372,6 @@ export function LibraryTab() {
               </Button>
               {showBulkEdit && (
                 <EditIconButton
-                  variant="outline"
                   className="h-8 w-8 shrink-0"
                   iconClassName="h-4 w-4"
                   label="Edit categories"
@@ -389,7 +388,6 @@ export function LibraryTab() {
               </Button>
               {showBulkEdit && (
                 <EditIconButton
-                  variant="outline"
                   className="h-8 w-8 shrink-0"
                   iconClassName="h-4 w-4"
                   label="Edit recipes"
@@ -707,7 +705,7 @@ function FoodList({
               )}
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 className="mr-1 h-8 w-8 shrink-0 self-center"
                 onClick={() => onAddToToday(food)}

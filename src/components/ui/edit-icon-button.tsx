@@ -14,7 +14,7 @@ export function EditIconButton({
   className,
   iconClassName,
   size = 'icon',
-  variant = 'outline',
+  variant = 'ghost',
   ...props
 }: EditIconButtonProps) {
   return (

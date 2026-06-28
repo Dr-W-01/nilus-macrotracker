@@ -180,9 +180,8 @@ export function SettingsTab() {
                 <div className="flex shrink-0 gap-1">
                   <EditIconButton
                     size="icon"
-                    variant="outline"
-                    className="h-11 w-11"
-                    iconClassName="h-6 w-6"
+                    className="h-8 w-8"
+                    iconClassName="h-4 w-4"
                     label={`Edit ${g.name}`}
                     onClick={() => setEditingGoal(g)}
                   />
