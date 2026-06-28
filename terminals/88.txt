@@ -3,7 +3,7 @@ pid: 27432
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location C:\\Users\\einsn\\Documents\\nilus-macrotracker; npm run dev"
 started_at: 2026-06-28T01:34:35.471Z
-running_for_ms: 30006    
+running_for_ms: 4190004  
 ---
 
 > nilus-macrotracker@1.0.0 dev

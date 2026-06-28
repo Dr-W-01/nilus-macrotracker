@@ -62,7 +62,7 @@ export function StatsPeriodBar({ range, compact = false }: StatsPeriodBarProps) 
           }
         }}
       >
-        <TabsList className={cn('grid grid-cols-3 bg-secondary/80 p-0.5', compact ? 'h-8' : 'h-9 p-1')}>
+        <TabsList className={cn('grid grid-cols-3 bg-secondary/80 p-0.5', compact ? 'h-7' : 'h-9 p-1')}>
           <TabsTrigger value="week" className="text-xs font-medium">
             This Week
           </TabsTrigger>
@@ -81,7 +81,7 @@ export function StatsPeriodBar({ range, compact = false }: StatsPeriodBarProps) 
             <label className="text-[10px] text-muted-foreground">Start</label>
             <Input
               type="date"
-              className={compact ? 'h-8 text-xs' : undefined}
+              className={compact ? 'h-7 min-h-7 text-xs' : undefined}
               value={statsRangeStart}
               onChange={(e) => setStatsRange(e.target.value, statsRangeEnd)}
             />
@@ -90,7 +90,7 @@ export function StatsPeriodBar({ range, compact = false }: StatsPeriodBarProps) 
             <label className="text-[10px] text-muted-foreground">End</label>
             <Input
               type="date"
-              className={compact ? 'h-8 text-xs' : undefined}
+              className={compact ? 'h-7 min-h-7 text-xs' : undefined}
               max={statsLastCompleteDate()}
               value={statsRangeEnd}
               onChange={(e) => setStatsRange(statsRangeStart, e.target.value)}
@@ -100,14 +100,14 @@ export function StatsPeriodBar({ range, compact = false }: StatsPeriodBarProps) 
       )}
 
       <div className="flex items-center justify-between gap-2">
-        <Button variant="ghost" size="icon" className={compact ? 'h-8 w-8' : undefined} onClick={() => shiftPeriod(-1)}>
-          <ChevronLeft className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className={compact ? 'h-7 w-7' : undefined} onClick={() => shiftPeriod(-1)}>
+          <ChevronLeft className="h-3.5 w-3.5" />
         </Button>
         <span className={cn('text-center text-muted-foreground', compact ? 'text-xs' : 'text-sm')}>
           {format(parseISO(range.start), 'MMM d')} – {format(parseISO(range.end), 'MMM d, yyyy')}
         </span>
-        <Button variant="ghost" size="icon" className={compact ? 'h-8 w-8' : undefined} onClick={() => shiftPeriod(1)}>
-          <ChevronRight className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className={compact ? 'h-7 w-7' : undefined} onClick={() => shiftPeriod(1)}>
+          <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </section>

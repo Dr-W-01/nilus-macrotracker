@@ -57,7 +57,7 @@ export function StatsTab() {
   return (
     <div className="stats-tab">
       <header className="tab-sticky-header">
-        <div className="space-y-2 px-4 pb-2">
+        <div className="space-y-1.5 px-4 pb-1.5">
           <div className="tab-title-row -mx-4">
             <BarChart3 className="h-4 w-4 text-primary" aria-hidden />
             <h1 className="tab-title-heading">Stats</h1>

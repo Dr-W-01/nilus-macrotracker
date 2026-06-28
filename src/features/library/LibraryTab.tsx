@@ -290,7 +290,7 @@ export function LibraryTab() {
     >
       <div className="tab-sticky-header">
         <div className="space-y-1.5 px-4 pb-1.5">
-          <div className="tab-title-row library-tab-title-row -mx-4 justify-between">
+          <div className="tab-title-row -mx-4 justify-between">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" aria-hidden />
               <h1 className="tab-title-heading">Library</h1>
