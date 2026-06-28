@@ -133,10 +133,10 @@ export function SettingsTab() {
 
   return (
     <div className="settings-tab">
-      <header className="tab-sticky-header flex min-h-14 items-center px-4 py-3">
+      <header className="tab-sticky-header flex min-h-12 items-center px-4 py-2">
         <div className="flex items-center gap-2">
-          <Settings className="h-5 w-5 text-primary" aria-hidden />
-          <h1 className="text-xl font-bold">Settings</h1>
+          <Settings className="h-4 w-4 text-primary" aria-hidden />
+          <h1 className="text-base font-bold">Settings</h1>
         </div>
       </header>
 

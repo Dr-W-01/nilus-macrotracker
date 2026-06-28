@@ -21,6 +21,7 @@ import {
   computeWeightPeriodStats,
   computeWeightTrend,
   countLoggedWeightsInRange,
+  getAllTimeWeightRange,
   weightChangeTone,
   type WeightChartPoint,
 } from '@/lib/weightStats'
@@ -35,11 +36,11 @@ import { shiftDate, todayString } from '@/lib/dates'
 import type { DailyLog, Settings } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-type WeightScale = '1W' | '1M' | '3M' | '6M' | '1Y'
+type WeightScale = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All'
 
-const WEIGHT_SCALES: WeightScale[] = ['1W', '1M', '3M', '6M', '1Y']
+const WEIGHT_SCALES: WeightScale[] = ['1W', '1M', '3M', '6M', '1Y', 'All']
 
-const WEIGHT_SCALE_DAYS: Record<WeightScale, number> = {
+const WEIGHT_SCALE_DAYS: Record<Exclude<WeightScale, 'All'>, number> = {
   '1W': 7,
   '1M': 30,
   '3M': 90,
@@ -47,7 +48,11 @@ const WEIGHT_SCALE_DAYS: Record<WeightScale, number> = {
   '1Y': 365,
 }
 
-function weightRangeForScale(scale: WeightScale): { start: string; end: string } {
+function weightRangeForScale(
+  scale: WeightScale,
+  dailyLogs: Record<string, DailyLog>,
+): { start: string; end: string } {
+  if (scale === 'All') return getAllTimeWeightRange(dailyLogs)
   const end = todayString()
   const start = shiftDate(end, -(WEIGHT_SCALE_DAYS[scale] - 1))
   return { start, end }
@@ -137,7 +142,10 @@ export function TrendsWeightSection({
   onDayClick,
 }: TrendsWeightSectionProps) {
   const [weightScale, setWeightScale] = useState<WeightScale>('1M')
-  const range = useMemo(() => weightRangeForScale(weightScale), [weightScale])
+  const range = useMemo(
+    () => weightRangeForScale(weightScale, dailyLogs),
+    [weightScale, dailyLogs],
+  )
 
   const unit = settings.weightUnit ?? 'lbs'
   const unitLabel = weightUnitLabel(unit)
@@ -230,71 +238,6 @@ export function TrendsWeightSection({
           ))}
         </div>
       </div>
-
-      {periodStats && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <WeightStatTile
-              label="Highest"
-              value={formatWeight(periodStats.highest)}
-              sublabel={format(parseISO(periodStats.highestDate), 'MMM d')}
-            />
-            <WeightStatTile
-              label="Lowest"
-              value={formatWeight(periodStats.lowest)}
-              sublabel={format(parseISO(periodStats.lowestDate), 'MMM d')}
-            />
-            <WeightStatTile
-              label="Average"
-              value={formatWeight(periodStats.average)}
-            />
-            <WeightStatTile
-              label="Net change"
-              value={`${periodStats.netChange > 0 ? '+' : ''}${periodStats.netChange.toFixed(1)} ${unitLabel}`}
-              tone={weightChangeTone(periodStats.netChange)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <WeightStatTile
-              label="Starting weight"
-              value={formatWeight(periodStats.startWeight)}
-              sublabel={format(parseISO(periodStats.startDate), 'MMM d, yyyy')}
-            />
-            <WeightStatTile
-              label="Most recent"
-              value={formatWeight(periodStats.latestWeight)}
-              sublabel={format(parseISO(periodStats.latestDate), 'MMM d, yyyy')}
-              tone={weightChangeTone(periodStats.netChange)}
-            />
-          </div>
-
-          {trendInfo && trendText && (
-            <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2.5">
-              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Trend rate
-              </p>
-              <p
-                className={cn(
-                  'mt-0.5 text-sm font-semibold',
-                  toneClass(
-                    trendInfo.direction === 'losing'
-                      ? 'loss'
-                      : trendInfo.direction === 'gaining'
-                        ? 'gain'
-                        : 'neutral',
-                  ),
-                )}
-              >
-                {trendText}
-              </p>
-              {projectionText && (
-                <p className="mt-1 text-xs text-muted-foreground">{projectionText}</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="h-56 min-h-[14rem] sm:h-64">
         {logCount === 0 ? (
@@ -397,6 +340,71 @@ export function TrendsWeightSection({
           </ResponsiveContainer>
         )}
       </div>
+
+      {periodStats && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <WeightStatTile
+              label="Highest"
+              value={formatWeight(periodStats.highest)}
+              sublabel={format(parseISO(periodStats.highestDate), 'MMM d')}
+            />
+            <WeightStatTile
+              label="Lowest"
+              value={formatWeight(periodStats.lowest)}
+              sublabel={format(parseISO(periodStats.lowestDate), 'MMM d')}
+            />
+            <WeightStatTile
+              label="Average"
+              value={formatWeight(periodStats.average)}
+            />
+            <WeightStatTile
+              label="Net change"
+              value={`${periodStats.netChange > 0 ? '+' : ''}${periodStats.netChange.toFixed(1)} ${unitLabel}`}
+              tone={weightChangeTone(periodStats.netChange)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <WeightStatTile
+              label="Starting weight"
+              value={formatWeight(periodStats.startWeight)}
+              sublabel={format(parseISO(periodStats.startDate), 'MMM d, yyyy')}
+            />
+            <WeightStatTile
+              label="Most recent"
+              value={formatWeight(periodStats.latestWeight)}
+              sublabel={format(parseISO(periodStats.latestDate), 'MMM d, yyyy')}
+              tone={weightChangeTone(periodStats.netChange)}
+            />
+          </div>
+
+          {trendInfo && trendText && (
+            <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2.5">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                Trend rate
+              </p>
+              <p
+                className={cn(
+                  'mt-0.5 text-sm font-semibold',
+                  toneClass(
+                    trendInfo.direction === 'losing'
+                      ? 'loss'
+                      : trendInfo.direction === 'gaining'
+                        ? 'gain'
+                        : 'neutral',
+                  ),
+                )}
+              >
+                {trendText}
+              </p>
+              {projectionText && (
+                <p className="mt-1 text-xs text-muted-foreground">{projectionText}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </StatsSectionCard>
   )
 }

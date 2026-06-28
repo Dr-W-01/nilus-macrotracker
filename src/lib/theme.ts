@@ -2,7 +2,7 @@ import type { Settings } from './types'
 
 export const DEFAULT_ACCENT_COLOR = '#B22222'
 export const DEFAULT_SECONDARY_TEXT_COLOR = '#d1d1d1'
-export const DEFAULT_LIGHT_SECONDARY_TEXT_COLOR = '#71717a'
+export const DEFAULT_LIGHT_SECONDARY_TEXT_COLOR = '#000000'
 
 /** Preset secondary colors tuned for dark backgrounds — poor contrast on light theme */
 export const DARK_THEME_SECONDARY_PRESETS = new Set([
@@ -64,7 +64,7 @@ export function withDefaultSettings(settings: Partial<Settings> & Settings): Set
 
 export function secondaryPresetsForTheme(theme: 'dark' | 'light'): string[] {
   if (theme === 'light') {
-    return ['#71717A', '#52525B', '#6B7280', '#78716C', '#64748B']
+    return ['#000000', '#171717', '#404040', '#52525B', '#6B7280']
   }
   return ['#A3A3A3', '#9CA3AF', '#8B8B8B', '#B0B0B0', '#7A7A7A']
 }

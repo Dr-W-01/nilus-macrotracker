@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DeleteMealDialog } from '@/components/settings/DeleteMealDialog'
 import { Button } from '@/components/ui/button'
@@ -11,8 +11,9 @@ import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 import { useMacroStore } from '@/store/useMacroStore'
 
-const reorderBtnClass = 'h-7 min-w-[2rem] shrink-0 px-1.5 text-[10px] font-medium'
+const reorderBtnClass = 'h-7 w-7 shrink-0'
 const actionBtnClass = 'h-7 w-7 shrink-0'
+const reorderIconClass = 'h-3.5 w-3.5'
 
 export function MealListEditor() {
   const meals = useMacroStore((s) => s.settings.meals)
@@ -130,24 +131,24 @@ export function MealListEditor() {
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon"
                 className={reorderBtnClass}
                 disabled={index === 0}
                 aria-label={`Move ${meal} up`}
                 onClick={() => moveMeal(index, 'up')}
               >
-                Up
+                <ChevronUp className={reorderIconClass} />
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon"
                 className={reorderBtnClass}
                 disabled={index === meals.length - 1}
                 aria-label={`Move ${meal} down`}
                 onClick={() => moveMeal(index, 'down')}
               >
-                Down
+                <ChevronDown className={reorderIconClass} />
               </Button>
               <EditIconButton
                 variant="outline"

@@ -58,9 +58,9 @@ export function StatsTab() {
     <div className="stats-tab">
       <header className="tab-sticky-header">
         <div className="space-y-2 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" aria-hidden />
-            <h1 className="text-lg font-bold">Stats</h1>
+          <div className="flex min-h-12 items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary" aria-hidden />
+            <h1 className="text-base font-bold">Stats</h1>
           </div>
           <StatsPeriodBar range={range} compact />
         </div>

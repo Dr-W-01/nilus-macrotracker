@@ -290,10 +290,10 @@ export function LibraryTab() {
     >
       <div className="tab-sticky-header">
         <div className="space-y-2 px-4 py-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex min-h-12 items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" aria-hidden />
-              <h1 className="text-lg font-bold">Library</h1>
+              <h1 className="text-base font-bold">Library</h1>
             </div>
             {librarySegment === 'categories' && activeCategory ? (
               <EditIconButton
@@ -307,10 +307,16 @@ export function LibraryTab() {
             value={librarySegment}
             onValueChange={(v) => setLibrarySegment(v as typeof librarySegment)}
           >
-            <TabsList className="grid h-8 grid-cols-3">
-              <TabsTrigger value="items">Items</TabsTrigger>
-              <TabsTrigger value="categories">Categories</TabsTrigger>
-              <TabsTrigger value="recipes">Recipes</TabsTrigger>
+            <TabsList className="grid h-9 w-full grid-cols-3 gap-1 p-1">
+              <TabsTrigger value="items" className="h-7 py-0 text-xs leading-none">
+                Items
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="h-7 py-0 text-xs leading-none">
+                Categories
+              </TabsTrigger>
+              <TabsTrigger value="recipes" className="h-7 py-0 text-xs leading-none">
+                Recipes
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           {librarySegment === 'categories' && activeCategory && (

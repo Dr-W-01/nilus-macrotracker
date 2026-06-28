@@ -574,18 +574,18 @@ export function DailyTab() {
         </div>
 
         {trackBurnedCalories && (
-        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-3 py-2')}>
           <div className="flex min-w-0 flex-1 items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-primary" />
+            <span className="flex items-center gap-1.5 text-sm">
+              <Flame className="h-4 w-4 text-primary" />
               Burned calories
             </span>
-            <span className="font-semibold">{log.burnedCalories} cal</span>
+            <span className="text-sm font-semibold">{log.burnedCalories} cal</span>
           </div>
           <EditIconButton
             size="icon"
             variant="ghost"
-            className="h-8 w-8"
+            className="h-7 w-7"
             label="Edit burned calories"
             onClick={openBurnEdit}
           />
@@ -593,13 +593,13 @@ export function DailyTab() {
         )}
 
         {trackCurrentWeight && (
-        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
+        <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-3 py-2')}>
           <div className="flex min-w-0 flex-1 items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Scale className="h-5 w-5 text-primary" />
+            <span className="flex items-center gap-1.5 text-sm">
+              <Scale className="h-4 w-4 text-primary" />
               Weight
             </span>
-            <span className="font-semibold">
+            <span className="text-sm font-semibold">
               {weightDisplay ?? (
                 <span className="text-muted-foreground font-normal">Not logged</span>
               )}
@@ -608,7 +608,7 @@ export function DailyTab() {
           <EditIconButton
             size="icon"
             variant="ghost"
-            className="h-8 w-8"
+            className="h-7 w-7"
             label="Edit weight"
             onClick={openWeightEdit}
           />
@@ -616,32 +616,32 @@ export function DailyTab() {
         )}
 
         <div className={SURFACE_GRADIENT_COMPACT}>
-          <div className="flex items-center gap-2 px-4 py-3">
+          <div className="flex items-center gap-1.5 px-3 py-2">
             <button
               type="button"
               className="flex min-w-0 flex-1 items-center justify-between"
               onClick={() => setNoteExpanded(!noteExpanded)}
             >
-              <span className="flex items-center gap-2">
-                <NotebookPen className="h-5 w-5 text-primary" />
+              <span className="flex items-center gap-1.5 text-sm">
+                <NotebookPen className="h-4 w-4 text-primary" />
                 Daily note
               </span>
               {noteExpanded ? (
-                <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               ) : (
-                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               )}
             </button>
             <EditIconButton
               size="icon"
               variant="ghost"
-              className="h-8 w-8"
+              className="h-7 w-7"
               label="Edit daily note"
               onClick={openNoteEdit}
             />
           </div>
           {noteExpanded && (
-            <div className="w-full border-t border-border/60 px-4 pb-4 pt-3 text-left">
+            <div className="w-full border-t border-border/60 px-3 pb-2.5 pt-2 text-left">
               {dailyNote ? (
                 <p className="text-sm whitespace-pre-wrap text-foreground">{dailyNote}</p>
               ) : (
@@ -652,20 +652,20 @@ export function DailyTab() {
         </div>
 
         {templates.length > 0 && (
-          <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-2 px-4 py-3')}>
+          <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center gap-1.5 px-3 py-2')}>
             <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                <Target className="h-5 w-5 shrink-0 text-primary" />
+              <span className="flex items-center gap-1.5 text-sm">
+                <Target className="h-4 w-4 shrink-0 text-primary" />
                 Goal template
               </span>
-              <span className="truncate text-right font-semibold">
+              <span className="truncate text-right text-sm font-semibold">
                 {activeTemplate?.name ?? '—'}
               </span>
             </div>
             <EditIconButton
               size="icon"
               variant="ghost"
-              className="h-8 w-8"
+              className="h-7 w-7"
               label="Edit goal template"
               onClick={openGoalTemplateEdit}
             />
