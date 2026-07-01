@@ -3,7 +3,7 @@ pid: 18844
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cmd /c \"cd /d C:\\Users\\einsn\\Documents\\nilus-macrotracker && npm run dev\""
 started_at: 2026-06-27T12:21:58.722Z
-running_for_ms: 56150000 
+running_for_ms: 108943549
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -17,3 +17,9 @@ running_for_ms: 56150000
 12:22:24 PM [vite] (client) page reload index.html
 12:22:24 PM [vite] vite.config.ts changed, restarting server...
 12:22:24 PM [vite] server restarted.
+
+---
+exit_code: -1
+elapsed_ms: 108943549
+ended_at: 2026-06-28T18:37:43.004Z
+---

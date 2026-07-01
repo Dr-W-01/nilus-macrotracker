@@ -3,7 +3,7 @@ pid: 11696
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location C:\\Users\\einsn\\Documents\\nilus-macrotracker; npm run dev"
 started_at: 2026-06-28T03:57:26.331Z
-running_for_ms: 24992    
+running_for_ms: 98101308 
 ---
 
 > nilus-macrotracker@1.0.0 dev
@@ -20,3 +20,9 @@ Port 5178 is in use, trying another one...
 
   ➜  Local:   http://localhost:5179/nilus-macrotracker/
   ➜  Network: http://192.168.1.69:5179/nilus-macrotracker/
+
+---
+exit_code: -1
+elapsed_ms: 98101308
+ended_at: 2026-06-29T07:12:27.832Z
+---

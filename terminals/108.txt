@@ -1,0 +1,491 @@
+---
+pid: 27396
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "Set-Location C:\\Users\\einsn\\Documents\\nilus-macrotracker; npm run lint -- --max-warnings=0 src/store/useMacroStore.ts"
+started_at: 2026-07-01T02:20:09.045Z
+running_for_ms: 80014    
+---
+
+> nilus-macrotracker@1.0.0 lint
+> eslint . --max-warnings=0 src/store/useMacroStore.ts
+
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\app\layout.tsx
+  36:6  warning  React Hook useEffect has a missing dependency: 'settings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\AddFoodSheet.tsx
+  54:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\AddFoodSheet.tsx:54:7
+  52 |     if (!food || !open) return
+  53 |     if (food.scaleType === 'scale') {
+> 54 |       setAmountEaten(getFoodBaseAmount(food))
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  55 |     } else {
+  56 |       setCountQty(1)
+  57 |     }  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\EditLoggedRecipeSheet.tsx
+  57:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\EditLoggedRecipeSheet.tsx:57:5
+  55 |   useEffect(() => {
+  56 |     if (!open || !entry) return
+> 57 |     setServings(Math.max(1, Math.round(entry.quantity) || 1))
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  58 |   }, [open, entry])
+  59 |
+  60 |   if (!entry || !recipe?.recipeComponents) return null  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\FoodPickerSheet.tsx
+  109:16  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\FoodPickerSheet.tsx:109:16
+  107 |
+  108 |   useEffect(() => {
+> 109 |     if (!open) setQuery('')
+      |                ^^^^^^^^ Avoid calling setState() directly within an effect
+  110 |   }, [open])
+  111 |
+  112 |   return (  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\QuantityInput.tsx
+  55:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\QuantityInput.tsx:55:19
+  53 |   const [amountText, setAmountText] = useState(String(eaten))
+  54 |   useEffect(() => {
+> 55 |     if (!isCount) setAmountText(String(eaten))
+     |                   ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  56 |   }, [eaten, food.id, isCount])
+  57 |
+  58 |   const multiplier = useMemo(  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\RecipeCustomizeSheet.tsx
+  63:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\RecipeCustomizeSheet.tsx:63:5
+  61 |   useEffect(() => {
+  62 |     if (!open) return
+> 63 |     setMeal(defaultMeal ?? '')
+     |     ^^^^^^^ Avoid calling setState() directly within an effect
+  64 |     setServings(1)
+  65 |   }, [open, defaultMeal, meals])
+  66 |  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\RecipeInstanceEditor.tsx
+   20:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-refresh/only-export-components
+   43:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\RecipeInstanceEditor.tsx:43:5
+  41 |       }
+  42 |     })
+> 43 |     setOverrides(initial)
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |   }, [open, recipe, library, baseComponents])
+  45 |
+  46 |   const components = useMemo(() => {  react-hooks/set-state-in-effect
+  133:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-refresh/only-export-components
+  253:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-refresh/only-export-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\RecipePreviewSheet.tsx
+  48:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\daily\RecipePreviewSheet.tsx:48:7
+  46 |   useEffect(() => {
+  47 |     if (open) {
+> 48 |       setMeal('')
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  49 |       setServings(1)
+  50 |     }
+  51 |   }, [open, meals])  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\AddCategoryDialog.tsx
+  30:15  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\AddCategoryDialog.tsx:30:15
+  28 |
+  29 |   useEffect(() => {
+> 30 |     if (open) setName('')
+     |               ^^^^^^^ Avoid calling setState() directly within an effect
+  31 |   }, [open])
+  32 |
+  33 |   const handleCreate = () => {  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\BulkAssignCategoryDialog.tsx
+  46:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\BulkAssignCategoryDialog.tsx:46:7
+  44 |   useEffect(() => {
+  45 |     if (open) {
+> 46 |       setNewName('')
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |       setShowCreate(categories.length === 0)
+  48 |     }
+  49 |   }, [open, categories.length])  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\CategoryEditSheet.tsx
+  39:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\CategoryEditSheet.tsx:39:5
+  37 |   useEffect(() => {
+  38 |     if (!open || !category) return
+> 39 |     setAddSearch('')
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |     setToAdd(new Set())
+  41 |     setToRemove(new Set())
+  42 |   }, [open, category])  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\CategoryManageSheet.tsx
+  42:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\CategoryManageSheet.tsx:42:7
+  40 |   useEffect(() => {
+  41 |     if (open && category) {
+> 42 |       setRenameValue(category)
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |       setRenaming(false)
+  44 |     }
+  45 |   }, [open, category])  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\EditFoodSheet.tsx
+  49:15  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\EditFoodSheet.tsx:49:15
+  47 |
+  48 |   useEffect(() => {
+> 49 |     if (food) setValues(foodItemToFormValues(food))
+     |               ^^^^^^^^^ Avoid calling setState() directly within an effect
+  50 |     else setValues(null)
+  51 |   }, [food])
+  52 |  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\FoodFormFields.tsx
+  33:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  48:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  70:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\NewFoodSheet.tsx
+  39:15  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\NewFoodSheet.tsx:39:15
+  37 |
+  38 |   useEffect(() => {
+> 39 |     if (open) setValues(emptyFoodFormValues())
+     |               ^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |   }, [open])
+  41 |
+  42 |   const save = () => {  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\RecipeIngredientEditor.tsx
+   20:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-refresh/only-export-components
+   31:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\library\RecipeIngredientEditor.tsx:31:5
+  29 |   useEffect(() => {
+  30 |     if (!open || !recipe?.recipeComponents) return
+> 31 |     setName(recipe.name)
+     |     ^^^^^^^ Avoid calling setState() directly within an effect
+  32 |     setOrderedIds(recipe.recipeComponents.map((c) => c.foodId))
+  33 |     const initial: RecipeOverrideState = {}
+  34 |     recipe.recipeComponents.forEach((c) => {  react-hooks/set-state-in-effect
+  108:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-refresh/only-export-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\stats\InsightsCard.tsx
+  57:8  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\stats\InsightsCard.tsx:57:8
+  55 |       )}
+  56 |     >
+> 57 |       <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', tone.iconClass)} aria-hidden />
+     |        ^^^^ This component is created during render
+  58 |       <p className="min-w-0 flex-1 text-sm leading-snug text-foreground">{bullet.text}</p>
+  59 |     </li>
+  60 |   )
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\stats\InsightsCard.tsx:48:16
+  46 | function InsightRow({ bullet }: { bullet: InsightBullet }) {
+  47 |   const tone = TONE_STYLES[bullet.tone]
+> 48 |   const Icon = bulletIcon(bullet.id, bullet.tone)
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ The component is created during render here
+  49 |
+  50 |   return (
+  51 |     <li  react-hooks/static-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\ui\button.tsx
+  52:18  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\ui\form-section.tsx
+  5:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\components\ui\scroll-modal.tsx
+    7:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   41:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   46:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   58:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   91:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   98:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  106:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  114:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\badges\BadgesTab.tsx
+  49:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\badges\BadgesTab.tsx:49:5
+  47 |   useEffect(() => {
+  48 |     if (!openBadgeDetailId) return
+> 49 |     setDetailId(openBadgeDetailId)
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  50 |     markBadgeViewed(openBadgeDetailId)
+  51 |     setOpenBadgeDetailId(null)
+  52 |   }, [openBadgeDetailId, setOpenBadgeDetailId, markBadgeViewed])  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\daily\DailyTab.tsx
+   128:9  warning  The 'templates' logical expression could make the dependencies of useMemo Hook (at line 134) change on every render. To fix this, wrap the initialization of 'templates' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+   167:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\daily\DailyTab.tsx:167:5
+  165 |
+  166 |   useEffect(() => {
+> 167 |     setSelectFoodsMode(false)
+      |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  168 |     setSelectedLogIds(new Set())
+  169 |   }, [currentDate])
+  170 |                                                                            react-hooks/set-state-in-effect
+   230:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\daily\DailyTab.tsx:230:5
+  228 |
+  229 |   useEffect(() => {
+> 230 |     setNoteExpanded(false)
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  231 |   }, [currentDate])
+  232 |
+  233 |   useEffect(() => {                                                                                               react-hooks/set-state-in-effect
+   234:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\daily\DailyTab.tsx:234:5
+  232 |
+  233 |   useEffect(() => {
+> 234 |     setGoalTemplateInput(activeTemplateId)
+      |     ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  235 |   }, [activeTemplateId])
+  236 |
+  237 |   const handleSelectFood = (food: FoodItem) => {                                        react-hooks/set-state-in-effect
+   255:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\daily\DailyTab.tsx:255:5
+  253 |     setPendingLibraryFoodId(null)
+  254 |     if (!food) return
+> 255 |     setPickerOpen(false)
+      |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  256 |     setSelectedFood(food)
+  257 |     if (food.isRecipe) setPreviewOpen(true)
+  258 |     else setAddSheetOpen(true)  react-hooks/set-state-in-effect
+  1093:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\daily\DailyTab.tsx:1093:5
+  1091 |   useEffect(() => {
+  1092 |     if (!entry || !food) return
+> 1093 |     setNote(entry.note ?? '')
+       |     ^^^^^^^ Avoid calling setState() directly within an effect
+  1094 |     setMeal(
+  1095 |       entry.meal?.trim() ? normalizeMealName(entry.meal, meals) : '',
+  1096 |     )           react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\library\LibraryTab.tsx
+  129:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\library\LibraryTab.tsx:129:7
+  127 |   useEffect(() => {
+  128 |     if (libraryModalOpen) {
+> 129 |       setSearchFocused(false)
+      |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  130 |       setLibrarySearchEngaged(false)
+  131 |       return
+  132 |     }  react-hooks/set-state-in-effect
+  141:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\library\LibraryTab.tsx:141:5
+  139 |
+  140 |   useEffect(() => {
+> 141 |     setActiveCategory(null)
+      |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  142 |     setCategoryEditOpen(false)
+  143 |     setEditMode(false)
+  144 |     setSelected(new Set())        react-hooks/set-state-in-effect
+  149:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\library\LibraryTab.tsx:149:7
+  147 |   useEffect(() => {
+  148 |     if (!activeCategory) {
+> 149 |       setCategoryEditOpen(false)
+      |       ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  150 |       return
+  151 |     }
+  152 |     setEditMode(false)           react-hooks/set-state-in-effect
+  731:17  error  '_showFavorite' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\settings\SettingsTab.tsx
+  656:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\features\settings\SettingsTab.tsx:656:5
+  654 |   const [form, setForm] = useState(goal)
+  655 |   useEffect(() => {
+> 656 |     setForm(goal)
+      |     ^^^^^^^ Avoid calling setState() directly within an effect
+  657 |   }, [goal])
+  658 |   if (!goal || !form) return null
+  659 |  react-hooks/set-state-in-effect
+
+C:\Users\einsn\Documents\nilus-macrotracker\src\store\useMacroStore.ts
+  209:21  error  '_removedGoalMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 47 problems (45 errors, 2 warnings)
+

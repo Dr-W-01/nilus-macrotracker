@@ -454,9 +454,13 @@ export const useMacroStore = create<MacroStore>()(
       markAllNewBadgesViewed: () => {
         const { badgeState } = get()
         if (badgeState.newSectionBadgeIds.length === 0) return
+        const newSectionSet = new Set(badgeState.newSectionBadgeIds)
         set({
           badgeState: {
             ...badgeState,
+            unviewedBadgeIds: badgeState.unviewedBadgeIds.filter(
+              (id) => !newSectionSet.has(id),
+            ),
             newSectionBadgeIds: [],
           },
         })

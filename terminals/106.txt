@@ -1,0 +1,18 @@
+---
+pid: 1404
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "npm run dev"
+started_at: 2026-07-01T02:19:18.028Z
+running_for_ms: 144994   
+---
+At line:1 char:54
++ (cd "C:\\Users\\einsn\\Documents\\nilus-macrotracker" ; npm run dev)
++                                                      ~
+Missing closing ')' in expression.
+At line:1 char:68
++ (cd "C:\\Users\\einsn\\Documents\\nilus-macrotracker" ; npm run dev)
++                                                                    ~
+Unexpected token ')' in expression or statement.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : MissingEndParenthesisInExpression
+ 
