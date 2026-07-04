@@ -1,16 +1,16 @@
 ---
-pid: 28612
+pid: 12364
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
-command: "Set-Location C:\\Users\\einsn\\Documents\\nilus-macrotracker; npm run dev"
-started_at: 2026-07-04T02:37:25.252Z
-running_for_ms: 659989   
+command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run dev"
+started_at: 2026-07-04T12:28:17.061Z
+running_for_ms: 159994   
 ---
 
 > nilus-macrotracker@1.0.0 dev
 > vite
 
 
-  VITE v8.0.16  ready in 693 ms
+  VITE v8.0.16  ready in 946 ms
 
   ➜  Local:   http://localhost:5173/nilus-macrotracker/
   ➜  Network: http://192.168.1.69:5173/nilus-macrotracker/

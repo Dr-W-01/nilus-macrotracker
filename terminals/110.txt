@@ -3,5 +3,5 @@ pid: 17676
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "npx tsc -b --pretty false"
 started_at: 2026-07-04T02:04:29.809Z
-running_for_ms: 1054987  
+running_for_ms: 2619999  
 ---

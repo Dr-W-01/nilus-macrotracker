@@ -1,0 +1,14 @@
+---
+pid: 36788
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\" && npm run dev"
+started_at: 2026-07-04T12:27:45.847Z
+running_for_ms: 190013   
+---
+At line:1 char:50
++ cd "C:\Users\einsn\Documents\nilus-macrotracker" && npm run dev
++                                                  ~~
+The token '&&' is not a valid statement separator in this version.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : InvalidEndOfLine
+ 

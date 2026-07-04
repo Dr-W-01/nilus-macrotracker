@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, RefreshCw, Settings, Trash2, Upload } from 'lucide-react'
+import {
+  Download,
+  Flame,
+  RefreshCw,
+  Scale,
+  Settings,
+  Target,
+  Trash2,
+  Upload,
+  UtensilsCrossed,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
@@ -150,7 +160,10 @@ export function SettingsTab() {
 
       <div className="space-y-6 p-4">
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'p-4')}>
-        <h2 className="mb-3 text-sm font-semibold">Goals & Templates</h2>
+        <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
+          <Target className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+          Goals & Templates
+        </h2>
         <ul className="space-y-2 mb-3">
           {settings.goalTemplates.map((g) => {
             const isDefault = g.id === settings.defaultTemplateId
@@ -239,14 +252,7 @@ export function SettingsTab() {
             Turn features off to hide them in Daily and Stats. Your logged data is always kept.
           </p>
           <TrackingToggle
-            label="Track current weight"
-            description="Show weight logging on the Daily tab and weight charts in Stats."
-            checked={isTrackCurrentWeightEnabled(settings)}
-            onCheckedChange={(checked) =>
-              updateSettings({ trackCurrentWeight: checked })
-            }
-          />
-          <TrackingToggle
+            icon={Flame}
             label="Track burned calories"
             description="Show burned calories on the Daily tab and net calorie trends in Stats."
             checked={isTrackBurnedCaloriesEnabled(settings)}
@@ -258,7 +264,10 @@ export function SettingsTab() {
       </section>
 
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'p-4')}>
-        <h2 className="mb-3 text-sm font-semibold">Meal Profiles</h2>
+        <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
+          <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+          Meal Profiles
+        </h2>
         <p className="mb-3 text-xs text-muted-foreground">
           Meal profiles define which meal categories appear on the Daily tab. Each logged day
           keeps the profile it was using — changing the default only affects new days.
@@ -323,79 +332,91 @@ export function SettingsTab() {
         </Button>
       </section>
 
-      {isTrackCurrentWeightEnabled(settings) && (
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <div>
-          <h2 className="text-sm font-semibold">Units</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Weight logged on the Daily tab uses this unit.
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+            <Scale className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+            Weight
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Track weight on the Daily tab, set a goal, and choose your preferred unit.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            size="sm"
-            className="h-7 min-h-7 flex-1 text-xs"
-            variant={(settings.weightUnit ?? 'lbs') === 'lbs' ? 'default' : 'outline'}
-            onClick={() => updateSettings({ weightUnit: 'lbs' as WeightUnit })}
-          >
-            Pounds (lbs)
-          </Button>
-          <Button
-            size="sm"
-            className="h-7 min-h-7 flex-1 text-xs"
-            variant={settings.weightUnit === 'kg' ? 'default' : 'outline'}
-            onClick={() => updateSettings({ weightUnit: 'kg' })}
-          >
-            Kilograms (kg)
-          </Button>
-        </div>
+        <TrackingToggle
+          icon={Scale}
+          label="Track current weight"
+          description="Show weight logging on the Daily tab and weight charts in Stats."
+          checked={isTrackCurrentWeightEnabled(settings)}
+          onCheckedChange={(checked) =>
+            updateSettings({ trackCurrentWeight: checked })
+          }
+        />
+        {isTrackCurrentWeightEnabled(settings) && (
+          <>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Units</p>
+              <p className="text-xs text-muted-foreground">
+                Weight logged on the Daily tab uses this unit.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  size="sm"
+                  className="h-7 min-h-7 flex-1 text-xs"
+                  variant={(settings.weightUnit ?? 'lbs') === 'lbs' ? 'default' : 'outline'}
+                  onClick={() => updateSettings({ weightUnit: 'lbs' as WeightUnit })}
+                >
+                  Pounds (lbs)
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 min-h-7 flex-1 text-xs"
+                  variant={settings.weightUnit === 'kg' ? 'default' : 'outline'}
+                  onClick={() => updateSettings({ weightUnit: 'kg' })}
+                >
+                  Kilograms (kg)
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="target-weight">Target weight (optional)</Label>
+              <p className="text-xs text-muted-foreground">
+                Optional goal line on the weight chart in Stats → Trends.
+              </p>
+              <Input
+                id="target-weight"
+                type="number"
+                min={0}
+                inputMode="decimal"
+                step={0.1}
+                placeholder={`e.g. ${settings.weightUnit === 'kg' ? '75' : '165'}`}
+                defaultValue={
+                  settings.targetWeightKg != null
+                    ? String(
+                        weightFromKg(
+                          settings.targetWeightKg,
+                          settings.weightUnit ?? 'lbs',
+                        ),
+                      )
+                    : ''
+                }
+                onBlur={(e) => {
+                  const kg = parseWeightInput(e.target.value, settings.weightUnit ?? 'lbs')
+                  updateSettings({ targetWeightKg: kg })
+                  if (kg != null) {
+                    e.target.value = String(
+                      weightFromKg(kg, settings.weightUnit ?? 'lbs'),
+                    )
+                    toast.success('Target weight saved')
+                  } else if (e.target.value.trim() === '') {
+                    updateSettings({ targetWeightKg: undefined })
+                    toast.success('Target weight cleared')
+                  }
+                }}
+              />
+            </div>
+          </>
+        )}
       </section>
-      )}
-
-      {isTrackCurrentWeightEnabled(settings) && (
-      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
-        <div>
-          <h2 className="text-sm font-semibold">Target weight</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Optional goal line on the weight chart in Stats → Trends.
-          </p>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="target-weight">Target weight (optional)</Label>
-          <Input
-            id="target-weight"
-            type="number"
-            min={0}
-            inputMode="decimal"
-            step={0.1}
-            placeholder={`e.g. ${settings.weightUnit === 'kg' ? '75' : '165'}`}
-            defaultValue={
-              settings.targetWeightKg != null
-                ? String(
-                    weightFromKg(
-                      settings.targetWeightKg,
-                      settings.weightUnit ?? 'lbs',
-                    ),
-                  )
-                : ''
-            }
-            onBlur={(e) => {
-              const kg = parseWeightInput(e.target.value, settings.weightUnit ?? 'lbs')
-              updateSettings({ targetWeightKg: kg })
-              if (kg != null) {
-                e.target.value = String(
-                  weightFromKg(kg, settings.weightUnit ?? 'lbs'),
-                )
-                toast.success('Target weight saved')
-              } else if (e.target.value.trim() === '') {
-                updateSettings({ targetWeightKg: undefined })
-                toast.success('Target weight cleared')
-              }
-            }}
-          />
-        </div>
-      </section>
-      )}
 
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-3')}>
         <div>

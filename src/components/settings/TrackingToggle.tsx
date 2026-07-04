@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react'
 import { SURFACE_GRADIENT_COMPACT } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
@@ -6,6 +7,7 @@ interface TrackingToggleProps {
   description: string
   checked: boolean
   onCheckedChange: (checked: boolean) => void
+  icon?: LucideIcon
 }
 
 export function TrackingToggle({
@@ -13,11 +15,15 @@ export function TrackingToggle({
   description,
   checked,
   onCheckedChange,
+  icon: Icon,
 }: TrackingToggleProps) {
   return (
     <div className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-center justify-between gap-3 p-3')}>
       <div className="min-w-0 space-y-0.5">
-        <p className="text-sm font-medium">{label}</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium">
+          {Icon && <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />}
+          {label}
+        </p>
         <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
       </div>
       <button
