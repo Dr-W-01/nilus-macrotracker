@@ -98,6 +98,29 @@ export function sanitizeOrphanedMealAssignments(
   return changed ? next : dailyLogs
 }
 
+/** Sanitize meal assignments per day using each day's resolved meal list. */
+export function sanitizeOrphanedMealAssignmentsPerLog(
+  dailyLogs: Record<string, DailyLog>,
+  resolveMeals: (log: DailyLog) => string[],
+): Record<string, DailyLog> {
+  let changed = false
+  const next = Object.fromEntries(
+    Object.entries(dailyLogs).map(([date, log]) => {
+      const meals = resolveMeals(log)
+      const configured = new Set(meals.map((m) => m.toLowerCase()))
+      const foods = log.foods.map((entry) => {
+        if (!entry.meal?.trim()) return entry
+        const key = entry.meal.trim().toLowerCase()
+        if (configured.has(key)) return entry
+        changed = true
+        return { ...entry, meal: undefined }
+      })
+      return [date, foods === log.foods ? log : { ...log, foods }]
+    }),
+  )
+  return changed ? next : dailyLogs
+}
+
 /** Count logged food entries assigned to a meal across all daily logs. */
 export function countLoggedFoodsForMeal(
   dailyLogs: Record<string, DailyLog>,

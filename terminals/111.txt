@@ -1,0 +1,7 @@
+---
+pid: 23708
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "node ./node_modules/typescript/bin/tsc -b --pretty false 2>&1 | Select-Object -First 50"
+started_at: 2026-07-04T02:10:01.296Z
+running_for_ms: 720014   
+---

@@ -1,46 +1,41 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { DeleteMealDialog } from '@/components/settings/DeleteMealDialog'
 import { Button } from '@/components/ui/button'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
 import { Input } from '@/components/ui/input'
-import { countLoggedFoodsForMeal } from '@/lib/meals'
 import { mobilePlainTextInputProps } from '@/lib/mobileInput'
-import { useMacroStore } from '@/store/useMacroStore'
 
 const reorderBtnClass = 'h-6 w-6 shrink-0'
 const actionBtnClass = 'h-6 w-6 shrink-0'
 const reorderIconClass = 'h-3.5 w-3.5'
 
-export function MealListEditor() {
-  const meals = useMacroStore((s) => s.settings.meals)
-  const dailyLogs = useMacroStore((s) => s.dailyLogs)
-  const addMeal = useMacroStore((s) => s.addMeal)
-  const renameMeal = useMacroStore((s) => s.renameMeal)
-  const removeMeal = useMacroStore((s) => s.removeMeal)
-  const reorderMeals = useMacroStore((s) => s.reorderMeals)
+export interface MealListEditorProps {
+  meals: string[]
+  onMealsChange: (meals: string[]) => void
+  defaultMeal?: string
+  onDefaultMealChange?: (meal: string) => void
+}
 
+export function MealListEditor({
+  meals,
+  onMealsChange,
+  defaultMeal,
+  onDefaultMealChange,
+}: MealListEditorProps) {
   const [newMeal, setNewMeal] = useState('')
   const [editingMeal, setEditingMeal] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
-  const [mealToDelete, setMealToDelete] = useState<string | null>(null)
   const editRef = useRef<HTMLInputElement>(null)
-
-  const assignedFoodCount = useMemo(
-    () => (mealToDelete ? countLoggedFoodsForMeal(dailyLogs, mealToDelete) : 0),
-    [dailyLogs, mealToDelete],
-  )
 
   const handleAdd = () => {
     const name = newMeal.trim()
     if (!name) return
-    if (addMeal(name)) {
-      setNewMeal('')
-      toast.success(`Added meal "${name}"`)
-    } else {
-      toast.error('That meal already exists')
+    if (meals.some((m) => m.toLowerCase() === name.toLowerCase())) return
+    onMealsChange([...meals, name])
+    if (!defaultMeal && onDefaultMealChange) {
+      onDefaultMealChange(name)
     }
+    setNewMeal('')
   }
 
   const startEditing = (meal: string) => {
@@ -58,48 +53,45 @@ export function MealListEditor() {
     const next = editValue.trim()
     cancelEditing()
     if (!next || next.toLowerCase() === original.toLowerCase()) return
-    if (renameMeal(original, next)) {
-      toast.success(`Renamed "${original}" to "${next}"`)
-    } else {
-      toast.error('Could not rename — name may already exist')
+    if (meals.some((m) => m.toLowerCase() === next.toLowerCase())) return
+    const renamed = meals.map((m) =>
+      m.toLowerCase() === original.toLowerCase() ? next : m,
+    )
+    onMealsChange(renamed)
+    if (defaultMeal?.toLowerCase() === original.toLowerCase() && onDefaultMealChange) {
+      onDefaultMealChange(next)
     }
   }
 
   const moveMeal = (index: number, direction: 'up' | 'down') => {
     const target = direction === 'up' ? index - 1 : index + 1
     if (target < 0 || target >= meals.length) return
-    reorderMeals(index, target)
+    const next = [...meals]
+    const [moved] = next.splice(index, 1)
+    next.splice(target, 0, moved)
+    onMealsChange(next)
   }
 
-  const requestDelete = (meal: string) => {
+  const removeMeal = (meal: string) => {
     if (meals.length <= 1) return
-    setMealToDelete(meal)
-  }
-
-  const confirmDelete = () => {
-    if (!mealToDelete) return
-    const meal = mealToDelete
-    const ok = removeMeal(meal)
-    setMealToDelete(null)
-    if (ok) {
-      toast.success(`Removed "${meal}" — logged foods moved to Uncategorized`)
-    } else {
-      toast.error(
-        'Could not remove this meal. Your logged foods are unchanged — try again in a moment.',
-      )
+    const next = meals.filter((m) => m.toLowerCase() !== meal.toLowerCase())
+    onMealsChange(next)
+    if (defaultMeal?.toLowerCase() === meal.toLowerCase() && onDefaultMealChange) {
+      onDefaultMealChange(next[0])
     }
   }
 
   return (
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">
-        Reorder meals for the Daily tab. Deleting a meal moves its logged foods to Uncategorized
-        — nothing is permanently removed.
+        Reorder meal categories for this profile. Past logged days keep the meal list they were
+        assigned — changes here only affect new days using this profile.
       </p>
 
       <ul className="space-y-1">
         {meals.map((meal, index) => {
           const isEditing = editingMeal === meal
+          const isDefault = defaultMeal?.toLowerCase() === meal.toLowerCase()
 
           return (
             <li
@@ -123,7 +115,22 @@ export function MealListEditor() {
               ) : (
                 <span className="min-w-0 flex-1 truncate px-0.5 text-sm font-medium">
                   {meal}
+                  {isDefault && onDefaultMealChange && (
+                    <span className="font-normal text-muted-foreground"> (Default)</span>
+                  )}
                 </span>
+              )}
+
+              {onDefaultMealChange && !isDefault && !isEditing && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 shrink-0 px-1.5 text-[10px] text-muted-foreground"
+                  onClick={() => onDefaultMealChange(meal)}
+                >
+                  Set default
+                </Button>
               )}
 
               <Button
@@ -161,7 +168,7 @@ export function MealListEditor() {
                 className={`${actionBtnClass} text-muted-foreground hover:text-destructive`}
                 disabled={meals.length <= 1}
                 aria-label={`Delete ${meal}`}
-                onClick={() => requestDelete(meal)}
+                onClick={() => removeMeal(meal)}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -186,16 +193,6 @@ export function MealListEditor() {
           Add
         </Button>
       </div>
-
-      <DeleteMealDialog
-        open={mealToDelete !== null}
-        meal={mealToDelete}
-        assignedFoodCount={assignedFoodCount}
-        onOpenChange={(open) => {
-          if (!open) setMealToDelete(null)
-        }}
-        onConfirm={confirmDelete}
-      />
     </div>
   )
 }

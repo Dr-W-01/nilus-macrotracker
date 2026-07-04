@@ -1,0 +1,29 @@
+---
+pid: 37592
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "Set-Location \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npm run build"
+started_at: 2026-07-04T01:59:54.778Z
+running_for_ms: 1330003  
+---
+
+> nilus-macrotracker@1.0.0 build
+> npm run icons && tsc -b && vite build
+
+
+> nilus-macrotracker@1.0.0 icons
+> node scripts/generate-pwa-icons.mjs
+
+wrote public\icons\icon-72.png
+wrote public\icons\icon-96.png
+wrote public\icons\icon-128.png
+wrote public\icons\icon-144.png
+wrote public\icons\icon-152.png
+wrote public\icons\icon-192.png
+wrote public\icons\icon-384.png
+wrote public\icons\icon-512.png
+wrote public\icons\maskable-192.png
+wrote public\icons\maskable-512.png
+wrote public/apple-touch-icon.png
+wrote public/icon-1024.png
+updated public/icons.svg
+src/lib/badges/evaluate.ts(1031,64): error TS2304: Cannot find name 'meals'.

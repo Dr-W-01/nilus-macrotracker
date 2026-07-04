@@ -38,11 +38,23 @@ export interface DailyLog {
   goalTemplateId: string
   /** Frozen goal values from when this day was logged or its template was last set. */
   goalSnapshot?: GoalTemplate
+  mealProfileId: string
+  /** Frozen meal profile from when this day was logged or its profile was last set. */
+  mealSnapshot?: MealProfile
   foods: LoggedFood[]
   burnedCalories: number
   /** Body weight stored in kilograms (optional). */
   weightKg?: number
   note: string
+}
+
+export interface MealProfile {
+  id: string
+  name: string
+  /** Ordered meal category names for grouping foods on the Daily tab. */
+  meals: string[]
+  /** Default meal when logging new food. */
+  defaultMeal: string
 }
 
 export interface GoalTemplate {
@@ -68,12 +80,10 @@ export type WeightUnit = 'lbs' | 'kg'
 export interface Settings {
   goalTemplates: GoalTemplate[]
   defaultTemplateId: string
+  mealProfiles: MealProfile[]
+  defaultMealProfileId: string
   /** Display unit for body weight logging. */
   weightUnit: WeightUnit
-  /** Meal names for grouping foods on the Daily tab. */
-  meals: string[]
-  /** Default meal when logging new food. */
-  defaultMeal: string
   /** Goal body weight in kilograms (optional). */
   targetWeightKg?: number
   /** When false, weight UI is hidden; logged data is kept. Default: true. */

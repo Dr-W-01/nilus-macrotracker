@@ -19,20 +19,27 @@ import type {
   FoodItem,
   GoalTemplate,
   LoggedFood,
+  MealProfile,
   Settings,
 } from '@/lib/types'
 
 import { pushRecentSearch } from '@/lib/foodSearch'
 import {
   DEFAULT_MEALS,
-  normalizeMealName,
   normalizeMeals,
-  remapCollapsedMeals,
-  remapMealReferences,
   resolveLoggedMeal,
   sanitizeOrphanedMealAssignments,
-  uncategorizeMealFromDailyLogs,
+  sanitizeOrphanedMealAssignmentsPerLog,
 } from '@/lib/meals'
+import {
+  countDaysUsingMealProfile,
+  ensureMealProfilesInSettings,
+  ensureMealSnapshot,
+  findMealProfileById,
+  resolveMealsForLog,
+  snapshotMealProfile,
+  snapshotLogsMealProfiles,
+} from '@/lib/mealProfiles'
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SECONDARY_TEXT_COLOR } from '@/lib/theme'
 import { DEFAULT_WEIGHT_UNIT, normalizeWeightUnit } from '@/lib/weight'
 import {
@@ -109,12 +116,19 @@ const defaultGoal: GoalTemplate = {
   sugars: 50,
 }
 
+const defaultMealProfile: MealProfile = {
+  id: 'standard',
+  name: 'Standard',
+  meals: [...DEFAULT_MEALS],
+  defaultMeal: DEFAULT_MEALS[0],
+}
+
 const defaultSettings: Settings = {
   goalTemplates: [defaultGoal],
   defaultTemplateId: 'default',
+  mealProfiles: [defaultMealProfile],
+  defaultMealProfileId: 'standard',
   weightUnit: DEFAULT_WEIGHT_UNIT,
-  meals: [...DEFAULT_MEALS],
-  defaultMeal: DEFAULT_MEALS[0],
   trackCurrentWeight: true,
   trackBurnedCalories: true,
   theme: 'dark',
@@ -122,10 +136,15 @@ const defaultSettings: Settings = {
   secondaryTextColor: DEFAULT_SECONDARY_TEXT_COLOR,
 }
 
-function createEmptyLog(date: string, templateId: string): DailyLog {
+function createEmptyLog(
+  date: string,
+  templateId: string,
+  mealProfileId: string,
+): DailyLog {
   return {
     date,
     goalTemplateId: templateId,
+    mealProfileId,
     foods: [],
     burnedCalories: 0,
     note: '',
@@ -147,7 +166,7 @@ function normalizeLibraryItem(item: FoodItem, library?: FoodItem[]): FoodItem {
   return base
 }
 
-const PERSIST_VERSION = 14
+const PERSIST_VERSION = 15
 
 const EMPTY_RECENT_SEARCHES = { library: [] as string[], picker: [] as string[] }
 
@@ -189,30 +208,23 @@ function normalizeMealCollapseByDate(
 
 function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
   const week = getWeekRange()
-  const meals = normalizeMeals(persisted.settings?.meals)
-  const dailyLogs = sanitizeOrphanedMealAssignments(
-    Object.fromEntries(
-      Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
-        date,
-        {
-          ...log,
-          weightKg:
-            log.weightKg != null && Number.isFinite(log.weightKg) && log.weightKg > 0
-              ? log.weightKg
-              : undefined,
-        },
-      ]),
-    ),
-    meals,
-  )
 
-  const { goalMode: _removedGoalMode, ...persistedSettings } = {
+  const { goalMode: _removedGoalMode, meals: _legacyMeals, defaultMeal: _legacyDefaultMeal, ...persistedSettings } = {
     ...(persisted.settings ?? {}),
-  } as Settings & { goalMode?: string }
+  } as Settings & { goalMode?: string; meals?: string[]; defaultMeal?: string }
+
+  const mealProfileFields = ensureMealProfilesInSettings({
+    ...persisted.settings,
+    mealProfiles: persisted.settings?.mealProfiles,
+    defaultMealProfileId: persisted.settings?.defaultMealProfileId,
+    meals: (persisted.settings as { meals?: string[] } | undefined)?.meals,
+    defaultMeal: (persisted.settings as { defaultMeal?: string } | undefined)?.defaultMeal,
+  })
 
   const settings = {
       ...defaultSettings,
       ...persistedSettings,
+      ...mealProfileFields,
       goalTemplates:
         persisted.settings?.goalTemplates?.length
           ? persisted.settings.goalTemplates.map((g) => ({
@@ -230,8 +242,6 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
       secondaryTextColor:
         persisted.settings?.secondaryTextColor ?? defaultSettings.secondaryTextColor,
       weightUnit: normalizeWeightUnit(persisted.settings?.weightUnit),
-      meals,
-      defaultMeal: normalizeMealName(persisted.settings?.defaultMeal, meals),
       targetWeightKg:
         persisted.settings?.targetWeightKg != null &&
         Number.isFinite(persisted.settings.targetWeightKg) &&
@@ -242,10 +252,31 @@ function normalizePersistedState(persisted: PersistedSlice): PersistedSlice {
       trackBurnedCalories: persisted.settings?.trackBurnedCalories !== false,
     } as Settings
 
+  const dailyLogsBase = Object.fromEntries(
+    Object.entries(persisted.dailyLogs ?? {}).map(([date, log]) => [
+      date,
+      {
+        ...log,
+        mealProfileId: log.mealProfileId ?? settings.defaultMealProfileId,
+        weightKg:
+          log.weightKg != null && Number.isFinite(log.weightKg) && log.weightKg > 0
+            ? log.weightKg
+            : undefined,
+      },
+    ]),
+  )
+
+  const dailyLogsWithGoals = snapshotLogsGoalTemplates(dailyLogsBase, settings)
+  const dailyLogsWithMeals = snapshotLogsMealProfiles(dailyLogsWithGoals, settings)
+  const dailyLogs = sanitizeOrphanedMealAssignmentsPerLog(
+    dailyLogsWithMeals,
+    (log) => resolveMealsForLog(log, settings),
+  )
+
   return {
     ...persisted,
     settings,
-    dailyLogs: snapshotLogsGoalTemplates(dailyLogs, settings),
+    dailyLogs,
     customCategories: Array.isArray(persisted.customCategories)
       ? persisted.customCategories
       : [],
@@ -364,10 +395,10 @@ interface MacroStore {
   getAllLibraryCategories: () => string[]
 
   updateSettings: (patch: Partial<Settings>) => void
-  addMeal: (name: string) => boolean
-  renameMeal: (from: string, to: string) => boolean
-  removeMeal: (name: string) => boolean
-  reorderMeals: (fromIndex: number, toIndex: number) => void
+  addMealProfile: (profile: Omit<MealProfile, 'id'>) => string
+  updateMealProfile: (id: string, patch: Partial<MealProfile>) => void
+  deleteMealProfile: (id: string) => boolean
+  countDaysUsingMealProfile: (id: string) => number
   recordFoodSearch: (scope: 'library' | 'picker', query: string) => void
   clearRecentFoodSearches: (scope: 'library' | 'picker') => void
   addGoalTemplate: (t: Omit<GoalTemplate, 'id'>) => string
@@ -486,15 +517,20 @@ export const useMacroStore = create<MacroStore>()(
         const d = date ?? get().currentDate
         const existing = get().dailyLogs[d]
         if (existing) return existing
-        const templateId = get().settings.defaultTemplateId
-        return createEmptyLog(d, templateId)
+        const { defaultTemplateId, defaultMealProfileId } = get().settings
+        return createEmptyLog(d, defaultTemplateId, defaultMealProfileId)
       },
 
       updateDailyLog: (date, patch) => {
         const settings = get().settings
         const logs = { ...get().dailyLogs }
         const base =
-          logs[date] ?? createEmptyLog(date, settings.defaultTemplateId)
+          logs[date] ??
+          createEmptyLog(
+            date,
+            settings.defaultTemplateId,
+            settings.defaultMealProfileId,
+          )
         let next: DailyLog = { ...base, ...patch, date }
 
         if ('goalTemplateId' in patch && patch.goalTemplateId) {
@@ -506,6 +542,15 @@ export const useMacroStore = create<MacroStore>()(
           next = ensureGoalSnapshot(next, settings)
         }
 
+        if ('mealProfileId' in patch && patch.mealProfileId) {
+          const profile = findMealProfileById(settings, patch.mealProfileId)
+          if (profile) {
+            next.mealSnapshot = snapshotMealProfile(profile)
+          }
+        } else if (!next.mealSnapshot) {
+          next = ensureMealSnapshot(next, settings)
+        }
+
         logs[date] = next
         set({ dailyLogs: logs })
         get().evaluateBadges()
@@ -513,8 +558,9 @@ export const useMacroStore = create<MacroStore>()(
 
       addLoggedFood: (logged, date) => {
         const d = date ?? get().currentDate
+        const settings = get().settings
         const log = get().getDailyLog(d)
-        const meals = normalizeMeals(get().settings.meals)
+        const meals = resolveMealsForLog(log, settings)
         const entry: LoggedFood = {
           ...logged,
           id: generateId(),
@@ -526,8 +572,9 @@ export const useMacroStore = create<MacroStore>()(
 
       updateLoggedFood: (loggedId, patch, date) => {
         const d = date ?? get().currentDate
+        const settings = get().settings
         const log = get().getDailyLog(d)
-        const meals = normalizeMeals(get().settings.meals)
+        const meals = resolveMealsForLog(log, settings)
         get().updateDailyLog(d, {
           foods: log.foods.map((f) => {
             if (f.id !== loggedId) return f
@@ -542,8 +589,9 @@ export const useMacroStore = create<MacroStore>()(
 
       bulkUpdateLoggedFoodMeal: (loggedIds, meal, date) => {
         const d = date ?? get().currentDate
+        const settings = get().settings
         const log = get().getDailyLog(d)
-        const meals = normalizeMeals(get().settings.meals)
+        const meals = resolveMealsForLog(log, settings)
         const tag = resolveLoggedMeal(meal, meals) ?? meal.trim()
         const idSet = new Set(loggedIds)
         get().updateDailyLog(d, {
@@ -559,8 +607,9 @@ export const useMacroStore = create<MacroStore>()(
         const prevLog = get().dailyLogs[prevDate]
         if (!prevLog || prevLog.foods.length === 0) return null
 
+        const settings = get().settings
         const log = get().getDailyLog(d)
-        const meals = normalizeMeals(get().settings.meals)
+        const meals = resolveMealsForLog(log, settings)
         const copied = prevLog.foods.map((entry) => {
           get().touchFoodUsage(entry.foodId)
           return {
@@ -819,116 +868,64 @@ export const useMacroStore = create<MacroStore>()(
 
       updateSettings: (patch) => set({ settings: { ...get().settings, ...patch } }),
 
-      addMeal: (name) => {
-        const trimmed = name.trim()
-        if (!trimmed) return false
-        const meals = normalizeMeals(get().settings.meals)
-        if (meals.some((m) => m.toLowerCase() === trimmed.toLowerCase())) return false
-        set({
-          settings: {
-            ...get().settings,
-            meals: [...meals, trimmed],
-          },
-        })
-        return true
-      },
-
-      renameMeal: (from, to) => {
-        const trimmed = to.trim()
-        if (!trimmed || from.toLowerCase() === trimmed.toLowerCase()) return false
-        const meals = normalizeMeals(get().settings.meals)
-        if (!meals.some((m) => m.toLowerCase() === from.toLowerCase())) return false
-        if (meals.some((m) => m.toLowerCase() === trimmed.toLowerCase())) return false
-
-        const renameMap = new Map([[from.toLowerCase(), trimmed]])
-        const nextMeals = meals.map((m) =>
-          m.toLowerCase() === from.toLowerCase() ? trimmed : m,
-        )
-        const defaultMeal =
-          get().settings.defaultMeal.toLowerCase() === from.toLowerCase()
-            ? trimmed
-            : get().settings.defaultMeal
-
-        const dailyLogs = Object.fromEntries(
-          Object.entries(get().dailyLogs).map(([date, log]) => [
-            date,
-            {
-              ...log,
-              foods: remapMealReferences(log.foods, renameMap, new Set()),
-            },
-          ]),
-        )
-
-        const mealCollapseByDate = Object.fromEntries(
-          Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
-            date,
-            remapCollapsedMeals(collapsed, renameMap, new Set()),
-          ]),
-        )
-
-        set({
-          settings: { ...get().settings, meals: nextMeals, defaultMeal },
-          dailyLogs,
-          mealCollapseByDate,
-        })
-        return true
-      },
-
-      reorderMeals: (fromIndex, toIndex) => {
-        const meals = normalizeMeals(get().settings.meals)
-        if (
-          fromIndex < 0 ||
-          toIndex < 0 ||
-          fromIndex >= meals.length ||
-          toIndex >= meals.length ||
-          fromIndex === toIndex
-        ) {
-          return
+      addMealProfile: (profile) => {
+        const id = generateId()
+        const meals = normalizeMeals(profile.meals)
+        const normalized: MealProfile = {
+          ...profile,
+          id,
+          meals,
+          defaultMeal: profile.defaultMeal || meals[0] || DEFAULT_MEALS[0],
         }
-        const next = [...meals]
-        const [moved] = next.splice(fromIndex, 1)
-        next.splice(toIndex, 0, moved)
         set({
           settings: {
             ...get().settings,
-            meals: next,
-            defaultMeal: next.includes(get().settings.defaultMeal)
-              ? get().settings.defaultMeal
-              : next[0],
+            mealProfiles: [...get().settings.mealProfiles, normalized],
+          },
+        })
+        return id
+      },
+
+      updateMealProfile: (id, patch) => {
+        set({
+          settings: {
+            ...get().settings,
+            mealProfiles: get().settings.mealProfiles.map((p) => {
+              if (p.id !== id) return p
+              const meals = patch.meals ? normalizeMeals(patch.meals) : p.meals
+              const defaultMeal =
+                patch.defaultMeal != null
+                  ? patch.defaultMeal
+                  : meals.includes(p.defaultMeal)
+                    ? p.defaultMeal
+                    : meals[0]
+              return { ...p, ...patch, meals, defaultMeal }
+            }),
           },
         })
       },
 
-      removeMeal: (name) => {
-        const meals = normalizeMeals(get().settings.meals)
-        if (meals.length <= 1) return false
-        const key = name.trim().toLowerCase()
-        if (!key) return false
-        const nextMeals = meals.filter((m) => m.toLowerCase() !== key)
-        if (nextMeals.length === meals.length) return false
-
-        const removedKeys = new Set([key])
-        const dailyLogs = uncategorizeMealFromDailyLogs(get().dailyLogs, name)
-        if (!dailyLogs) return false
-
-        const defaultMeal = nextMeals.includes(get().settings.defaultMeal)
-          ? get().settings.defaultMeal
-          : nextMeals[0]
-
-        const mealCollapseByDate = Object.fromEntries(
-          Object.entries(get().mealCollapseByDate).map(([date, collapsed]) => [
-            date,
-            remapCollapsedMeals(collapsed, new Map(), removedKeys),
-          ]),
-        )
-
+      deleteMealProfile: (id) => {
+        const profiles = get().settings.mealProfiles
+        if (profiles.length <= 1) return false
+        if (countDaysUsingMealProfile(get().dailyLogs, id) > 0) return false
+        const next = profiles.filter((p) => p.id !== id)
+        const defaultMealProfileId =
+          get().settings.defaultMealProfileId === id
+            ? next[0].id
+            : get().settings.defaultMealProfileId
         set({
-          settings: { ...get().settings, meals: nextMeals, defaultMeal },
-          dailyLogs,
-          mealCollapseByDate,
+          settings: {
+            ...get().settings,
+            mealProfiles: next,
+            defaultMealProfileId,
+          },
         })
         return true
       },
+
+      countDaysUsingMealProfile: (id) =>
+        countDaysUsingMealProfile(get().dailyLogs, id),
 
       recordFoodSearch: (scope, query) => {
         const current = get().recentFoodSearches
@@ -1053,6 +1050,34 @@ export const useMacroStore = create<MacroStore>()(
       }),
       migrate: (persisted: unknown, version) => {
         const raw = (persisted ?? {}) as PersistedSlice
+        if (version < 15) {
+          const legacySettings = raw.settings as
+            | (Settings & { meals?: string[]; defaultMeal?: string })
+            | undefined
+          const mealProfileFields = ensureMealProfilesInSettings({
+            mealProfiles: legacySettings?.mealProfiles,
+            defaultMealProfileId: legacySettings?.defaultMealProfileId,
+            meals: legacySettings?.meals,
+            defaultMeal: legacySettings?.defaultMeal,
+          })
+          if (raw.settings) {
+            raw.settings = {
+              ...raw.settings,
+              ...mealProfileFields,
+            } as Settings
+          }
+          const settings = (raw.settings ?? defaultSettings) as Settings
+          const logsWithProfileId = Object.fromEntries(
+            Object.entries(raw.dailyLogs ?? {}).map(([date, log]) => [
+              date,
+              {
+                ...log,
+                mealProfileId: log.mealProfileId ?? settings.defaultMealProfileId,
+              },
+            ]),
+          )
+          raw.dailyLogs = snapshotLogsMealProfiles(logsWithProfileId, settings)
+        }
         if (version < 14) {
           raw.badgeState = normalizeBadgeState(raw.badgeState)
         }
@@ -1064,7 +1089,8 @@ export const useMacroStore = create<MacroStore>()(
           raw.dailyLogs = snapshotLogsGoalTemplates(raw.dailyLogs ?? {}, settings)
         }
         if (version < 10) {
-          const meals = normalizeMeals(raw.settings?.meals)
+          const legacyMeals = (raw.settings as { meals?: string[] } | undefined)?.meals
+          const meals = normalizeMeals(legacyMeals)
           raw.dailyLogs = sanitizeOrphanedMealAssignments(raw.dailyLogs ?? {}, meals)
         }
         if (version < 9) {
@@ -1095,12 +1121,13 @@ export const useMacroStore = create<MacroStore>()(
           }
         }
         if (version < 5 && raw.settings) {
-          const meals = normalizeMeals(raw.settings.meals)
+          const legacy = raw.settings as { meals?: string[]; defaultMeal?: string }
+          const meals = normalizeMeals(legacy.meals)
           raw.settings = {
             ...raw.settings,
             meals,
-            defaultMeal: normalizeMealName(raw.settings.defaultMeal, meals),
-          }
+            defaultMeal: legacy.defaultMeal || meals[0],
+          } as Settings
         }
         if (version < 4 && raw.settings) {
           raw.settings = {

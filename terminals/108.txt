@@ -3,7 +3,7 @@ pid: 27396
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "Set-Location C:\\Users\\einsn\\Documents\\nilus-macrotracker; npm run lint -- --max-warnings=0 src/store/useMacroStore.ts"
 started_at: 2026-07-01T02:20:09.045Z
-running_for_ms: 80014    
+running_for_ms: 36545008 
 ---
 
 > nilus-macrotracker@1.0.0 lint

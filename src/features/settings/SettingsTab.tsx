@@ -27,6 +27,7 @@ import {
 import { DeficitSurplusInput } from '@/components/settings/DeficitSurplusInput'
 import { LoggedMacroPreview } from '@/components/daily/LoggedMacroPreview'
 import { FactoryResetDialog } from '@/components/settings/FactoryResetDialog'
+import { DeleteMealProfileDialog } from '@/components/settings/DeleteMealProfileDialog'
 import { MealListEditor } from '@/components/settings/MealListEditor'
 import { TrackingToggle } from '@/components/settings/TrackingToggle'
 import {
@@ -36,7 +37,8 @@ import {
 import { MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { formatTargetDeficitShort } from '@/lib/stats'
 import { parseWeightInput, weightFromKg } from '@/lib/weight'
-import type { GoalTemplate, WeightUnit } from '@/lib/types'
+import { DEFAULT_MEALS } from '@/lib/meals'
+import type { GoalTemplate, MealProfile, WeightUnit } from '@/lib/types'
 import { useMacroStore } from '@/store/useMacroStore'
 import { ColorPickerField } from '@/components/settings/ColorPickerField'
 import { useAppUpdateState } from '@/hooks/useAppUpdateState'
@@ -54,12 +56,18 @@ export function SettingsTab() {
   const addGoalTemplate = useMacroStore((s) => s.addGoalTemplate)
   const updateGoalTemplate = useMacroStore((s) => s.updateGoalTemplate)
   const deleteGoalTemplate = useMacroStore((s) => s.deleteGoalTemplate)
+  const addMealProfile = useMacroStore((s) => s.addMealProfile)
+  const updateMealProfile = useMacroStore((s) => s.updateMealProfile)
+  const deleteMealProfile = useMacroStore((s) => s.deleteMealProfile)
+  const countDaysUsingMealProfile = useMacroStore((s) => s.countDaysUsingMealProfile)
   const factoryReset = useMacroStore((s) => s.factoryReset)
 
   const backupFileRef = useRef<HTMLInputElement>(null)
   const [factoryResetOpen, setFactoryResetOpen] = useState(false)
   const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [editingGoal, setEditingGoal] = useState<GoalTemplate | null>(null)
+  const [editingMealProfile, setEditingMealProfile] = useState<MealProfile | null>(null)
+  const [mealProfileToDelete, setMealProfileToDelete] = useState<MealProfile | null>(null)
   const [backupConfirmOpen, setBackupConfirmOpen] = useState(false)
   const [pendingBackup, setPendingBackup] = useState<ReturnType<
     typeof parseFullBackup
@@ -249,6 +257,73 @@ export function SettingsTab() {
         </div>
       </section>
 
+      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'p-4')}>
+        <h2 className="mb-3 text-sm font-semibold">Meal Profiles</h2>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Meal profiles define which meal categories appear on the Daily tab. Each logged day
+          keeps the profile it was using — changing the default only affects new days.
+        </p>
+        <ul className="space-y-2 mb-3">
+          {settings.mealProfiles.map((profile) => {
+            const isDefault = profile.id === settings.defaultMealProfileId
+            return (
+              <li
+                key={profile.id}
+                className={cn(SURFACE_GRADIENT_COMPACT, 'flex items-start gap-2 p-3')}
+              >
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="font-medium leading-snug">
+                    {profile.name}
+                    {isDefault && (
+                      <span className="font-normal text-muted-foreground"> (Default)</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    {profile.meals.join(' · ')}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <EditIconButton
+                    size="icon"
+                    className="h-8 w-8"
+                    iconClassName="h-4 w-4"
+                    label={`Edit ${profile.name}`}
+                    onClick={() => setEditingMealProfile(profile)}
+                  />
+                  {settings.mealProfiles.length > 1 && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-10 w-10 text-muted-foreground hover:text-destructive"
+                      aria-label={`Delete ${profile.name}`}
+                      title={`Delete ${profile.name}`}
+                      onClick={() => setMealProfileToDelete(profile)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 min-h-7 w-full text-xs"
+          onClick={() =>
+            setEditingMealProfile({
+              id: '',
+              name: 'New Profile',
+              meals: [...DEFAULT_MEALS],
+              defaultMeal: DEFAULT_MEALS[0],
+            })
+          }
+        >
+          Create new profile
+        </Button>
+      </section>
+
       {isTrackCurrentWeightEnabled(settings) && (
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-4')}>
         <div>
@@ -322,11 +397,6 @@ export function SettingsTab() {
         </div>
       </section>
       )}
-
-      <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-2 p-3')}>
-        <h2 className="text-sm font-semibold">Daily meals</h2>
-        <MealListEditor />
-      </section>
 
       <section className={cn(SURFACE_GRADIENT_ROUNDED, 'space-y-3 p-3')}>
         <div>
@@ -634,7 +704,134 @@ export function SettingsTab() {
         }}
         defaultId={settings.defaultTemplateId}
       />
+
+      <MealProfileEditDialog
+        profile={editingMealProfile}
+        onClose={() => setEditingMealProfile(null)}
+        onSave={(profile) => {
+          if (profile.id) {
+            updateMealProfile(profile.id, profile)
+            toast.success('Meal profile updated')
+          } else {
+            const id = addMealProfile(profile)
+            if (!settings.defaultMealProfileId) {
+              updateSettings({ defaultMealProfileId: id })
+            }
+            toast.success('Meal profile created')
+          }
+          setEditingMealProfile(null)
+        }}
+        onSetDefault={(id) => {
+          updateSettings({ defaultMealProfileId: id })
+          toast.success('Default meal profile set')
+        }}
+        defaultId={settings.defaultMealProfileId}
+      />
+
+      <DeleteMealProfileDialog
+        open={mealProfileToDelete !== null}
+        profileName={mealProfileToDelete?.name ?? null}
+        daysInUse={
+          mealProfileToDelete ? countDaysUsingMealProfile(mealProfileToDelete.id) : 0
+        }
+        onOpenChange={(open) => {
+          if (!open) setMealProfileToDelete(null)
+        }}
+        onConfirm={() => {
+          if (!mealProfileToDelete) return
+          const name = mealProfileToDelete.name
+          if (deleteMealProfile(mealProfileToDelete.id)) {
+            toast.success(`Deleted "${name}"`)
+          } else {
+            toast.error('Could not delete this profile')
+          }
+          setMealProfileToDelete(null)
+        }}
+      />
     </div>
+  )
+}
+
+function MealProfileEditDialog({
+  profile,
+  onClose,
+  onSave,
+  onSetDefault,
+  defaultId,
+}: {
+  profile: MealProfile | null
+  onClose: () => void
+  onSave: (profile: MealProfile) => void
+  onSetDefault: (id: string) => void
+  defaultId: string
+}) {
+  const [form, setForm] = useState(profile)
+  useEffect(() => {
+    setForm(profile)
+  }, [profile])
+  if (!profile || !form) return null
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <ModalViewport active onRequestClose={onClose} />
+      <DialogContent
+        className={scrollDialogContentClass}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <ScrollDialogHeader>
+          <DialogTitle>{profile.id ? 'Edit' : 'New'} meal profile</DialogTitle>
+        </ScrollDialogHeader>
+        <ScrollDialogBody className="space-y-3">
+          <div>
+            <Label className="text-xs">Name</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Meal categories</Label>
+            <MealListEditor
+              meals={form.meals}
+              onMealsChange={(meals) =>
+                setForm({
+                  ...form,
+                  meals,
+                  defaultMeal: meals.includes(form.defaultMeal)
+                    ? form.defaultMeal
+                    : meals[0] ?? form.defaultMeal,
+                })
+              }
+              defaultMeal={form.defaultMeal}
+              onDefaultMealChange={(defaultMeal) => setForm({ ...form, defaultMeal })}
+            />
+          </div>
+        </ScrollDialogBody>
+        <ScrollDialogFooter>
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={!form.name.trim() || form.meals.length === 0}
+            onClick={() => onSave(form)}
+          >
+            Save
+          </Button>
+          {form.id && form.id !== defaultId && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full"
+              onClick={() => onSetDefault(form.id)}
+            >
+              Set as default
+            </Button>
+          )}
+          <Button size="lg" variant="ghost" className="w-full" onClick={onClose}>
+            Cancel
+          </Button>
+        </ScrollDialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

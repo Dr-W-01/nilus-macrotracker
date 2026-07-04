@@ -86,6 +86,7 @@ import {
 import { SURFACE_GRADIENT_COMPACT, SURFACE_GRADIENT_ROUNDED } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 import { resolveGoalForLog } from '@/lib/goals'
+import { resolveDefaultMealForLog, resolveMealsForLog } from '@/lib/mealProfiles'
 import { useMacroStore } from '@/store/useMacroStore'
 
 const METRICS = [
@@ -153,8 +154,12 @@ export function DailyTab() {
   const [editRecipeLogged, setEditRecipeLogged] = useState<LoggedFood | null>(null)
 
   const meals = useMemo(
-    () => normalizeMeals(settings?.meals),
-    [settings?.meals],
+    () => (settings ? resolveMealsForLog(log, settings) : normalizeMeals()),
+    [log, settings],
+  )
+  const defaultMeal = useMemo(
+    () => (settings ? resolveDefaultMealForLog(log, settings) : meals[0]),
+    [log, settings, meals],
   )
   const [selectFoodsMode, setSelectFoodsMode] = useState(false)
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set())
@@ -745,7 +750,7 @@ export function DailyTab() {
         recipe={selectedFood}
         library={foodLibrary}
         meals={meals}
-        defaultMeal={settings.defaultMeal}
+        defaultMeal={defaultMeal}
         onOpenChange={setCustomizeOpen}
         onConfirm={(meal, overrides, quantity) => addRecipe(meal, overrides, quantity)}
         onCancel={() => {

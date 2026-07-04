@@ -1,7 +1,8 @@
 import { format, parseISO } from 'date-fns'
 import { collectAllCategories, foodCategories } from '@/lib/categories'
 import { getWeekRangeForDate, shiftDate } from '@/lib/dates'
-import { isConfiguredMeal, normalizeMeals, resolveLoggedMeal } from '@/lib/meals'
+import { isConfiguredMeal, resolveLoggedMeal } from '@/lib/meals'
+import { resolveMealsForLog } from '@/lib/mealProfiles'
 import { computeLoggingStreak, dayHasLoggedFood } from '@/lib/loggingStreak'
 import { getStatsDayRowForDate } from '@/lib/stats'
 import type { DailyLog, FoodItem, Settings } from '@/lib/types'
@@ -341,12 +342,11 @@ function evaluateGoalStreakMilestones(
 }
 
 function evaluateMealCompleteDays(input: BadgeScanInput): BadgeEarnedInstance[] {
-  const meals = normalizeMeals(input.settings.meals)
-  if (meals.length === 0) return []
-
   const instances: BadgeEarnedInstance[] = []
   for (const [date, log] of Object.entries(input.dailyLogs)) {
     if (!dayHasLoggedFood(log)) continue
+    const meals = resolveMealsForLog(log, input.settings)
+    if (meals.length === 0) continue
     const covered = new Set<string>()
     for (const entry of log.foods) {
       if (!entry.meal?.trim()) continue
@@ -522,18 +522,21 @@ function evaluateWeekendLogger(dailyLogs: Record<string, DailyLog>): BadgeEarned
   return instances
 }
 
-function evaluateMealStreak(
+function evaluateMealStreakByPosition(
   dailyLogs: Record<string, DailyLog>,
-  meals: string[],
-  targetMeal: string,
+  settings: Settings,
+  position: number,
   milestone: number,
 ): BadgeEarnedInstance[] {
-  const mealLower = targetMeal.toLowerCase()
   const instances: BadgeEarnedInstance[] = []
 
   const hasMeal = (date: string) => {
     const log = dailyLogs[date]
     if (!log || !dayHasLoggedFood(log)) return false
+    const meals = resolveMealsForLog(log, settings)
+    const targetMeal = meals[position]
+    if (!targetMeal) return false
+    const mealLower = targetMeal.toLowerCase()
     return log.foods.some((entry) => {
       if (!entry.meal?.trim()) return false
       if (!isConfiguredMeal(entry.meal, meals)) return false
@@ -543,6 +546,11 @@ function evaluateMealStreak(
 
   for (const date of sortedLogDates(dailyLogs)) {
     if (!hasMeal(date)) continue
+    const log = dailyLogs[date]
+    const meals = resolveMealsForLog(log, settings)
+    const targetMeal = meals[position]
+    if (!targetMeal) continue
+    const mealLower = targetMeal.toLowerCase()
     let streak = 0
     let d = date
     while (hasMeal(d)) {
@@ -773,9 +781,6 @@ function evaluateWeekdayWarrior(dailyLogs: Record<string, DailyLog>): BadgeEarne
 }
 
 function evaluateMealCompleteWeeks(input: BadgeScanInput): BadgeEarnedInstance[] {
-  const meals = normalizeMeals(input.settings.meals)
-  if (meals.length === 0) return []
-
   const completeDays = evaluateMealCompleteDays(input)
   const byWeek = new Map<string, number>()
 
@@ -1000,19 +1005,9 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
   awards.net_deficit_1000_day = evaluateNetDeficitDays(input, 1000)
   awards.net_deficit_week_5000 = evaluateNetDeficitWeeks(input, 5000)
 
-  const meals = normalizeMeals(input.settings.meals)
-  const breakfast = meals[0]
-  const lunch = meals[1]
-  const dinner = meals[2]
-  if (breakfast) {
-    awards.breakfast_streak_7 = evaluateMealStreak(dailyLogs, meals, breakfast, 7)
-  }
-  if (lunch) {
-    awards.lunch_streak_7 = evaluateMealStreak(dailyLogs, meals, lunch, 7)
-  }
-  if (dinner) {
-    awards.dinner_streak_7 = evaluateMealStreak(dailyLogs, meals, dinner, 7)
-  }
+  awards.breakfast_streak_7 = evaluateMealStreakByPosition(dailyLogs, input.settings, 0, 7)
+  awards.lunch_streak_7 = evaluateMealStreakByPosition(dailyLogs, input.settings, 1, 7)
+  awards.dinner_streak_7 = evaluateMealStreakByPosition(dailyLogs, input.settings, 2, 7)
 
   const firstNoteDate = Object.keys(dailyLogs)
     .filter((date) => dailyLogs[date].note.trim().length > 0)
@@ -1032,7 +1027,9 @@ export function scanAllBadgeInstances(input: BadgeScanInput): BadgeAwardMap {
 
   let firstUncategorizedDate: string | undefined
   for (const date of Object.keys(dailyLogs).sort()) {
-    for (const entry of dailyLogs[date].foods) {
+    const log = dailyLogs[date]
+    const meals = resolveMealsForLog(log, input.settings)
+    for (const entry of log.foods) {
       if (!entry.meal?.trim() || !isConfiguredMeal(entry.meal, meals)) {
         firstUncategorizedDate = date
         break

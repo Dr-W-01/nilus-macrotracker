@@ -1,0 +1,51 @@
+---
+pid: 4456
+cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
+command: "npm run build 2>&1"
+started_at: 2026-07-04T02:15:34.567Z
+running_for_ms: 390004   
+---
+
+> nilus-macrotracker@1.0.0 build
+> npm run icons && tsc -b && vite build
+
+
+> nilus-macrotracker@1.0.0 icons
+> node scripts/generate-pwa-icons.mjs
+
+wrote public\icons\icon-72.png
+wrote public\icons\icon-96.png
+wrote public\icons\icon-128.png
+wrote public\icons\icon-144.png
+wrote public\icons\icon-152.png
+wrote public\icons\icon-192.png
+wrote public\icons\icon-384.png
+wrote public\icons\icon-512.png
+wrote public\icons\maskable-192.png
+wrote public\icons\maskable-512.png
+wrote public/apple-touch-icon.png
+wrote public/icon-1024.png
+updated public/icons.svg
+vite v8.0.16 building client environment for production...
+transforming...✓ 3437 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/manifest.webmanifest                            1.11 kB
+dist/index.html                                      1.23 kB │ gzip:   0.55 kB
+dist/assets/index-BHd15NOH.css                      71.80 kB │ gzip:  12.77 kB
+dist/assets/workbox-window.prod.es5-Bd17z0YL.js      5.65 kB │ gzip:   2.20 kB
+dist/assets/index-B-d6inaj.js                    1,092.17 kB │ gzip: 317.52 kB
+
+✓ built in 4.05s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+PWA v1.3.0
+mode      generateSW
+precache  35 entries (1240.28 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-9c191d2f.js
