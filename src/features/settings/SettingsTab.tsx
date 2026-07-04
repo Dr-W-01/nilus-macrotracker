@@ -316,7 +316,6 @@ export function SettingsTab() {
               id: '',
               name: 'New Profile',
               meals: [...DEFAULT_MEALS],
-              defaultMeal: DEFAULT_MEALS[0],
             })
           }
         >
@@ -793,17 +792,7 @@ function MealProfileEditDialog({
             <Label className="text-xs">Meal categories</Label>
             <MealListEditor
               meals={form.meals}
-              onMealsChange={(meals) =>
-                setForm({
-                  ...form,
-                  meals,
-                  defaultMeal: meals.includes(form.defaultMeal)
-                    ? form.defaultMeal
-                    : meals[0] ?? form.defaultMeal,
-                })
-              }
-              defaultMeal={form.defaultMeal}
-              onDefaultMealChange={(defaultMeal) => setForm({ ...form, defaultMeal })}
+              onMealsChange={(meals) => setForm({ ...form, meals })}
             />
           </div>
         </ScrollDialogBody>

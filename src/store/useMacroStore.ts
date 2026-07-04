@@ -120,7 +120,6 @@ const defaultMealProfile: MealProfile = {
   id: 'standard',
   name: 'Standard',
   meals: [...DEFAULT_MEALS],
-  defaultMeal: DEFAULT_MEALS[0],
 }
 
 const defaultSettings: Settings = {
@@ -870,12 +869,10 @@ export const useMacroStore = create<MacroStore>()(
 
       addMealProfile: (profile) => {
         const id = generateId()
-        const meals = normalizeMeals(profile.meals)
         const normalized: MealProfile = {
-          ...profile,
           id,
-          meals,
-          defaultMeal: profile.defaultMeal || meals[0] || DEFAULT_MEALS[0],
+          name: profile.name,
+          meals: normalizeMeals(profile.meals),
         }
         set({
           settings: {
@@ -892,14 +889,11 @@ export const useMacroStore = create<MacroStore>()(
             ...get().settings,
             mealProfiles: get().settings.mealProfiles.map((p) => {
               if (p.id !== id) return p
-              const meals = patch.meals ? normalizeMeals(patch.meals) : p.meals
-              const defaultMeal =
-                patch.defaultMeal != null
-                  ? patch.defaultMeal
-                  : meals.includes(p.defaultMeal)
-                    ? p.defaultMeal
-                    : meals[0]
-              return { ...p, ...patch, meals, defaultMeal }
+              return {
+                ...p,
+                ...patch,
+                meals: patch.meals ? normalizeMeals(patch.meals) : p.meals,
+              }
             }),
           },
         })

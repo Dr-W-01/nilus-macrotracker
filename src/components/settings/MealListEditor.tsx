@@ -12,16 +12,9 @@ const reorderIconClass = 'h-3.5 w-3.5'
 export interface MealListEditorProps {
   meals: string[]
   onMealsChange: (meals: string[]) => void
-  defaultMeal?: string
-  onDefaultMealChange?: (meal: string) => void
 }
 
-export function MealListEditor({
-  meals,
-  onMealsChange,
-  defaultMeal,
-  onDefaultMealChange,
-}: MealListEditorProps) {
+export function MealListEditor({ meals, onMealsChange }: MealListEditorProps) {
   const [newMeal, setNewMeal] = useState('')
   const [editingMeal, setEditingMeal] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -32,9 +25,6 @@ export function MealListEditor({
     if (!name) return
     if (meals.some((m) => m.toLowerCase() === name.toLowerCase())) return
     onMealsChange([...meals, name])
-    if (!defaultMeal && onDefaultMealChange) {
-      onDefaultMealChange(name)
-    }
     setNewMeal('')
   }
 
@@ -54,13 +44,9 @@ export function MealListEditor({
     cancelEditing()
     if (!next || next.toLowerCase() === original.toLowerCase()) return
     if (meals.some((m) => m.toLowerCase() === next.toLowerCase())) return
-    const renamed = meals.map((m) =>
-      m.toLowerCase() === original.toLowerCase() ? next : m,
+    onMealsChange(
+      meals.map((m) => (m.toLowerCase() === original.toLowerCase() ? next : m)),
     )
-    onMealsChange(renamed)
-    if (defaultMeal?.toLowerCase() === original.toLowerCase() && onDefaultMealChange) {
-      onDefaultMealChange(next)
-    }
   }
 
   const moveMeal = (index: number, direction: 'up' | 'down') => {
@@ -74,11 +60,7 @@ export function MealListEditor({
 
   const removeMeal = (meal: string) => {
     if (meals.length <= 1) return
-    const next = meals.filter((m) => m.toLowerCase() !== meal.toLowerCase())
-    onMealsChange(next)
-    if (defaultMeal?.toLowerCase() === meal.toLowerCase() && onDefaultMealChange) {
-      onDefaultMealChange(next[0])
-    }
+    onMealsChange(meals.filter((m) => m.toLowerCase() !== meal.toLowerCase()))
   }
 
   return (
@@ -91,7 +73,6 @@ export function MealListEditor({
       <ul className="space-y-1">
         {meals.map((meal, index) => {
           const isEditing = editingMeal === meal
-          const isDefault = defaultMeal?.toLowerCase() === meal.toLowerCase()
 
           return (
             <li
@@ -115,22 +96,7 @@ export function MealListEditor({
               ) : (
                 <span className="min-w-0 flex-1 truncate px-0.5 text-sm font-medium">
                   {meal}
-                  {isDefault && onDefaultMealChange && (
-                    <span className="font-normal text-muted-foreground"> (Default)</span>
-                  )}
                 </span>
-              )}
-
-              {onDefaultMealChange && !isDefault && !isEditing && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 shrink-0 px-1.5 text-[10px] text-muted-foreground"
-                  onClick={() => onDefaultMealChange(meal)}
-                >
-                  Set default
-                </Button>
               )}
 
               <Button

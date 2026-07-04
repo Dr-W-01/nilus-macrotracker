@@ -134,6 +134,14 @@ export function DailyTab() {
     () => templates.find((t) => t.id === activeTemplateId) ?? templates[0],
     [templates, activeTemplateId],
   )
+
+  const mealProfiles = settings?.mealProfiles ?? []
+  const activeMealProfileId =
+    log.mealProfileId || settings?.defaultMealProfileId || 'standard'
+  const activeMealProfile = useMemo(
+    () => mealProfiles.find((p) => p.id === activeMealProfileId) ?? mealProfiles[0],
+    [mealProfiles, activeMealProfileId],
+  )
   const viewHeaderDate = formatDailyViewHeaderDate(currentDate)
 
   const consumed = useMemo(
@@ -228,6 +236,8 @@ export function DailyTab() {
   )
   const [goalTemplateEditOpen, setGoalTemplateEditOpen] = useState(false)
   const [goalTemplateInput, setGoalTemplateInput] = useState(activeTemplateId)
+  const [mealProfileEditOpen, setMealProfileEditOpen] = useState(false)
+  const [mealProfileInput, setMealProfileInput] = useState(activeMealProfileId)
   const [copyYesterdayConfirmOpen, setCopyYesterdayConfirmOpen] = useState(false)
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
 
@@ -238,6 +248,10 @@ export function DailyTab() {
   useEffect(() => {
     setGoalTemplateInput(activeTemplateId)
   }, [activeTemplateId])
+
+  useEffect(() => {
+    setMealProfileInput(activeMealProfileId)
+  }, [activeMealProfileId])
 
   const handleSelectFood = (food: FoodItem) => {
     setPickerOpen(false)
@@ -339,6 +353,11 @@ export function DailyTab() {
   const openGoalTemplateEdit = () => {
     setGoalTemplateInput(activeTemplateId)
     setGoalTemplateEditOpen(true)
+  }
+
+  const openMealProfileEdit = () => {
+    setMealProfileInput(activeMealProfileId)
+    setMealProfileEditOpen(true)
   }
 
   const applyDuplicateYesterday = () => {
@@ -678,6 +697,27 @@ export function DailyTab() {
           </div>
         )}
 
+        {mealProfiles.length > 0 && (
+          <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-sm leading-tight">
+                <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" />
+                Meal profile
+              </span>
+              <span className="truncate text-right text-sm font-semibold leading-tight">
+                {activeMealProfile?.name ?? '—'}
+              </span>
+            </div>
+            <EditIconButton
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              label="Edit meal profile"
+              onClick={openMealProfileEdit}
+            />
+          </div>
+        )}
+
         <div className="flex justify-center">
           <Button
             variant="ghost"
@@ -960,6 +1000,55 @@ export function DailyTab() {
           </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
+
+      {mealProfiles.length > 0 && (
+      <Sheet open={mealProfileEditOpen} onOpenChange={setMealProfileEditOpen}>
+        <ModalViewport
+          active={mealProfileEditOpen}
+          onRequestClose={() => setMealProfileEditOpen(false)}
+        />
+        <SheetContent side="bottom" className={scrollSheetContentClass}>
+          <ScrollSheetHeader>
+            <SheetTitle>Meal profile</SheetTitle>
+          </ScrollSheetHeader>
+          <ScrollSheetBody>
+            <select
+              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              autoComplete="off"
+              value={mealProfileInput}
+              onChange={(e) => setMealProfileInput(e.target.value)}
+            >
+              {mealProfiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} — {p.meals.join(', ')}
+                </option>
+              ))}
+            </select>
+          </ScrollSheetBody>
+          <ScrollSheetFooter>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                updateDailyLog(currentDate, { mealProfileId: mealProfileInput })
+                setMealProfileEditOpen(false)
+                toast.success('Meal profile updated')
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setMealProfileEditOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ScrollSheetFooter>
+        </SheetContent>
+      </Sheet>
+      )}
 
       {templates.length > 0 && (
       <Sheet open={goalTemplateEditOpen} onOpenChange={setGoalTemplateEditOpen}>

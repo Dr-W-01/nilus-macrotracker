@@ -1,5 +1,5 @@
 import type { DailyLog, MealProfile, Settings } from '@/lib/types'
-import { normalizeMealName, normalizeMeals } from '@/lib/meals'
+import { normalizeMeals } from '@/lib/meals'
 
 /** Frozen meal profile captured when a day is first logged or when its profile is changed. */
 export type MealSnapshot = MealProfile
@@ -9,7 +9,6 @@ export function snapshotMealProfile(profile: MealProfile): MealSnapshot {
     id: profile.id,
     name: profile.name,
     meals: [...profile.meals],
-    defaultMeal: profile.defaultMeal,
   }
 }
 
@@ -38,9 +37,10 @@ export function resolveMealsForLog(log: DailyLog, settings: Settings): string[] 
   return normalizeMeals(resolveMealProfileForLog(log, settings).meals)
 }
 
+/** First meal category in the day's profile — used when pre-selecting a meal while logging. */
 export function resolveDefaultMealForLog(log: DailyLog, settings: Settings): string {
-  const profile = resolveMealProfileForLog(log, settings)
-  return normalizeMealName(profile.defaultMeal, profile.meals)
+  const meals = resolveMealsForLog(log, settings)
+  return meals[0] ?? ''
 }
 
 export function ensureMealSnapshot(log: DailyLog, settings: Settings): DailyLog {
@@ -76,16 +76,16 @@ export function countDaysUsingMealProfile(
   return Object.values(dailyLogs).filter((log) => log.mealProfileId === profileId).length
 }
 
-export function createStandardMealProfile(
-  meals?: string[],
-  defaultMeal?: string,
-): MealProfile {
-  const normalizedMeals = normalizeMeals(meals)
+export function normalizeMealProfile(profile: MealProfile): MealProfile {
+  const meals = normalizeMeals(profile.meals)
+  return { id: profile.id, name: profile.name, meals }
+}
+
+export function createStandardMealProfile(meals?: string[]): MealProfile {
   return {
     id: 'standard',
     name: 'Standard',
-    meals: normalizedMeals,
-    defaultMeal: normalizeMealName(defaultMeal, normalizedMeals),
+    meals: normalizeMeals(meals),
   }
 }
 
@@ -93,14 +93,9 @@ export function ensureMealProfilesInSettings(
   settings: Partial<Settings> & { meals?: string[]; defaultMeal?: string },
 ): Pick<Settings, 'mealProfiles' | 'defaultMealProfileId'> {
   if (settings.mealProfiles?.length) {
-    const mealProfiles = settings.mealProfiles.map((p) => {
-      const meals = normalizeMeals(p.meals)
-      return {
-        ...p,
-        meals,
-        defaultMeal: normalizeMealName(p.defaultMeal, meals),
-      }
-    })
+    const mealProfiles = settings.mealProfiles.map((p) =>
+      normalizeMealProfile(p),
+    )
     const defaultMealProfileId =
       mealProfiles.some((p) => p.id === settings.defaultMealProfileId)
         ? settings.defaultMealProfileId!
@@ -108,7 +103,7 @@ export function ensureMealProfilesInSettings(
     return { mealProfiles, defaultMealProfileId }
   }
 
-  const standard = createStandardMealProfile(settings.meals, settings.defaultMeal)
+  const standard = createStandardMealProfile(settings.meals)
   return {
     mealProfiles: [standard],
     defaultMealProfileId: standard.id,

@@ -53,8 +53,6 @@ export interface MealProfile {
   name: string
   /** Ordered meal category names for grouping foods on the Daily tab. */
   meals: string[]
-  /** Default meal when logging new food. */
-  defaultMeal: string
 }
 
 export interface GoalTemplate {
