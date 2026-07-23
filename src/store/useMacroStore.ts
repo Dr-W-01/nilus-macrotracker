@@ -95,13 +95,20 @@ function runBadgeEvaluation(
     customCategories: state.customCategories,
   })
 
+  const prevProgress = state.badgeState.progress
   const { nextState, newBadgeIds } = applyBadgeAwards(state.badgeState, awards)
   if (newBadgeIds.length === 0) return
 
   const badgeState = appendUnviewedBadges(nextState, newBadgeIds)
   set({ badgeState })
   if (!options.silent) {
-    toastBadgesUnlocked(newBadgeIds)
+    // Celebratory toasts only for first-time unlocks (not recurring re-awards).
+    const firstTimeIds = newBadgeIds.filter(
+      (id) => (prevProgress[id]?.instances.length ?? 0) === 0,
+    )
+    if (firstTimeIds.length > 0) {
+      toastBadgesUnlocked(firstTimeIds)
+    }
   }
 }
 

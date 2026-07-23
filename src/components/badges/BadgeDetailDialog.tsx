@@ -10,12 +10,14 @@ import {
 import { Button } from '@/components/ui/button'
 import { BADGE_BY_ID } from '@/lib/badges/definitions'
 import { getBadgeCount } from '@/lib/badges/evaluate'
+import type { BadgeProgressToward } from '@/lib/badges/progress'
 import type { BadgeId, BadgeProgress } from '@/lib/badges/types'
 import { cn } from '@/lib/utils'
 
 interface BadgeDetailDialogProps {
   badgeId: BadgeId | null
   progress?: BadgeProgress
+  progressToward?: BadgeProgressToward | null
   weightTrackingEnabled: boolean
   burnTrackingEnabled: boolean
   onClose: () => void
@@ -24,6 +26,7 @@ interface BadgeDetailDialogProps {
 export function BadgeDetailDialog({
   badgeId,
   progress,
+  progressToward,
   weightTrackingEnabled,
   burnTrackingEnabled,
   onClose,
@@ -38,6 +41,8 @@ export function BadgeDetailDialog({
   const instances = [...(progress?.instances ?? [])].sort((a, b) =>
     b.earnedAt.localeCompare(a.earnedAt),
   )
+  const fraction = progressToward?.fraction ?? 0
+  const progressPct = Math.round(fraction * 100)
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -72,6 +77,36 @@ export function BadgeDetailDialog({
               {def.howToEarn}
             </p>
           </div>
+
+          {progressToward && (
+            <div className="rounded-lg border border-border bg-secondary/25 px-3 py-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Progress
+              </p>
+              <p className="text-sm font-medium text-foreground">{progressToward.text}</p>
+              <div
+                className="mt-2.5 h-2 overflow-hidden rounded-full bg-border/80"
+                role="progressbar"
+                aria-valuenow={progressPct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={progressToward.text}
+              >
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-[width] duration-300',
+                    fraction >= 1 ? 'bg-primary' : 'bg-primary/80',
+                  )}
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              {fraction >= 1 && def.recurring && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Goal met — keep going for the next award.
+                </p>
+              )}
+            </div>
+          )}
 
           {weightLocked && (
             <p className="rounded-lg border border-dashed border-border px-3 py-2.5 text-xs text-muted-foreground">

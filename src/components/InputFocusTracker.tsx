@@ -32,6 +32,8 @@ export function InputFocusTracker() {
     const sync = () => {
       const active = document.activeElement
       const focused = isTextInput(active)
+      // Only hide nav when a real text field is focused and keyboard is (likely) open.
+      // Never leave engaged=true after focus is gone (prevents stuck-hidden nav).
       const engaged =
         focused &&
         keyboardLikelyOpen() &&
@@ -51,10 +53,14 @@ export function InputFocusTracker() {
         setInputFocusEngaged(false)
         return
       }
+      // Engage immediately so the nav clears for the keyboard; sync confirms keyboard state.
       setInputFocusEngaged(true)
+      scheduleSync(80)
     }
 
     const onFocusOut = () => {
+      // Clear optimistically so unmounting sheet inputs cannot leave nav stuck hidden.
+      setInputFocusEngaged(false)
       scheduleSync(120)
     }
 
@@ -62,10 +68,15 @@ export function InputFocusTracker() {
       scheduleSync(50)
     }
 
+    const onPointerUp = () => scheduleSync(0)
+
+    // Capture phase so we still see focusout when a focused node is removed from the DOM.
     document.addEventListener('focusin', onFocusIn)
     document.addEventListener('focusout', onFocusOut)
     window.visualViewport?.addEventListener('resize', onViewportChange)
     window.visualViewport?.addEventListener('scroll', onViewportChange)
+    // After modal/sheet close, activeElement often settles on body without a clean blur path.
+    document.addEventListener('pointerup', onPointerUp)
     sync()
 
     return () => {
@@ -74,6 +85,7 @@ export function InputFocusTracker() {
       document.removeEventListener('focusout', onFocusOut)
       window.visualViewport?.removeEventListener('resize', onViewportChange)
       window.visualViewport?.removeEventListener('scroll', onViewportChange)
+      document.removeEventListener('pointerup', onPointerUp)
       setInputFocusEngaged(false)
     }
   }, [setInputFocusEngaged])

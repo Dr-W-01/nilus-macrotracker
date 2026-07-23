@@ -3,5 +3,5 @@ pid: 41064
 cwd: "C:\Users\einsn\Documents\nilus-macrotracker"
 command: "cd \"C:\\Users\\einsn\\Documents\\nilus-macrotracker\"; npx tsc -b --pretty false 2>&1"
 started_at: 2026-07-04T12:27:59.297Z
-running_for_ms: 160009   
+running_for_ms: 2705002  
 ---

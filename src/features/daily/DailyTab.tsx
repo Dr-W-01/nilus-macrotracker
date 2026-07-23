@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button'
 import { FormSection } from '@/components/ui/form-section'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { EditIconButton } from '@/components/ui/edit-icon-button'
+import { AppSelect } from '@/components/ui/app-select'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -130,18 +131,10 @@ export function DailyTab() {
   const goal = settings ? resolveGoalForLog(log, settings) : templates[0]
 
   const activeTemplateId = log.goalTemplateId || settings?.defaultTemplateId || 'default'
-  const activeTemplate = useMemo(
-    () => templates.find((t) => t.id === activeTemplateId) ?? templates[0],
-    [templates, activeTemplateId],
-  )
 
   const mealProfiles = settings?.mealProfiles ?? []
   const activeMealProfileId =
     log.mealProfileId || settings?.defaultMealProfileId || 'standard'
-  const activeMealProfile = useMemo(
-    () => mealProfiles.find((p) => p.id === activeMealProfileId) ?? mealProfiles[0],
-    [mealProfiles, activeMealProfileId],
-  )
   const viewHeaderDate = formatDailyViewHeaderDate(currentDate)
 
   const consumed = useMemo(
@@ -234,10 +227,6 @@ export function DailyTab() {
   const [weightInput, setWeightInput] = useState(
     log.weightKg != null ? String(weightFromKg(log.weightKg, weightUnit)) : '',
   )
-  const [goalTemplateEditOpen, setGoalTemplateEditOpen] = useState(false)
-  const [goalTemplateInput, setGoalTemplateInput] = useState(activeTemplateId)
-  const [mealProfileEditOpen, setMealProfileEditOpen] = useState(false)
-  const [mealProfileInput, setMealProfileInput] = useState(activeMealProfileId)
   const [copyYesterdayConfirmOpen, setCopyYesterdayConfirmOpen] = useState(false)
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
 
@@ -245,13 +234,25 @@ export function DailyTab() {
     setNoteExpanded(false)
   }, [currentDate])
 
-  useEffect(() => {
-    setGoalTemplateInput(activeTemplateId)
-  }, [activeTemplateId])
+  const goalTemplateOptions = useMemo(
+    () =>
+      templates.map((t) => ({
+        value: t.id,
+        label: t.name,
+        description: `${t.calories} cal · P ${t.protein}g · C ${t.carbs}g · F ${t.fat}g`,
+      })),
+    [templates],
+  )
 
-  useEffect(() => {
-    setMealProfileInput(activeMealProfileId)
-  }, [activeMealProfileId])
+  const mealProfileOptions = useMemo(
+    () =>
+      mealProfiles.map((p) => ({
+        value: p.id,
+        label: p.name,
+        description: p.meals.join(', '),
+      })),
+    [mealProfiles],
+  )
 
   const handleSelectFood = (food: FoodItem) => {
     setPickerOpen(false)
@@ -348,16 +349,6 @@ export function DailyTab() {
         : '',
     )
     setWeightEditOpen(true)
-  }
-
-  const openGoalTemplateEdit = () => {
-    setGoalTemplateInput(activeTemplateId)
-    setGoalTemplateEditOpen(true)
-  }
-
-  const openMealProfileEdit = () => {
-    setMealProfileInput(activeMealProfileId)
-    setMealProfileEditOpen(true)
   }
 
   const applyDuplicateYesterday = () => {
@@ -678,42 +669,42 @@ export function DailyTab() {
 
         {templates.length > 0 && (
           <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5 text-sm leading-tight">
-                <Target className="h-4 w-4 shrink-0 text-primary" />
-                Goal template
-              </span>
-              <span className="truncate text-right text-sm font-semibold leading-tight">
-                {activeTemplate?.name ?? '—'}
-              </span>
-            </div>
-            <EditIconButton
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6"
-              label="Edit goal template"
-              onClick={openGoalTemplateEdit}
+            <span className="flex shrink-0 items-center gap-1.5 text-sm leading-tight">
+              <Target className="h-4 w-4 shrink-0 text-primary" />
+              Goal template
+            </span>
+            <AppSelect
+              compact
+              className="min-w-0 max-w-[60%] flex-1"
+              aria-label="Goal template"
+              value={activeTemplateId}
+              options={goalTemplateOptions}
+              onChange={(id) => {
+                if (id === activeTemplateId) return
+                updateDailyLog(currentDate, { goalTemplateId: id })
+                toast.success('Goal template updated')
+              }}
             />
           </div>
         )}
 
         {mealProfiles.length > 0 && (
           <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5 text-sm leading-tight">
-                <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" />
-                Meal profile
-              </span>
-              <span className="truncate text-right text-sm font-semibold leading-tight">
-                {activeMealProfile?.name ?? '—'}
-              </span>
-            </div>
-            <EditIconButton
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6"
-              label="Edit meal profile"
-              onClick={openMealProfileEdit}
+            <span className="flex shrink-0 items-center gap-1.5 text-sm leading-tight">
+              <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" />
+              Meal profile
+            </span>
+            <AppSelect
+              compact
+              className="min-w-0 max-w-[60%] flex-1"
+              aria-label="Meal profile"
+              value={activeMealProfileId}
+              options={mealProfileOptions}
+              onChange={(id) => {
+                if (id === activeMealProfileId) return
+                updateDailyLog(currentDate, { mealProfileId: id })
+                toast.success('Meal profile updated')
+              }}
             />
           </div>
         )}
@@ -1000,104 +991,6 @@ export function DailyTab() {
           </ScrollSheetFooter>
         </SheetContent>
       </Sheet>
-
-      {mealProfiles.length > 0 && (
-      <Sheet open={mealProfileEditOpen} onOpenChange={setMealProfileEditOpen}>
-        <ModalViewport
-          active={mealProfileEditOpen}
-          onRequestClose={() => setMealProfileEditOpen(false)}
-        />
-        <SheetContent side="bottom" className={scrollSheetContentClass}>
-          <ScrollSheetHeader>
-            <SheetTitle>Meal profile</SheetTitle>
-          </ScrollSheetHeader>
-          <ScrollSheetBody>
-            <select
-              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              autoComplete="off"
-              value={mealProfileInput}
-              onChange={(e) => setMealProfileInput(e.target.value)}
-            >
-              {mealProfiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} — {p.meals.join(', ')}
-                </option>
-              ))}
-            </select>
-          </ScrollSheetBody>
-          <ScrollSheetFooter>
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => {
-                updateDailyLog(currentDate, { mealProfileId: mealProfileInput })
-                setMealProfileEditOpen(false)
-                toast.success('Meal profile updated')
-              }}
-            >
-              Save
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setMealProfileEditOpen(false)}
-            >
-              Cancel
-            </Button>
-          </ScrollSheetFooter>
-        </SheetContent>
-      </Sheet>
-      )}
-
-      {templates.length > 0 && (
-      <Sheet open={goalTemplateEditOpen} onOpenChange={setGoalTemplateEditOpen}>
-        <ModalViewport
-          active={goalTemplateEditOpen}
-          onRequestClose={() => setGoalTemplateEditOpen(false)}
-        />
-        <SheetContent side="bottom" className={scrollSheetContentClass}>
-          <ScrollSheetHeader>
-            <SheetTitle>Goal template</SheetTitle>
-          </ScrollSheetHeader>
-          <ScrollSheetBody>
-            <select
-              className="flex h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              autoComplete="off"
-              value={goalTemplateInput}
-              onChange={(e) => setGoalTemplateInput(e.target.value)}
-            >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} — {t.calories} cal
-                </option>
-              ))}
-            </select>
-          </ScrollSheetBody>
-          <ScrollSheetFooter>
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => {
-                updateDailyLog(currentDate, { goalTemplateId: goalTemplateInput })
-                setGoalTemplateEditOpen(false)
-                toast.success('Goal template updated')
-              }}
-            >
-              Save
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setGoalTemplateEditOpen(false)}
-            >
-              Cancel
-            </Button>
-          </ScrollSheetFooter>
-        </SheetContent>
-      </Sheet>
-      )}
 
       {trackCurrentWeight && (
       <Sheet open={weightEditOpen} onOpenChange={setWeightEditOpen}>

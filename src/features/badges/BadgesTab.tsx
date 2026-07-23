@@ -6,6 +6,7 @@ import { BadgeDetailDialog } from '@/components/badges/BadgeDetailDialog'
 import { BADGE_CATEGORY_META, badgesByCategory } from '@/lib/badges/categories'
 import { BADGE_DEFINITIONS } from '@/lib/badges/definitions'
 import { getBadgeCount } from '@/lib/badges/evaluate'
+import { getBadgeProgressToward } from '@/lib/badges/progress'
 import type { BadgeId } from '@/lib/badges/types'
 import {
   isTrackBurnedCaloriesEnabled,
@@ -16,6 +17,10 @@ import { useMacroStore } from '@/store/useMacroStore'
 export function BadgesTab() {
   const badgeState = useMacroStore((s) => s.badgeState)
   const settings = useMacroStore((s) => s.settings)
+  const dailyLogs = useMacroStore((s) => s.dailyLogs)
+  const foodLibrary = useMacroStore((s) => s.foodLibrary)
+  const favoriteFoodIds = useMacroStore((s) => s.favoriteFoodIds)
+  const customCategories = useMacroStore((s) => s.customCategories)
   const highlightedBadgeId = useMacroStore((s) => s.highlightedBadgeId)
   const openBadgeDetailId = useMacroStore((s) => s.openBadgeDetailId)
   const setHighlightedBadgeId = useMacroStore((s) => s.setHighlightedBadgeId)
@@ -38,6 +43,17 @@ export function BadgesTab() {
       BADGE_DEFINITIONS.filter((b) => getBadgeCount(badgeState.progress[b.id]) > 0).length,
     [badgeState.progress],
   )
+
+  const detailProgressToward = useMemo(() => {
+    if (!detailId) return null
+    return getBadgeProgressToward(detailId, {
+      dailyLogs,
+      foodLibrary,
+      settings,
+      favoriteFoodIds,
+      customCategories,
+    })
+  }, [detailId, dailyLogs, foodLibrary, settings, favoriteFoodIds, customCategories])
 
   const openBadgeDetail = (id: BadgeId) => {
     setDetailId(id)
@@ -109,6 +125,7 @@ export function BadgesTab() {
       <BadgeDetailDialog
         badgeId={detailId}
         progress={detailId ? badgeState.progress[detailId] : undefined}
+        progressToward={detailProgressToward}
         weightTrackingEnabled={weightTrackingEnabled}
         burnTrackingEnabled={burnTrackingEnabled}
         onClose={closeDetail}

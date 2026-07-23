@@ -66,6 +66,7 @@ export function LibraryTab() {
   const removeLibraryCategory = useMacroStore((s) => s.removeLibraryCategory)
   const deleteLibraryCategory = useMacroStore((s) => s.deleteLibraryCategory)
   const setLibrarySearchEngaged = useMacroStore((s) => s.setLibrarySearchEngaged)
+  const setInputFocusEngaged = useMacroStore((s) => s.setInputFocusEngaged)
 
   const [query, setQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
@@ -128,14 +129,27 @@ export function LibraryTab() {
     if (libraryModalOpen) {
       setSearchFocused(false)
       setLibrarySearchEngaged(false)
+      // Modal/sheet form fields can leave inputFocusEngaged stuck true after close.
+      setInputFocusEngaged(false)
       return
     }
+    // Always clear keyboard-hide flag when a library modal closes so bottom nav returns.
+    setInputFocusEngaged(false)
     setLibrarySearchEngaged(searchFocused || query.trim().length > 0)
-  }, [libraryModalOpen, searchFocused, query, setLibrarySearchEngaged])
+  }, [
+    libraryModalOpen,
+    searchFocused,
+    query,
+    setLibrarySearchEngaged,
+    setInputFocusEngaged,
+  ])
 
   useEffect(() => {
-    return () => setLibrarySearchEngaged(false)
-  }, [setLibrarySearchEngaged])
+    return () => {
+      setLibrarySearchEngaged(false)
+      setInputFocusEngaged(false)
+    }
+  }, [setLibrarySearchEngaged, setInputFocusEngaged])
 
   useEffect(() => {
     setActiveCategory(null)
