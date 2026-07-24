@@ -35,11 +35,19 @@ interface AppSelectProps {
   disabled?: boolean
   /** Label for the confirm button (default Save) */
   saveLabel?: string
+  /**
+   * When false, no inline value trigger is rendered — open via controlled props
+   * (e.g. an EditIconButton on the Daily tab).
+   */
+  showTrigger?: boolean
+  /** Controlled open state (optional; uncontrolled when omitted) */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 /**
- * Compact trigger that opens a modal of tappable option rows.
- * Selection is staged until the user taps Save (Cancel discards).
+ * Modal option picker with staged selection (Save applies, Cancel discards).
+ * Can render its own value trigger, or be opened externally (showTrigger=false).
  */
 export function AppSelect({
   value,
@@ -51,12 +59,22 @@ export function AppSelect({
   compact = false,
   disabled = false,
   saveLabel = 'Save',
+  showTrigger = true,
+  open: openControlled,
+  onOpenChange,
 }: AppSelectProps) {
-  const [open, setOpen] = useState(false)
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
+  const isControlled = openControlled !== undefined
+  const open = isControlled ? openControlled : uncontrolledOpen
+  const setOpen = (next: boolean) => {
+    if (!isControlled) setUncontrolledOpen(next)
+    onOpenChange?.(next)
+  }
+
   const [draft, setDraft] = useState(value)
   const selected = options.find((o) => o.value === value) ?? options[0]
   const dialogTitle = title ?? ariaLabel ?? 'Choose option'
-  const canOpen = !disabled && options.length > 1
+  const canOpenTrigger = !disabled && options.length > 1
   const draftChanged = draft !== value
 
   useEffect(() => {
@@ -74,32 +92,34 @@ export function AppSelect({
 
   return (
     <>
-      <button
-        type="button"
-        disabled={!canOpen}
-        aria-label={ariaLabel ?? dialogTitle}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className={cn(
-          'flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-card text-left text-foreground shadow-sm transition-colors',
-          'hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          'disabled:cursor-default disabled:opacity-80',
-          compact ? 'h-8 px-2.5 py-1 text-sm' : 'h-10 px-3 py-2 text-sm',
-          open && 'border-primary/40 ring-2 ring-ring/40',
-          className,
-        )}
-        onClick={() => {
-          if (!canOpen) return
-          setOpen(true)
-        }}
-      >
-        <span className="min-w-0 truncate font-semibold leading-tight">
-          {selected?.label ?? '—'}
-        </span>
-        {canOpen && (
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-        )}
-      </button>
+      {showTrigger && (
+        <button
+          type="button"
+          disabled={!canOpenTrigger}
+          aria-label={ariaLabel ?? dialogTitle}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          className={cn(
+            'flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-card text-left text-foreground shadow-sm transition-colors',
+            'hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'disabled:cursor-default disabled:opacity-80',
+            compact ? 'h-8 px-2.5 py-1 text-sm' : 'h-10 px-3 py-2 text-sm',
+            open && 'border-primary/40 ring-2 ring-ring/40',
+            className,
+          )}
+          onClick={() => {
+            if (!canOpenTrigger) return
+            setOpen(true)
+          }}
+        >
+          <span className="min-w-0 truncate font-semibold leading-tight">
+            {selected?.label ?? '—'}
+          </span>
+          {canOpenTrigger && (
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          )}
+        </button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <ModalViewport active={open} onRequestClose={close} />

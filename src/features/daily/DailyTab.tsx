@@ -238,6 +238,8 @@ export function DailyTab() {
   )
   const [copyYesterdayConfirmOpen, setCopyYesterdayConfirmOpen] = useState(false)
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
+  const [goalTemplateEditOpen, setGoalTemplateEditOpen] = useState(false)
+  const [mealProfileEditOpen, setMealProfileEditOpen] = useState(false)
 
   useEffect(() => {
     setNoteExpanded(false)
@@ -695,14 +697,26 @@ export function DailyTab() {
         </div>
 
         {templates.length > 0 && (
-          <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
-            <span className="flex shrink-0 items-center gap-1.5 text-sm leading-tight">
-              <Target className="h-4 w-4 shrink-0 text-primary" />
-              Goal template
-            </span>
+          <>
+            <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
+              <div className="flex min-w-0 flex-1 items-center justify-between">
+                <span className="flex items-center gap-1.5 text-sm leading-tight">
+                  <Target className="h-4 w-4 shrink-0 text-primary" />
+                  Goal template
+                </span>
+              </div>
+              <EditIconButton
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                label="Edit goal template"
+                onClick={() => setGoalTemplateEditOpen(true)}
+              />
+            </div>
             <AppSelect
-              compact
-              className="min-w-0 max-w-[60%] flex-1"
+              showTrigger={false}
+              open={goalTemplateEditOpen}
+              onOpenChange={setGoalTemplateEditOpen}
               title="Goal template"
               aria-label="Goal template"
               value={activeTemplateId}
@@ -713,18 +727,30 @@ export function DailyTab() {
                 toast.success('Goal template updated')
               }}
             />
-          </div>
+          </>
         )}
 
         {mealProfiles.length > 0 && (
-          <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
-            <span className="flex shrink-0 items-center gap-1.5 text-sm leading-tight">
-              <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" />
-              Meal profile
-            </span>
+          <>
+            <div className={cn(SURFACE_GRADIENT_COMPACT, 'daily-meta-row')}>
+              <div className="flex min-w-0 flex-1 items-center justify-between">
+                <span className="flex items-center gap-1.5 text-sm leading-tight">
+                  <UtensilsCrossed className="h-4 w-4 shrink-0 text-primary" />
+                  Meal profile
+                </span>
+              </div>
+              <EditIconButton
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                label="Edit meal profile"
+                onClick={() => setMealProfileEditOpen(true)}
+              />
+            </div>
             <AppSelect
-              compact
-              className="min-w-0 max-w-[60%] flex-1"
+              showTrigger={false}
+              open={mealProfileEditOpen}
+              onOpenChange={setMealProfileEditOpen}
               title="Meal profile"
               aria-label="Meal profile"
               value={activeMealProfileId}
@@ -735,7 +761,7 @@ export function DailyTab() {
                 toast.success('Meal profile updated')
               }}
             />
-          </div>
+          </>
         )}
 
         <div className="flex justify-center">
