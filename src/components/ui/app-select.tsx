@@ -1,5 +1,15 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { Check, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import {
+  ModalViewport,
+  ScrollDialogBody,
+  ScrollDialogFooter,
+  ScrollDialogHeader,
+  fitScrollDialogContentClass,
+} from '@/components/ui/scroll-modal'
+import { SURFACE_INNER } from '@/lib/surfaceStyles'
 import { cn } from '@/lib/utils'
 
 export type AppSelectOption = {
@@ -12,6 +22,8 @@ interface AppSelectProps {
   value: string
   options: AppSelectOption[]
   onChange: (value: string) => void
+  /** Dialog title when the picker opens */
+  title?: string
   /** Accessible name for the trigger button */
   'aria-label'?: string
   className?: string
@@ -21,129 +33,114 @@ interface AppSelectProps {
 }
 
 /**
- * In-place dropdown selector matching app surface styles.
- * Replaces full-screen sheet pickers for simple single-choice lists.
+ * Compact trigger that opens a modal of tappable option rows.
+ * Matches app dialog / surface styling for Goal Template & Meal Profile pickers.
  */
 export function AppSelect({
   value,
   options,
   onChange,
+  title,
   'aria-label': ariaLabel,
   className,
   compact = false,
   disabled = false,
 }: AppSelectProps) {
   const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
-  const listId = useId()
   const selected = options.find((o) => o.value === value) ?? options[0]
-
-  useEffect(() => {
-    if (!open) return
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [open])
+  const dialogTitle = title ?? ariaLabel ?? 'Choose option'
+  const canOpen = !disabled && options.length > 1
 
   if (options.length === 0) return null
 
+  const pick = (next: string) => {
+    if (next !== value) onChange(next)
+    setOpen(false)
+  }
+
   return (
-    <div ref={rootRef} className={cn('relative min-w-0', className)}>
+    <>
       <button
         type="button"
-        disabled={disabled || options.length <= 1}
-        aria-label={ariaLabel}
-        aria-haspopup="listbox"
+        disabled={!canOpen}
+        aria-label={ariaLabel ?? dialogTitle}
+        aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={listId}
         className={cn(
           'flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-card text-left text-foreground shadow-sm transition-colors',
           'hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           'disabled:cursor-default disabled:opacity-80',
           compact ? 'h-8 px-2.5 py-1 text-sm' : 'h-10 px-3 py-2 text-sm',
           open && 'border-primary/40 ring-2 ring-ring/40',
+          className,
         )}
         onClick={() => {
-          if (disabled || options.length <= 1) return
-          setOpen((v) => !v)
+          if (!canOpen) return
+          setOpen(true)
         }}
       >
         <span className="min-w-0 truncate font-semibold leading-tight">
           {selected?.label ?? '—'}
         </span>
-        {options.length > 1 && (
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
-              open && 'rotate-180',
-            )}
-            aria-hidden
-          />
+        {canOpen && (
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
         )}
       </button>
 
-      {open && options.length > 1 && (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-label={ariaLabel}
-          className={cn(
-            'absolute right-0 z-40 mt-1 max-h-56 min-w-full overflow-y-auto overscroll-contain',
-            'rounded-lg border border-border bg-card py-1 shadow-lg',
-            'w-max max-w-[min(20rem,calc(100vw-2rem))]',
-          )}
-        >
-          {options.map((opt) => {
-            const active = opt.value === value
-            return (
-              <li key={opt.value} role="option" aria-selected={active}>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <ModalViewport active={open} onRequestClose={() => setOpen(false)} />
+        <DialogContent className={fitScrollDialogContentClass}>
+          <ScrollDialogHeader>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+          </ScrollDialogHeader>
+          <ScrollDialogBody className="space-y-2 py-2">
+            {options.map((opt) => {
+              const active = opt.value === value
+              return (
                 <button
+                  key={opt.value}
                   type="button"
+                  onClick={() => pick(opt.value)}
                   className={cn(
-                    'flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm transition-colors',
-                    active
-                      ? 'bg-primary/10 text-foreground'
-                      : 'text-foreground hover:bg-secondary/50 active:bg-secondary/60',
+                    SURFACE_INNER,
+                    'flex w-full items-start gap-3 px-3 py-3 text-left transition-colors',
+                    'hover:bg-secondary/50 active:bg-secondary/60',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    active && 'border-primary/40 bg-primary/10 ring-1 ring-primary/25',
                   )}
-                  onClick={() => {
-                    onChange(opt.value)
-                    setOpen(false)
-                  }}
                 >
-                  <Check
+                  <span
                     className={cn(
-                      'mt-0.5 h-4 w-4 shrink-0 text-primary',
-                      !active && 'opacity-0',
+                      'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border',
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-card text-transparent',
                     )}
                     aria-hidden
-                  />
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-medium leading-tight">{opt.label}</span>
+                    <span className="block text-sm font-semibold leading-tight text-foreground">
+                      {opt.label}
+                    </span>
                     {opt.description && (
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                      <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
                         {opt.description}
                       </span>
                     )}
                   </span>
                 </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </div>
+              )
+            })}
+          </ScrollDialogBody>
+          <ScrollDialogFooter>
+            <Button size="lg" variant="ghost" className="w-full" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </ScrollDialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

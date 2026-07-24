@@ -676,6 +676,7 @@ export function DailyTab() {
             <AppSelect
               compact
               className="min-w-0 max-w-[60%] flex-1"
+              title="Goal template"
               aria-label="Goal template"
               value={activeTemplateId}
               options={goalTemplateOptions}
@@ -697,6 +698,7 @@ export function DailyTab() {
             <AppSelect
               compact
               className="min-w-0 max-w-[60%] flex-1"
+              title="Meal profile"
               aria-label="Meal profile"
               value={activeMealProfileId}
               options={mealProfileOptions}
