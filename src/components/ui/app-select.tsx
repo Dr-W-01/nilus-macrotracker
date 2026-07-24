@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Check, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
@@ -15,7 +15,10 @@ import { cn } from '@/lib/utils'
 export type AppSelectOption = {
   value: string
   label: string
+  /** Plain secondary text (ignored when `detail` is provided) */
   description?: string
+  /** Rich content under the label (macros, energy line, etc.) */
+  detail?: ReactNode
 }
 
 interface AppSelectProps {
@@ -30,11 +33,13 @@ interface AppSelectProps {
   /** Compact trigger for dense rows (Daily meta rows) */
   compact?: boolean
   disabled?: boolean
+  /** Label for the confirm button (default Save) */
+  saveLabel?: string
 }
 
 /**
  * Compact trigger that opens a modal of tappable option rows.
- * Matches app dialog / surface styling for Goal Template & Meal Profile pickers.
+ * Selection is staged until the user taps Save (Cancel discards).
  */
 export function AppSelect({
   value,
@@ -45,16 +50,25 @@ export function AppSelect({
   className,
   compact = false,
   disabled = false,
+  saveLabel = 'Save',
 }: AppSelectProps) {
   const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState(value)
   const selected = options.find((o) => o.value === value) ?? options[0]
   const dialogTitle = title ?? ariaLabel ?? 'Choose option'
   const canOpen = !disabled && options.length > 1
+  const draftChanged = draft !== value
+
+  useEffect(() => {
+    if (open) setDraft(value)
+  }, [open, value])
 
   if (options.length === 0) return null
 
-  const pick = (next: string) => {
-    if (next !== value) onChange(next)
+  const close = () => setOpen(false)
+
+  const save = () => {
+    if (draft !== value) onChange(draft)
     setOpen(false)
   }
 
@@ -88,19 +102,19 @@ export function AppSelect({
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <ModalViewport active={open} onRequestClose={() => setOpen(false)} />
+        <ModalViewport active={open} onRequestClose={close} />
         <DialogContent className={fitScrollDialogContentClass}>
           <ScrollDialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
           </ScrollDialogHeader>
           <ScrollDialogBody className="space-y-2 py-2">
             {options.map((opt) => {
-              const active = opt.value === value
+              const active = opt.value === draft
               return (
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => pick(opt.value)}
+                  onClick={() => setDraft(opt.value)}
                   className={cn(
                     SURFACE_INNER,
                     'flex w-full items-start gap-3 px-3 py-3 text-left transition-colors',
@@ -120,22 +134,27 @@ export function AppSelect({
                   >
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </span>
-                  <span className="min-w-0 flex-1">
+                  <span className="min-w-0 flex-1 space-y-1">
                     <span className="block text-sm font-semibold leading-tight text-foreground">
                       {opt.label}
                     </span>
-                    {opt.description && (
-                      <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                    {opt.detail ? (
+                      <span className="block space-y-1">{opt.detail}</span>
+                    ) : opt.description ? (
+                      <span className="block text-xs leading-relaxed text-muted-foreground">
                         {opt.description}
                       </span>
-                    )}
+                    ) : null}
                   </span>
                 </button>
               )
             })}
           </ScrollDialogBody>
           <ScrollDialogFooter>
-            <Button size="lg" variant="ghost" className="w-full" onClick={() => setOpen(false)}>
+            <Button size="lg" className="w-full" disabled={!draftChanged} onClick={save}>
+              {saveLabel}
+            </Button>
+            <Button size="lg" variant="ghost" className="w-full" onClick={close}>
               Cancel
             </Button>
           </ScrollDialogFooter>

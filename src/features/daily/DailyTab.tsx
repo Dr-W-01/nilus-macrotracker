@@ -77,7 +77,7 @@ import {
   normalizeMeals,
   resolveLoggedMeal,
 } from '@/lib/meals'
-import type { FoodItem, LoggedFood } from '@/lib/types'
+import type { FoodItem, GoalTemplate, LoggedFood } from '@/lib/types'
 import { MACRO_DISPLAY_LABELS, MACRO_NUTRIENT_ORDER } from '@/lib/macroColors'
 import { mobileFriendlyInputProps } from '@/lib/mobileInput'
 import {
@@ -100,6 +100,15 @@ const METRICS = [
 ] as const
 
 const NO_COLLAPSED_MEALS: string[] = []
+
+/** e.g. "2,200 Calories in / Cut 500" or "2,200 Calories in / Surplus 300" */
+function formatGoalCaloriesLine(template: GoalTemplate): string {
+  const intake = `${Math.round(template.calories).toLocaleString()} Calories in`
+  const td = template.targetDeficit
+  if (td == null || td === 0) return intake
+  if (td < 0) return `${intake} / Cut ${Math.abs(td).toLocaleString()}`
+  return `${intake} / Surplus ${Math.round(td).toLocaleString()}`
+}
 
 export function DailyTab() {
   const currentDate = useMacroStore((s) => s.currentDate)
@@ -239,7 +248,25 @@ export function DailyTab() {
       templates.map((t) => ({
         value: t.id,
         label: t.name,
-        description: `${t.calories} cal · P ${t.protein}g · C ${t.carbs}g · F ${t.fat}g`,
+        detail: (
+          <>
+            <span className="block text-xs leading-snug text-muted-foreground">
+              {formatGoalCaloriesLine(t)}
+            </span>
+            <LoggedMacroPreview
+              macros={{
+                calories: t.calories,
+                protein: t.protein,
+                carbs: t.carbs,
+                fat: t.fat,
+                fiber: t.fiber,
+                sugars: t.sugars,
+              }}
+              size="sm"
+              className="leading-snug"
+            />
+          </>
+        ),
       })),
     [templates],
   )
